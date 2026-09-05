@@ -6,6 +6,12 @@ import { login } from '../lib/api';
 import ParticleField from '../components/ParticleField';
 import MeshGradient from '../components/MeshGradient';
 import { useTilt } from '@cole/ui-components/src/useTilt';
+import Sidebar, { type DashboardView } from '../components/Sidebar';
+import OverviewView from '../components/OverviewView';
+import TenantsView from '../components/TenantsView';
+import PlansView from '../components/PlansView';
+import AnalyticsView from '../components/AnalyticsView';
+import AuditView from '../components/AuditView';
 
 interface Tenant {
   id: string;
@@ -155,147 +161,127 @@ function LoginScreen({ onLogin, onBackToHome }: { onLogin: () => void; onBackToH
 }
 
 /* ────────────────────────────────────────────────────────────
-   SUPER ADMIN DASHBOARD VIEW
+   SUPER ADMIN DASHBOARD VIEW (CONTROL CENTER)
    ──────────────────────────────────────────────────────────── */
 function Dashboard({ onLogout }: { onLogout: () => void }) {
-  const [tenants, setTenants] = useState<Tenant[]>(INITIAL_TENANTS);
-  const [plans] = useState<Plan[]>(INITIAL_PLANS);
-  const [showModal, setShowModal] = useState(false);
-  const [newName, setNewName] = useState('');
-  const [newSubdomain, setNewSubdomain] = useState('');
-  const [selectedPlanId, setSelectedPlanId] = useState(INITIAL_PLANS[1].id);
-
-  const handleCreateTenant = (e: React.FormEvent) => {
-    e.preventDefault();
-    const plan = plans.find((p) => p.id === selectedPlanId) || plans[0];
-    const newTenant: Tenant = {
-      id: `t-${Date.now()}`,
-      name: newName,
-      subdomain: newSubdomain.toLowerCase().replace(/[^a-z0-9-]/g, ''),
-      status: 'ACTIVE',
-      planName: plan.name,
-      studentsCount: 0,
-      maxStudents: plan.maxStudents,
-      features: plan.features,
-    };
-    setTenants([...tenants, newTenant]);
-    setShowModal(false);
-    setNewName('');
-    setNewSubdomain('');
-  };
+  const [activeView, setActiveView] = useState<DashboardView>('overview');
+  const [systemOnline] = useState(true);
+  const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 p-6 sm:p-10 max-w-7xl mx-auto space-y-8">
-      <header className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-6 border-b border-slate-800">
-        <div>
-          <span className="text-[10px] font-extrabold text-indigo-400 bg-indigo-500/10 px-2.5 py-1 rounded-full uppercase tracking-wider border border-indigo-500/20">
-            Super Admin Control Center
-          </span>
-          <h1 className="text-2xl sm:text-3xl font-black text-white mt-1">Colegios y Suscripciones SaaS</h1>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="primary" onClick={() => setShowModal(true)}>+ Registrar Nuevo Colegio</Button>
-          <Button variant="outline" onClick={onLogout}>Cerrar Sesión</Button>
-        </div>
-      </header>
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex font-sans">
+      {/* Sidebar Navigation */}
+      <Sidebar
+        activeView={activeView}
+        onViewChange={setActiveView}
+        onLogout={onLogout}
+        userEmail="admin@cole.pe"
+        userName="Super Admin"
+      />
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
-          <p className="text-xs font-bold text-slate-400 uppercase">Colegios Activos</p>
-          <p className="text-3xl font-black text-indigo-400 mt-2">{tenants.length}</p>
-        </div>
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
-          <p className="text-xs font-bold text-slate-400 uppercase">Alumnos Totales</p>
-          <p className="text-3xl font-black text-emerald-400 mt-2">{tenants.reduce((acc, t) => acc + t.studentsCount, 0)}</p>
-        </div>
-        <div className="p-6 rounded-2xl bg-slate-900 border border-slate-800">
-          <p className="text-xs font-bold text-slate-400 uppercase">Planes Comerciales</p>
-          <p className="text-3xl font-black text-violet-400 mt-2">{plans.length}</p>
-        </div>
-      </div>
-
-      <div className="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-        <div className="p-6 border-b border-slate-800">
-          <h2 className="text-base font-bold text-white">Directorio de Colegios Vinculados</h2>
-        </div>
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-sm text-slate-300">
-            <thead className="bg-slate-950 text-xs uppercase font-bold text-slate-500">
-              <tr>
-                <th className="px-6 py-4">Colegio</th>
-                <th className="px-6 py-4">Subdominio</th>
-                <th className="px-6 py-4">Plan</th>
-                <th className="px-6 py-4">Alumnos</th>
-                <th className="px-6 py-4">Estado</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
-              {tenants.map((t) => (
-                <tr key={t.id} className="hover:bg-slate-800/40">
-                  <td className="px-6 py-4 font-bold text-white">{t.name}</td>
-                  <td className="px-6 py-4 font-mono text-xs text-indigo-400">{t.subdomain}.cole.pe</td>
-                  <td className="px-6 py-4">{t.planName}</td>
-                  <td className="px-6 py-4">{t.studentsCount} / {t.maxStudents}</td>
-                  <td className="px-6 py-4">
-                    <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-full border border-emerald-500/20">
-                      {t.status}
-                    </span>
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      {showModal && (
-        <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-md w-full text-slate-100">
-            <h3 className="text-xl font-bold text-white mb-4">Registrar Nuevo Colegio</h3>
-            <form onSubmit={handleCreateTenant} className="space-y-4">
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Nombre de la Institución</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="Ej: Colegio San Agustín"
-                  value={newName}
-                  onChange={(e) => setNewName(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm"
-                />
+      {/* Main Content Area */}
+      <div className="flex-1 ml-72 min-h-screen flex flex-col bg-slate-950">
+        {/* Top Executive Header & System Pulse */}
+        <header className="sticky top-0 z-30 bg-slate-950/85 backdrop-blur-xl border-b border-slate-800/80 px-8 py-4 flex items-center justify-between gap-4">
+          <div className="flex items-center gap-4">
+            <div>
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] font-extrabold text-indigo-400 bg-indigo-500/10 px-2.5 py-0.5 rounded-full uppercase tracking-wider border border-indigo-500/20">
+                  Super Admin Control Center
+                </span>
+                <span className="text-[10px] font-bold text-slate-500 bg-slate-900 px-2 py-0.5 rounded border border-slate-800">
+                  v2.0 • Multi-Tenant SaaS
+                </span>
               </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Subdominio</label>
-                <input
-                  type="text"
-                  required
-                  placeholder="sanagustin"
-                  value={newSubdomain}
-                  onChange={(e) => setNewSubdomain(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-400 uppercase mb-1">Plan</label>
-                <select
-                  value={selectedPlanId}
-                  onChange={(e) => setSelectedPlanId(e.target.value)}
-                  className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm"
-                >
-                  {plans.map((p) => (
-                    <option key={p.id} value={p.id}>{p.name} (${p.monthlyPrice}/mes)</option>
-                  ))}
-                </select>
-              </div>
-              <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
-                <Button type="button" variant="outline" onClick={() => setShowModal(false)}>Cancelar</Button>
-                <Button type="submit" variant="primary">Crear Colegio</Button>
-              </div>
-            </form>
+              <h1 className="text-xl sm:text-2xl font-black text-white mt-1">
+                {activeView === 'overview' && 'Panel General & Métricas Globales'}
+                {activeView === 'tenants' && 'Colegios y Suscripciones SaaS'}
+                {activeView === 'plans' && 'Catálogo de Planes Comerciales'}
+                {activeView === 'analytics' && 'Analíticas de Crecimiento & Capacidad'}
+                {activeView === 'audit' && 'Auditoría de Dominio & Seguridad'}
+              </h1>
+            </div>
           </div>
-        </div>
-      )}
-    </main>
+
+          <div className="flex items-center gap-3">
+            {/* Live System Health Pulse */}
+            <div className="hidden lg:flex items-center gap-3 px-3.5 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs">
+              <div className="flex items-center gap-1.5">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse" />
+                <span className="text-[11px] font-semibold text-slate-300">API Core :4000</span>
+              </div>
+              <span className="text-slate-700">|</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                <span className="text-[11px] text-slate-400">PostgreSQL :5433</span>
+              </div>
+              <span className="text-slate-700">|</span>
+              <div className="flex items-center gap-1.5">
+                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+                <span className="text-[11px] text-slate-400">Redis :6379</span>
+              </div>
+            </div>
+
+            {/* Quick action button */}
+            {activeView !== 'tenants' && (
+              <button
+                onClick={() => setActiveView('tenants')}
+                className="px-3.5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-lg shadow-indigo-500/20 transition-all flex items-center gap-2"
+              >
+                <span>+</span>
+                <span>Registrar Nuevo Colegio</span>
+              </button>
+            )}
+
+            {/* Notifications Toggle */}
+            <div className="relative">
+              <button
+                onClick={() => setNotificationsOpen(!notificationsOpen)}
+                className="p-2 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-300 transition-colors text-sm"
+                title="Alertas del Sistema"
+              >
+                🔔
+              </button>
+
+              {notificationsOpen && (
+                <div className="absolute right-0 mt-2 w-80 bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl p-4 space-y-3 z-50">
+                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
+                    <span className="text-xs font-bold text-white">Alertas del Sistema</span>
+                    <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded-full">Todo Operativo</span>
+                  </div>
+                  <div className="space-y-2 text-xs">
+                    <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80">
+                      <p className="font-bold text-white">Suscripción Renovada</p>
+                      <p className="text-slate-400 text-[11px] mt-0.5">Colegio San Cleo ha renovado Plan Profesional automáticamente.</p>
+                      <span className="text-[9px] text-slate-500">Hace 15 min</span>
+                    </div>
+                    <div className="p-2.5 rounded-xl bg-slate-950/80 border border-slate-800/80">
+                      <p className="font-bold text-white">Prueba Iniciada</p>
+                      <p className="text-slate-400 text-[11px] mt-0.5">Academia Montessori inició prueba de 14 días.</p>
+                      <span className="text-[9px] text-slate-500">Hace 2 horas</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* Logout button */}
+            <Button variant="outline" onClick={onLogout} className="text-xs py-1.5 px-3">
+              Cerrar Sesión
+            </Button>
+          </div>
+        </header>
+
+        {/* View Router */}
+        <main className="flex-1 p-8 max-w-7xl w-full mx-auto space-y-8">
+          {activeView === 'overview' && <OverviewView />}
+          {activeView === 'tenants' && <TenantsView />}
+          {activeView === 'plans' && <PlansView />}
+          {activeView === 'analytics' && <AnalyticsView />}
+          {activeView === 'audit' && <AuditView />}
+        </main>
+      </div>
+    </div>
   );
 }
 
