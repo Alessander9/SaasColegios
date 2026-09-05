@@ -1,117 +1,111 @@
-# 🌿 Estrategia de Ramas Git (Branching Strategy) - SaaS Colegios
+# 🌿 Estrategia de Ramas Git, Alta Disponibilidad y Respaldo - SaaS Colegios
 
-Este documento describe la estructura oficial de ramas del repositorio, el propósito de cada una, el flujo de trabajo (workflow) para el equipo de ingeniería y las políticas de despliegue y copias de seguridad.
+Este documento describe la arquitectura oficial de ramas, entornos de despliegue, políticas de recuperación ante desastres (DR) y el flujo de trabajo (GitFlow) para garantizar que la plataforma **nunca quede sin solución frente al cliente y se mantenga 100% online**.
 
 ---
 
-## 🗺️ Mapa General de Ramas
+## 🗺️ Mapa General de Ramas y Entornos
 
 ```
-                            [feature/*] (Nuevas funcionalidades)
-                                   │
-                                   ▼
- [dev] (Integración y pruebas continuas) ────────────────────────┐
-                                                                 │ (PR / Merge)
-                                                                 ▼
- [main] (Código consolidado validado) ──────────────────────────► [deploy] (Producción en Vivo)
-                                                                 │
-                                         ┌───────────────────────┴───────────────────────┐
-                                         ▼                                               ▼
-                         [backup-pre-deploy]                                     [backup-sistema]
-                    (Respaldo funcional anterior)                          (Copia de seguridad actual)
+                              [feature/*] (Nuevas funcionalidades)
+                                     │
+                                     ▼
+ [dev] (Integración continua / Testing) ────────────────────────┐
+                                                                │ (PR Aprobado)
+                                                                ▼
+ [staging] (Pre-producción espejo para pruebas de humo/carga) ──┤
+                                                                │ (Validación 100%)
+                                                                ▼
+ [main] (Troncal oficial auditado) ────────────────────────────► [deploy] (Producción en Vivo)
+                                                                │
+                     ┌──────────────────────────────────────────┼──────────────────────────────────────────┐
+                     ▼                                          ▼                                          ▼
+           [backup-pre-deploy]                            [backup-sistema]                         Tags Inmutables
+      (Snapshot estable anterior)                    (Copia de seguridad total)                   (v1.2.0-stable)
+                     │
+                     ▼
+          [hotfix/*] (Parches críticos en caliente directos a producción)
 ```
 
 ---
 
 ## 📋 Detalle y Propósito de Cada Rama
 
-### 1. `main` (Rama Troncal Principal)
-* **Propósito:** Contiene el código fuente principal, auditado y aprobado. Todo cambio que ingresa a `main` ha superado previamente la suite completa de pruebas unitarias y E2E de Selenium.
-* **Políticas:**
-  - No se realizan commits directos en caliente sin revisión previa.
-  - Sirve de base para sincronizar las ramas de producción y respaldos.
+### 1. `deploy` (Producción en Vivo)
+* **Propósito:** Código fuente idéntico al ejecutado en los servidores de producción de los colegios.
+* **Características activas:**
+  - Sistema Dual de Asistencia Escolar (Kiosko QR en Portería + Registro Manual Docente).
+  - Resiliencia Offline-First (almacenamiento en cola local y autosincronización).
+  - Selector multimoneda (Soles, Dólares, Euros).
+  - Persistencia de sesión con cookies y timeout configurable por inactividad.
+  - Microanimaciones e interfaz ejecutiva interactiva.
+* **Políticas:** Despliegues protegidos con cero tiempo de inactividad (*Zero-Downtime*).
 
 ---
 
-### 2. `dev` (Desarrollo e Integración)
-* **Propósito:** Rama activa de desarrollo e integración de software. Aquí confluyen los avances y pruebas de las distintas áreas (School Admin, Backend Core API, Portal Docente, Portal Padre, Portal Alumno).
-* **Uso:**
-  - Los desarrolladores integran sus ramas de características (`feature/*`) hacia `dev`.
-  - Permite ejecutar pipelines de integración continua (CI) en un entorno de pruebas sin comprometer la estabilidad del sistema desplegado.
+### 2. `staging` (Entorno Espejo de Pre-Producción)
+* **Propósito:** Entorno idéntico a producción donde se ejecutan pruebas de carga, pruebas de regresión E2E de Selenium y validaciones de aceptación de cliente antes de enviar a `deploy`.
+* **Regla:** Ningún cambio pasa a `deploy` sin haber estado en `staging` exitosamente.
 
 ---
 
-### 3. `feature` (Nuevas Características y Módulos)
-* **Propósito:** Rama base y de referencia para la creación y experimentación de nuevas funcionalidades del SaaS escolar (ej. nuevos métodos de pago, facturación electrónica SUNAT, módulos de mensajería masiva).
-* **Convención de nomenclatura recomendada para ramas derivadas:**
-  - `feature/nombre-de-la-funcionalidad` (ej. `feature/minedu-siagie-export`, `feature/carnet-nfc`)
-* **Flujo:** Se crea a partir de `dev`, se trabaja la funcionalidad de manera aislada y luego se realiza un Pull Request hacia `dev`.
+### 3. `hotfix` (Parches Críticos de Emergencia)
+* **Propósito:** Rama de respuesta ultrarrápida (SLA < 15 min) para corregir incidencias urgentes reportadas en vivo sin esperar al ciclo de desarrollo normal.
+* **Flujo:** Se desprende de `deploy`/`main`, se aplica el parche, se valida y se mergea de inmediato hacia `deploy`, `main` y `dev`.
 
 ---
 
-### 4. `deploy` (Versión Estable en Producción / Despliegue)
-* **Propósito:** Representa con exactitud el estado del código desplegado en el entorno de **Producción en Vivo**.
-* **Estado Actual:** Contiene la versión completa con el **Sistema Dual de Asistencia Escolar (Kiosko QR Automático en Portería + Registro Manual en Aula por Docente)**, control de monedas (Soles, Dólares, Euros), persistencia de cookies, cierre configurable por inactividad y microanimaciones de alta fidelidad.
-* **Políticas:**
-  - Solo recibe merges aprobados desde `main`.
-  - Cada versión desplegada en esta rama debe contar con una etiqueta (Git Tag) de versión semántica (ej. `v1.2.0`).
+### 4. `dev` (Desarrollo Activo e Integración Continua)
+* **Propósito:** Rama de trabajo diario donde los desarrolladores unen sus ramas `feature/*` mediante Pull Requests.
 
 ---
 
-### 5. `backup-pre-deploy` (Último Backup Funcional Previo al Despliegue)
-* **Propósito:** Copia de seguridad y punto de restauración inmediato (Rollback Snapshot). Contiene la versión estable funcional del sistema **justo antes del último despliegue mayor de asistencia QR** (Commit `50b8ad0`: persistencia de sesión con cookies, timeout configurable y soporte multimoneda).
-* **Utilidad:**
-  - En caso de contingencia o fallo crítico durante un despliegue, permite restaurar el servicio en segundos al estado previamente validado.
+### 5. `feature` (Nuevas Funcionalidades y Módulos)
+* **Propósito:** Rama base para nuevas capacidades (ej. facturación SUNAT, integración con SIAGIE MINEDU, pagos automáticos).
+* **Convención:** `feature/nombre-de-la-funcionalidad`.
 
 ---
 
-### 6. `backup-sistema` (Copia de Seguridad Integral)
-* **Propósito:** Snapshot y respaldo de seguridad completo de todo el ecosistema (los 5 portales web, el backend NestJS, schemas de base de datos Prisma y suites completas de pruebas).
-* **Mantenimiento:**
-  - Se actualiza periódicamente tras cada hito importante o cierre de ciclo de desarrollo para garantizar redundancia y resguardo histórico de la plataforma.
+### 6. `backup-pre-deploy` (Rollback Inmediato Pre-Deploy)
+* **Propósito:** Punto de restauración garantizado previo al último despliegue mayor (Commit `50b8ad0`).
+* **Uso:** Si un despliegue mayor presenta inconsistencias en la nube, este snapshot permite regresar al estado previo en segundos.
 
 ---
 
-## 🛠️ Comandos Frecuentes de Trabajo
+### 7. `backup-sistema` (Copia de Seguridad Integral)
+* **Propósito:** Snapshot histórico de todo el ecosistema (5 portales web, backend NestJS, bases de datos Prisma y suite Selenium E2E).
 
-### Trabajar en una nueva característica
+---
+
+## 🏷️ Tags Semánticos Inmutables (Releases)
+
+Las ramas se mueven con nuevos commits, pero los **Git Tags** permanecen fijos e inmutables:
+* **`v1.2.0-stable`**: Versión certificada con Asistencia Dual QR, Offline-First, Multimoneda, Persistencia de Sesión y Suite E2E con 100% de éxito.
+
+---
+
+## 🛡️ Herramientas de Alta Disponibilidad & Disaster Recovery
+
+El sistema cuenta con scripts automatizados de respaldo y restauración en un solo comando:
+
 ```bash
-# Cambiar a la rama dev y actualizarla
-git checkout dev
-git pull origin dev
+# Generar un snapshot completo del sistema en la carpeta /backups
+pnpm run backup:system
 
-# Crear tu rama de funcionalidad
-git checkout -b feature/mi-nueva-mejora
-
-# Guardar cambios y subir
-git add .
-git commit -m "feat(modulo): descripcion de la mejora"
-git push origin feature/mi-nueva-mejora
-```
-
-### Actualizar el entorno de producción (`deploy`)
-```bash
-git checkout deploy
-git merge main
-git push origin deploy
-```
-
-### Restaurar versión desde el backup pre-deploy (en caso de emergencia)
-```bash
-git checkout backup-pre-deploy
-# O crear una rama hotfix a partir del backup
-git checkout -b hotfix/restauracion-emergencia backup-pre-deploy
+# Verificar integridad y restaurar estado
+pnpm run restore:system
 ```
 
 ---
 
-## 🔒 Tabla Resumen de Gobernanza
+## 🔒 Tabla de Gobernanza y SLAs
 
-| Rama | Entorno / Destino | Nivel de Estabilidad | Requiere Tests |
-| :--- | :--- | :--- | :--- |
-| `main` | Troncal Corporativo | ⭐⭐⭐⭐⭐ (Muy Alto) | Sí (100% E2E + Unit) |
-| `deploy` | Producción en la Nube | ⭐⭐⭐⭐⭐ (Muy Alto) | Sí (100% E2E + Build) |
-| `dev` | Staging / Desarrollo | ⭐⭐⭐⭐ (Medio-Alto) | Sí (Build + Unit) |
-| `feature` | Ramas de Trabajo | ⭐⭐⭐ (En Construcción) | Recomendado |
-| `backup-pre-deploy` | Punto de Restauración | ⭐⭐⭐⭐⭐ (Inmutable) | Validado históricamente |
-| `backup-sistema` | Respaldo General | ⭐⭐⭐⭐⭐ (Inmutable) | Validado históricamente |
+| Rama / Tag | Entorno | Nivel de Estabilidad | SLA de Recuperación | Requiere Tests |
+| :--- | :--- | :--- | :--- | :--- |
+| `deploy` | Producción | ⭐⭐⭐⭐⭐ (Crítico) | < 3 min | Sí (100% E2E + Build) |
+| `hotfix` | Parche Urgente | ⭐⭐⭐⭐⭐ (Crítico) | Inmediato | Sí (Smoke Tests) |
+| `staging` | Pre-Producción | ⭐⭐⭐⭐⭐ (Alto) | < 5 min | Sí (E2E Completo) |
+| `main` | Troncal | ⭐⭐⭐⭐⭐ (Alto) | < 5 min | Sí (100% Tests) |
+| `dev` | Desarrollo | ⭐⭐⭐⭐ (Medio) | < 15 min | Sí (Build + Unit) |
+| `feature` | En Desarrollo | ⭐⭐⭐ (En Construcción) | N/A | Recomendado |
+| `v1.2.0-stable` | Tag Inmutable | ⭐⭐⭐⭐⭐ (Inmutable) | Punto Cero | Validado |

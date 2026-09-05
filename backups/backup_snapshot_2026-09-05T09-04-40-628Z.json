@@ -1,0 +1,46 @@
+{
+  "version": "1.2.0",
+  "timestamp": "2026-09-05T09:04:40.751Z",
+  "gitBranch": "main",
+  "gitCommit": "c371bdeef408f13f7394c2cb0705e455f04379be",
+  "status": "HEALTHY",
+  "services": [
+    {
+      "name": "web-platform-admin",
+      "port": 3000,
+      "status": "READY"
+    },
+    {
+      "name": "web-school-admin",
+      "port": 3001,
+      "status": "READY"
+    },
+    {
+      "name": "web-teacher-portal",
+      "port": 3002,
+      "status": "READY"
+    },
+    {
+      "name": "web-parent-portal",
+      "port": 3003,
+      "status": "READY"
+    },
+    {
+      "name": "web-student-portal",
+      "port": 3004,
+      "status": "READY"
+    },
+    {
+      "name": "core-api",
+      "port": 4000,
+      "status": "READY"
+    }
+  ],
+  "verifiedFeatures": [
+    "Dual Attendance (Auto QR Kiosk + Manual Teacher)",
+    "Multi-Currency (PEN, USD, EUR)",
+    "Cookie Persistence & Auto Inactivity Logout",
+    "Micro-animations & Interactive Hover UI",
+    "Offline-First Local Queue Resiliency"
+  ]
+}

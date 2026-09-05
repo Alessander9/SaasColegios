@@ -15,6 +15,8 @@
     "e2e:browser:local": "powershell -ExecutionPolicy Bypass -File scripts/browser-e2e-local.ps1",
     "test:selenium": "node scripts/selenium-smoke.cjs",
     "e2e:commerce-concurrency": "powershell -ExecutionPolicy Bypass -File scripts/commerce-concurrency.ps1",
+    "backup:system": "node scripts/backup-system.js",
+    "restore:system": "node scripts/restore-system.js",
     "typecheck": "turbo run typecheck",
     "clean": "turbo run clean"
   },

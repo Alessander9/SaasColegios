@@ -45,8 +45,47 @@ export const AttendanceQrKioskModal: React.FC<AttendanceQrKioskModalProps> = ({
   const [scanHistory, setScanHistory] = useState<ScanRecord[]>([]);
   const [feedbackEffect, setFeedbackEffect] = useState<'success' | 'warning' | null>(null);
   const [terminalName] = useState<string>('Portería Principal - Kiosko #1');
+  const [isOnline, setIsOnline] = useState<boolean>(() => typeof navigator !== 'undefined' ? navigator.onLine : true);
+  const [offlineQueueCount, setOfflineQueueCount] = useState<number>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('cole_offline_attendance_queue');
+        return saved ? JSON.parse(saved).length : 0;
+      } catch {}
+    }
+    return 0;
+  });
 
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Online / Offline network event listeners & auto-sync
+  useEffect(() => {
+    const handleOnline = () => {
+      setIsOnline(true);
+      try {
+        const saved = localStorage.getItem('cole_offline_attendance_queue');
+        if (saved) {
+          const queue: ScanRecord[] = JSON.parse(saved);
+          if (Array.isArray(queue) && queue.length > 0) {
+            queue.forEach((rec) => onRecordAttendance(rec));
+            localStorage.removeItem('cole_offline_attendance_queue');
+            setOfflineQueueCount(0);
+          }
+        }
+      } catch {}
+    };
+
+    const handleOffline = () => {
+      setIsOnline(false);
+    };
+
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+    return () => {
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [onRecordAttendance]);
 
   // Live clock
   useEffect(() => {
@@ -132,6 +171,16 @@ export const AttendanceQrKioskModal: React.FC<AttendanceQrKioskModalProps> = ({
       terminal: terminalName,
     };
 
+    // Save to offline resilient queue if disconnected
+    if (typeof window !== 'undefined' && (typeof navigator !== 'undefined' ? !navigator.onLine : false)) {
+      try {
+        const existing = JSON.parse(localStorage.getItem('cole_offline_attendance_queue') || '[]');
+        const updated = [record, ...existing];
+        localStorage.setItem('cole_offline_attendance_queue', JSON.stringify(updated));
+        setOfflineQueueCount(updated.length);
+      } catch {}
+    }
+
     setLastScannedStudent(record);
     setScanHistory((prev) => [record, ...prev.slice(0, 19)]);
     setFeedbackEffect(isLate ? 'warning' : 'success');
@@ -195,8 +244,21 @@ export const AttendanceQrKioskModal: React.FC<AttendanceQrKioskModalProps> = ({
             </div>
           </div>
 
-          {/* Clock & Date Badge */}
-          <div className="flex items-center gap-4">
+          {/* Clock, Network Status & Date Badge */}
+          <div className="flex items-center gap-3 sm:gap-4">
+            {/* Network status pill */}
+            <div
+              className={`px-3 py-1.5 rounded-xl border flex items-center gap-1.5 text-xs font-bold ${
+                isOnline
+                  ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-400'
+                  : 'bg-amber-500/20 border-amber-500/40 text-amber-300 animate-pulse'
+              }`}
+              title={isOnline ? 'Conexión a internet estable' : 'Modo sin conexión: las lecturas se guardan localmente y se sincronizarán al reconectar'}
+            >
+              <span className={`w-2 h-2 rounded-full ${isOnline ? 'bg-emerald-400' : 'bg-amber-400'}`} />
+              <span>{isOnline ? 'En Línea' : `Offline (${offlineQueueCount} en cola)`}</span>
+            </div>
+
             <div className="text-right">
               <p className="text-2xl font-black font-mono tracking-wider text-emerald-400">{currentTime || '08:00:00'}</p>
               <p className="text-[10px] uppercase font-bold text-slate-400 capitalize">{currentDate}</p>
