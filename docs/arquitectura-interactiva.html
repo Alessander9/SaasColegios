@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cole Platform — Mapa Interactivo de Arquitectura, BD, Procesos y Pantallas</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-base: #090d16;
+      --bg-surface: #0f172a;
+      --bg-card: rgba(30, 41, 59, 0.7);
+      --bg-card-hover: rgba(51, 65, 85, 0.85);
+      --border-subtle: rgba(255, 255, 255, 0.08);
+      --border-accent: rgba(99, 102, 241, 0.4);
+      --text-primary: #f8fafc;
+      --text-secondary: #94a3b8;
+      --text-muted: #64748b;
+      --accent-indigo: #6366f1;
+      --accent-purple: #a855f7;
+      --accent-emerald: #10b981;
+      --accent-amber: #f59e0b;
+      --accent-cyan: #06b6d4;
+      --accent-rose: #f43f5e;
+      --radius-sm: 8px;
+      --radius-md: 12px;
+      --radius-lg: 18px;
+      --shadow-glow: 0 0 25px rgba(99, 102, 241, 0.25);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-base);
+      color: var(--text-primary);
+      font-family: 'Inter', -apple-system, sans-serif;
+      min-height: 100vh;
+      overflow-x: hidden;
+      line-height: 1.5;
+    }
+
+    /* Ambient background lighting */
+    .ambient-light {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100vw;
+      height: 100vh;
+      background: 
+        radial-gradient(circle at 15% 15%, rgba(99, 102, 241, 0.12) 0%, transparent 40%),
+        radial-gradient(circle at 85% 25%, rgba(168, 85, 247, 0.1) 0%, transparent 40%),
+        radial-gradient(circle at 50% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: 1440px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    /* Header */
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding-bottom: 2rem;
+      border-bottom: 1px solid var(--border-subtle);
+      margin-bottom: 2rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+    }
+
+    .logo-badge {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
+      border-radius: var(--radius-md);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      box-shadow: var(--shadow-glow);
+    }
+
+    .brand-text h1 {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.75rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(to right, #fff, #cbd5e1);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .brand-text p {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+    }
+
+    .header-badges {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .badge {
+      padding: 0.35rem 0.75rem;
+      border-radius: 9999px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+    }
+
+    .badge.active {
+      background: rgba(99, 102, 241, 0.15);
+      border-color: var(--accent-indigo);
+      color: #c7d2fe;
+    }
+
+    /* Navigation Tabs */
+    .nav-tabs {
+      display: flex;
+      gap: 0.5rem;
+      background: rgba(15, 23, 42, 0.8);
+      backdrop-filter: blur(12px);
+      padding: 0.35rem;
+      border-radius: var(--radius-md);
+      border: 1px solid var(--border-subtle);
+      margin-bottom: 2rem;
+      overflow-x: auto;
+    }
+
+    .tab-btn {
+      background: transparent;
+      border: none;
+      color: var(--text-secondary);
+      padding: 0.75rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+      white-space: nowrap;
+    }
+
+    .tab-btn:hover {
+      color: var(--text-primary);
+      background: rgba(255, 255, 255, 0.04);
+    }
+
+    .tab-btn.active {
+      background: var(--accent-indigo);
+      color: #fff;
+      box-shadow: 0 4px 12px rgba(99, 102, 241, 0.35);
+    }
+
+    /* Tab Content Panels */
+    .tab-panel {
+      display: none;
+      animation: fadeIn 0.3s ease;
+    }
+
+    .tab-panel.active {
+      display: block;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* Cards & Grid Layouts */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+    }
+
+    .card {
+      background: var(--bg-card);
+      backdrop-filter: blur(16px);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .card:hover {
+      border-color: var(--border-accent);
+      background: var(--bg-card-hover);
+      transform: translateY(-2px);
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1rem;
+    }
+
+    .card-title {
+      font-family: 'Outfit', sans-serif;
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    /* Entity Table Viewer (Database tab) */
+    .entity-tag {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      padding: 0.2rem 0.5rem;
+      border-radius: 4px;
+      background: rgba(99, 102, 241, 0.15);
+      color: #818cf8;
+      border: 1px solid rgba(99, 102, 241, 0.3);
+    }
+
+    .field-list {
+      list-style: none;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+    }
+
+    .field-item {
+      display: flex;
+      justify-content: space-between;
+      padding: 0.4rem 0;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+    }
+
+    .field-name {
+      color: #e2e8f0;
+    }
+
+    .field-name.pk {
+      color: #f59e0b;
+      font-weight: 600;
+    }
+
+    .field-name.fk {
+      color: #38bdf8;
+    }
+
+    .field-type {
+      color: var(--text-muted);
+    }
+
+    /* Flow Simulator Component */
+    .simulator-container {
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-lg);
+      padding: 2rem;
+      margin-bottom: 2rem;
+    }
+
+    .sim-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 1.5rem;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .role-selector {
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+    }
+
+    .role-chip {
+      padding: 0.5rem 1rem;
+      border-radius: 9999px;
+      font-size: 0.8rem;
+      font-weight: 600;
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid var(--border-subtle);
+      color: var(--text-secondary);
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .role-chip.selected {
+      background: linear-gradient(135deg, var(--accent-indigo), var(--accent-purple));
+      color: #fff;
+      border-color: transparent;
+      box-shadow: 0 2px 10px rgba(99, 102, 241, 0.3);
+    }
+
+    .timeline {
+      position: relative;
+      margin-left: 1.5rem;
+      padding-left: 2rem;
+      border-left: 2px dashed rgba(99, 102, 241, 0.3);
+    }
+
+    .step-item {
+      position: relative;
+      margin-bottom: 2rem;
+      opacity: 0.4;
+      transition: all 0.3s ease;
+    }
+
+    .step-item.active {
+      opacity: 1;
+      transform: scale(1.02);
+    }
+
+    .step-item.completed {
+      opacity: 0.85;
+    }
+
+    .step-node {
+      position: absolute;
+      left: -2.75rem;
+      top: 0;
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--bg-surface);
+      border: 2px solid var(--text-muted);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.75rem;
+      font-weight: 700;
+      color: var(--text-muted);
+    }
+
+    .step-item.active .step-node {
+      border-color: var(--accent-indigo);
+      background: var(--accent-indigo);
+      color: #fff;
+      box-shadow: 0 0 12px var(--accent-indigo);
+    }
+
+    .step-item.completed .step-node {
+      border-color: var(--accent-emerald);
+      background: var(--accent-emerald);
+      color: #fff;
+    }
+
+    .step-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      padding: 1.25rem;
+    }
+
+    .step-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 0.5rem;
+    }
+
+    .step-title {
+      font-weight: 700;
+      color: #fff;
+      font-size: 1rem;
+    }
+
+    .step-endpoint {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      color: #38bdf8;
+      background: rgba(56, 189, 248, 0.1);
+      padding: 0.2rem 0.6rem;
+      border-radius: 4px;
+    }
+
+    .step-desc {
+      font-size: 0.875rem;
+      color: var(--text-secondary);
+      margin-bottom: 0.75rem;
+    }
+
+    .sim-controls {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn {
+      padding: 0.6rem 1.25rem;
+      border-radius: var(--radius-sm);
+      font-weight: 600;
+      font-size: 0.875rem;
+      cursor: pointer;
+      border: none;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .btn-primary {
+      background: var(--accent-indigo);
+      color: #fff;
+    }
+
+    .btn-primary:hover {
+      background: #4f46e5;
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.08);
+      color: var(--text-primary);
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.12);
+    }
+
+    /* Screens Preview (Mockups) */
+    .screen-mockup {
+      background: #020617;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-md);
+      overflow: hidden;
+      box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+    }
+
+    .mockup-bar {
+      background: #0f172a;
+      padding: 0.75rem 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .circle-btn {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+    }
+
+    .mockup-url {
+      background: #1e293b;
+      padding: 0.2rem 1rem;
+      border-radius: 4px;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      font-family: 'JetBrains Mono', monospace;
+      flex-grow: 1;
+      margin-left: 0.5rem;
+    }
+
+    .mockup-body {
+      padding: 1.5rem;
+      min-height: 260px;
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .mock-row {
+      display: flex;
+      gap: 1rem;
+    }
+
+    .mock-stat {
+      flex: 1;
+      background: rgba(30, 41, 59, 0.5);
+      border: 1px solid var(--border-subtle);
+      padding: 1rem;
+      border-radius: var(--radius-sm);
+    }
+
+    .mock-stat-val {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #fff;
+    }
+
+    .mock-stat-lbl {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+    }
+
+    .code-block {
+      background: #090d16;
+      border: 1px solid var(--border-subtle);
+      border-radius: var(--radius-sm);
+      padding: 1rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.8rem;
+      color: #38bdf8;
+      overflow-x: auto;
+    }
+
+    /* Outbox Event Badge */
+    .event-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.4rem;
+      padding: 0.25rem 0.5rem;
+      background: rgba(16, 185, 129, 0.15);
+      border: 1px solid rgba(16, 185, 129, 0.3);
+      color: #34d399;
+      border-radius: 4px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="ambient-light"></div>
+
+  <div class="container">
+    <!-- Header -->
+    <header>
+      <div class="brand">
+        <div class="logo-badge">🏫</div>
+        <div class="brand-text">
+          <h1>Cole Platform — Mapa Interactivo</h1>
+          <p>Visualizador de Base de Datos, Lógica DDD, Flujos por Rol y Portales</p>
+        </div>
+      </div>
+      <div class="header-badges">
+        <span class="badge active">Multi-Tenant Scoped</span>
+        <span class="badge">NestJS 11 + Next.js 15</span>
+        <span class="badge">PostgreSQL 16 + Prisma</span>
+        <span class="badge">Transactional Outbox</span>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="nav-tabs">
+      <button class="tab-btn active" onclick="switchTab('db')">🗄️ 1. Base de Datos & Modelo E/R</button>
+      <button class="tab-btn" onclick="switchTab('logic')">🧠 2. Lógica de Negocio & Eventos</button>
+      <button class="tab-btn" onclick="switchTab('flows')">🔄 3. Simulador de Flujos por Rol</button>
+      <button class="tab-btn" onclick="switchTab('screens')">📱 4. Pantallas & Portales</button>
+      <button class="tab-btn" onclick="switchTab('global')">🌐 5. Ciclo Escolar Integral</button>
+    </nav>
+
+    <!-- TAB 1: BASE DE DATOS & MODELO ER -->
+    <section id="tab-db" class="tab-panel active">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: 'Outfit'; font-size: 1.5rem; margin-bottom: 0.5rem;">Entidades Principales y Aislamiento por Tenant</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Todas las entidades tenant-owned contienen el campo <code>tenantId</code> indexado para garantizar aislamiento absoluto en PostgreSQL.</p>
+      </div>
+
+      <div class="grid-3">
+        <!-- Tenant & Platform -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🏢 Tenant & Planes</h3>
+            <span class="entity-tag">platform</span>
+          </div>
+          <ul class="field-list">
+            <li class="field-item"><span class="field-name pk">🔑 id</span> <span class="field-type">String (UUID)</span></li>
+            <li class="field-item"><span class="field-name">name</span> <span class="field-type">String</span></li>
+            <li class="field-item"><span class="field-name">slug / subdomain</span> <span class="field-type">String (Unique)</span></li>
+            <li class="field-item"><span class="field-name fk">🔗 planId</span> <span class="field-type">FK -> Plan.id</span></li>
+            <li class="field-item"><span class="field-name">status</span> <span class="field-type">ACTIVE / SUSPENDED</span></li>
+          </ul>
+        </div>
+
+        <!-- School Core & Levels -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🏫 Estructura Escolar</h3>
+            <span class="entity-tag">school_core</span>
+          </div>
+          <ul class="field-list">
+            <li class="field-item"><span class="field-name fk">🛡️ tenantId</span> <span class="field-type">FK -> Tenant.id</span></li>
+            <li class="field-item"><span class="field-name">EducationalLevel</span> <span class="field-type">Inicial, Primaria, Secundaria</span></li>
+            <li class="field-item"><span class="field-name">GradeLevel</span> <span class="field-type">1er Grado, 5to Año...</span></li>
+            <li class="field-item"><span class="field-name">Section</span> <span class="field-type">Sección A, B...</span></li>
+            <li class="field-item"><span class="field-name">AcademicYear</span> <span class="field-type">2026 (Bimestres)</span></li>
+          </ul>
+        </div>
+
+        <!-- Students & Guardians -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🎓 Alumnos y Familias</h3>
+            <span class="entity-tag">student</span>
+          </div>
+          <ul class="field-list">
+            <li class="field-item"><span class="field-name pk">🔑 id</span> <span class="field-type">String (UUID)</span></li>
+            <li class="field-item"><span class="field-name fk">🛡️ tenantId</span> <span class="field-type">FK -> Tenant.id</span></li>
+            <li class="field-item"><span class="field-name">studentCode</span> <span class="field-type">ALU-2026-XXX</span></li>
+            <li class="field-item"><span class="field-name">documentNumber</span> <span class="field-type">DNI / CE</span></li>
+            <li class="field-item"><span class="field-name fk">🔗 StudentGuardian</span> <span class="field-type">Vínculo con Padre</span></li>
+            <li class="field-item"><span class="field-name fk">🔗 Enrollment</span> <span class="field-type">Matrícula confirmada</span></li>
+          </ul>
+        </div>
+
+        <!-- Academic & Grades -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">📚 Calificaciones y Asistencia</h3>
+            <span class="entity-tag">academic</span>
+          </div>
+          <ul class="field-list">
+            <li class="field-item"><span class="field-name fk">🛡️ tenantId</span> <span class="field-type">FK -> Tenant.id</span></li>
+            <li class="field-item"><span class="field-name">Course / CurricularArea</span> <span class="field-type">Matemática, Comunicación...</span></li>
+            <li class="field-item"><span class="field-name">Evaluation</span> <span class="field-type">Examen, Tarea, Práctica</span></li>
+            <li class="field-item"><span class="field-name">GradeRecord</span> <span class="field-type">score (0-20 o Literal)</span></li>
+            <li class="field-item"><span class="field-name">AttendanceRecord</span> <span class="field-type">PRESENT / LATE / ABSENT</span></li>
+          </ul>
+        </div>
+
+        <!-- Finance & Cashbox -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">💰 Finanzas y Pagos</h3>
+            <span class="entity-tag">finance</span>
+          </div>
+          <ul class="field-list">
+            <li class="field-item"><span class="field-name fk">🛡️ tenantId</span> <span class="field-type">FK -> Tenant.id</span></li>
+            <li class="field-item"><span class="field-name">Charge</span> <span class="field-type">Pensión Marzo, Matrícula</span></li>
+            <li class="field-item"><span class="field-name">Payment</span> <span class="field-type">Idempotent (No deletes)</span></li>
+            <li class="field-item"><span class="field-name">CashBox / Session</span> <span class="field-type">Arqueo y cierre diario</span></li>
+            <li class="field-item"><span class="field-name">idempotencyKey</span> <span class="field-type">Prevención cobros dobles</span></li>
+          </ul>
+        </div>
+
+        <!-- Outbox & Audit -->
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">📬 Outbox & Auditoría</h3>
+            <span class="entity-tag">infra</span>
+          </div>
+          <ul class="field-list">
+            <li class="field-item"><span class="field-name pk">🔑 id</span> <span class="field-type">String (UUID)</span></li>
+            <li class="field-item"><span class="field-name">eventType</span> <span class="field-type">StudentCreated.v1...</span></li>
+            <li class="field-item"><span class="field-name">status</span> <span class="field-type">PENDING -> PUBLISHED</span></li>
+            <li class="field-item"><span class="field-name">AuditLog</span> <span class="field-type">actorId, before, after</span></li>
+            <li class="field-item"><span class="field-name">Inmutable</span> <span class="field-type">Cero modificación física</span></li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 2: LOGICA & EVENTOS -->
+    <section id="tab-logic" class="tab-panel">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: 'Outfit'; font-size: 1.5rem; margin-bottom: 0.5rem;">Lógica de Negocio, Guards y Eventos de Dominio</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">El sistema implementa arquitectura dirigida por eventos con consistencia transaccional (Transactional Outbox Pattern).</p>
+      </div>
+
+      <div class="grid-2">
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">🛡️ Flujo de Ejecución de una Petición</h3>
+          </div>
+          <div class="code-block">
+1. Request HTTP -> Global RateLimiter (100 req/min)
+2. AuthGuard -> Valida Bearer JWT
+3. TenantResolver -> Inyecta TenantContext desde claims
+4. PermissionGuard -> Verifica permisos (ej. 'grades.input')
+5. EntitlementGuard -> Comprueba cuota del plan SaaS
+6. Service -> Transacción Atómica con Outbox
+7. Response 200 OK -> Logger estructurado JSON
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-header">
+            <h3 class="card-title">⚡ Eventos de Dominio Versionados</h3>
+          </div>
+          <div style="display: flex; flex-direction: column; gap: 0.75rem;">
+            <div><span class="event-badge">🟢 StudentCreated.v1</span> <span style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 0.5rem;">Emitido al registrar nuevo alumno</span></div>
+            <div><span class="event-badge">🟢 EnrollmentConfirmed.v1</span> <span style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 0.5rem;">Matrícula asignada a grado/sección</span></div>
+            <div><span class="event-badge">🟢 PaymentCompleted.v1</span> <span style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 0.5rem;">Cancela pensión y actualiza balance</span></div>
+            <div><span class="event-badge">🟢 GradePublished.v1</span> <span style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 0.5rem;">Habilita libreta en portal de padres</span></div>
+            <div><span class="event-badge">🟢 PayrollProcessed.v1</span> <span style="font-size: 0.8rem; color: var(--text-secondary); margin-left: 0.5rem;">Genera boletas y asientos de nómina</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 3: SIMULADOR DE FLUJOS POR ROL -->
+    <section id="tab-flows" class="tab-panel">
+      <div class="simulator-container">
+        <div class="sim-header">
+          <div>
+            <h2 style="font-family: 'Outfit'; font-size: 1.5rem;">Simulador Paso a Paso por Rol</h2>
+            <p style="color: var(--text-secondary); font-size: 0.85rem;">Selecciona un rol para ver su secuencia exacta de intervención:</p>
+          </div>
+          <div class="role-selector" id="role-chips">
+            <button class="role-chip selected" onclick="loadRoleFlow('director')">🎩 Director</button>
+            <button class="role-chip" onclick="loadRoleFlow('secretaria')">📋 Secretaría</button>
+            <button class="role-chip" onclick="loadRoleFlow('docente')">👨‍🏫 Docente</button>
+            <button class="role-chip" onclick="loadRoleFlow('tesorero')">💰 Tesorero</button>
+            <button class="role-chip" onclick="loadRoleFlow('padre')">👨‍👩‍👧 Apoderado</button>
+          </div>
+        </div>
+
+        <div class="timeline" id="flow-timeline">
+          <!-- Dynamic Steps will be injected here -->
+        </div>
+
+        <div class="sim-controls">
+          <button class="btn btn-secondary" onclick="prevStep()">⬅️ Paso Anterior</button>
+          <button class="btn btn-primary" onclick="nextStep()">Siguiente Paso ➡️</button>
+          <button class="btn btn-secondary" onclick="resetFlow()">🔄 Reiniciar</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 4: PANTALLAS & MOCKUPS -->
+    <section id="tab-screens" class="tab-panel">
+      <div style="margin-bottom: 1.5rem;">
+        <h2 style="font-family: 'Outfit'; font-size: 1.5rem; margin-bottom: 0.5rem;">Vistas de los 5 Portales Web</h2>
+        <p style="color: var(--text-secondary); font-size: 0.9rem;">Interfaces responsivas construidas con Next.js 15 y Tailwind CSS.</p>
+      </div>
+
+      <div class="grid-2">
+        <!-- School Admin Mockup -->
+        <div class="screen-mockup">
+          <div class="mockup-bar">
+            <span class="circle-btn" style="background:#ef4444"></span>
+            <span class="circle-btn" style="background:#eab308"></span>
+            <span class="circle-btn" style="background:#22c55e"></span>
+            <span class="mockup-url">http://localhost:3001/dashboard (School Admin)</span>
+          </div>
+          <div class="mockup-body">
+            <div style="font-weight: 700; color: #fff;">Panel Directivo — Colegio San José</div>
+            <div class="mock-row">
+              <div class="mock-stat">
+                <div class="mock-stat-val">8</div>
+                <div class="mock-stat-lbl">Alumnos Matriculados</div>
+              </div>
+              <div class="mock-stat">
+                <div class="mock-stat-val">S/ 24,500</div>
+                <div class="mock-stat-lbl">Recaudación Marzo</div>
+              </div>
+              <div class="mock-stat">
+                <div class="mock-stat-val">100%</div>
+                <div class="mock-stat-lbl">Asistencia Docente</div>
+              </div>
+            </div>
+            <div style="background: rgba(30,41,59,0.5); padding: 0.75rem; border-radius: 6px; font-size: 0.8rem; color: #94a3b8;">
+              ⚡ Accesos rápidos: [Nueva Matrícula] [Registro de Cobro] [Planilla HR] [Cierre de Periodo]
+            </div>
+          </div>
+        </div>
+
+        <!-- Teacher Portal Mockup -->
+        <div class="screen-mockup">
+          <div class="mockup-bar">
+            <span class="circle-btn" style="background:#ef4444"></span>
+            <span class="circle-btn" style="background:#eab308"></span>
+            <span class="circle-btn" style="background:#22c55e"></span>
+            <span class="mockup-url">http://localhost:3002/grades (Teacher Portal)</span>
+          </div>
+          <div class="mockup-body">
+            <div style="font-weight: 700; color: #fff;">Mis Cursos — Prof. Elena Torres</div>
+            <div style="background: rgba(99,102,241,0.1); border: 1px solid var(--accent-indigo); padding: 0.75rem; border-radius: 6px;">
+              <div style="font-size: 0.85rem; font-weight: 600; color: #c7d2fe;">Curso: Matemática — 5to Año Secundaria A</div>
+              <div style="font-size: 0.75rem; color: #94a3b8;">Evaluación: Examen Parcial Bimestre 1 (Escala 0-20)</div>
+            </div>
+            <div style="font-size: 0.8rem; color: #cbd5e1; display: flex; flex-direction: column; gap: 0.4rem;">
+              <div style="display:flex; justify-content:space-between; padding:0.3rem; background:rgba(255,255,255,0.03); border-radius:4px;">
+                <span>Joaquín Mendoza Castillo (ALU-2026-009)</span>
+                <span style="color:#10b981; font-weight:700;">18 / 20</span>
+              </div>
+              <div style="display:flex; justify-content:space-between; padding:0.3rem; background:rgba(255,255,255,0.03); border-radius:4px;">
+                <span>Valentina Morales Díaz (ALU-2026-004)</span>
+                <span style="color:#10b981; font-weight:700;">17 / 20</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- TAB 5: CICLO ESCOLAR INTEGRAL -->
+    <section id="tab-global" class="tab-panel">
+      <div class="card" style="margin-bottom: 2rem;">
+        <h2 style="font-family: 'Outfit'; font-size: 1.5rem; margin-bottom: 1rem;">Flujo Integral del Ciclo Escolar Anual</h2>
+        <div style="display: flex; flex-direction: column; gap: 1.25rem;">
+          <div style="padding: 1rem; background: rgba(99,102,241,0.1); border-left: 4px solid var(--accent-indigo); border-radius: 4px;">
+            <div style="font-weight: 700; color: #c7d2fe;">Fase 1: Configuración & Admisiones (Enero - Febrero)</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">SuperAdmin provisiona -> Director abre Año 2026 -> Secretaría registra alumnos en Inicial, Primaria y Secundaria -> Tesorería emite matrícula.</div>
+          </div>
+          <div style="padding: 1rem; background: rgba(16,185,129,0.1); border-left: 4px solid var(--accent-emerald); border-radius: 4px;">
+            <div style="font-weight: 700; color: #6ee7b7;">Fase 2: Inicio Académico & Cobranzas (Marzo - Julio)</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">Docentes registran asistencia diaria -> Califican evaluaciones bimestrales -> Familias pagan pensiones y compran uniformes en tienda.</div>
+          </div>
+          <div style="padding: 1rem; background: rgba(245,158,11,0.1); border-left: 4px solid var(--accent-amber); border-radius: 4px;">
+            <div style="font-weight: 700; color: #fde68a;">Fase 3: Cierre de Periodo, Planillas & Certificados (Noviembre - Diciembre)</div>
+            <div style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 0.25rem;">Director cierra Bimestre oficial (`lockPeriod`) -> Liquida nómina mensual HR -> Emisión masiva de libretas de notas y certificados oficiales PDF.</div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <script>
+    // Tab switcher logic
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+
+      event.currentTarget.classList.add('active');
+      document.getElementById('tab-' + tabId).classList.add('active');
+    }
+
+    // Role flow data
+    const roleFlows = {
+      director: [
+        { title: "1. Configurar Perfil y Año Académico", endpoint: "POST /api/v1/school-core/academic-years", desc: "Apertura el año lectivo 2026 y define los 4 bimestres escolares." },
+        { title: "2. Validar Niveles y Secciones", endpoint: "POST /api/v1/school-core/sections", desc: "Verifica cupos en Inicial (Kinder), Primaria y Secundaria." },
+        { title: "3. Asignar Materias a Docentes", endpoint: "POST /api/v1/academic/courses/assign", desc: "Asocia profesores a cursos específicos y secciones." },
+        { title: "4. Procesar y Aprobar Planilla HR", endpoint: "POST /api/v1/payroll/calculate", desc: "Calcula sueldos, AFP/ONP y emite boletas de pago del personal." },
+        { title: "5. Cierre Oficial de Periodo", endpoint: "POST /api/v1/academic/periods/lock", desc: "Bloquea calificaciones para emisión oficial de libretas." }
+      ],
+      secretaria: [
+        { title: "1. Admisión de Alumno", endpoint: "POST /api/v1/students", desc: "Registra expediente, DNI y fecha de nacimiento del estudiante." },
+        { title: "2. Vinculación de Apoderados", endpoint: "POST /api/v1/students/guardians", desc: "Asocia padre/madre/tutor con parentesco y datos de contacto." },
+        { title: "3. Generación y Confirmación de Matrícula", endpoint: "POST /api/v1/enrollment/confirm", desc: "Asigna sección y genera código único MAT-2026-XXXX." },
+        { title: "4. Emisión de Constancias PDF", endpoint: "POST /api/v1/documents/generate", desc: "Emite certificados oficiales de matrícula y notas." }
+      ],
+      docente: [
+        { title: "1. Toma de Asistencia Diaria", endpoint: "POST /api/v1/academic/attendance", desc: "Marca presentes, tardanzas y justificaciones por bloque." },
+        { title: "2. Creación de Evaluaciones", endpoint: "POST /api/v1/academic/evaluations", desc: "Programa exámenes y prácticas por competencias curriculares." },
+        { title: "3. Asentamiento de Calificaciones", endpoint: "POST /api/v1/academic/grades", desc: "Ingresa notas numéricas o literales para cada estudiante." },
+        { title: "4. Conclusiones Descriptivas", endpoint: "POST /api/v1/academic/conclusions", desc: "Registra observaciones cualitativas de logro de aprendizaje." }
+      ],
+      tesorero: [
+        { title: "1. Emisión de Cargos Masivos", endpoint: "POST /api/v1/finance/charges/generate", desc: "Genera las pensiones escolares mensuales para los matriculados." },
+        { title: "2. Apertura de Caja Diaria", endpoint: "POST /api/v1/finance/cashbox/open", desc: "Inicia el turno de recaudación con saldo base." },
+        { title: "3. Registro de Cobros con Idempotencia", endpoint: "POST /api/v1/finance/payments", desc: "Procesa pagos en ventanilla emitiendo comprobante." },
+        { title: "4. Arqueo y Cierre de Caja", endpoint: "POST /api/v1/finance/cashbox/close", desc: "Cuadra ingresos y genera reporte consolidado del día." }
+      ],
+      padre: [
+        { title: "1. Consulta de Calificaciones", endpoint: "GET /api/v1/parent/grades", desc: "Visualiza libreta de notas de sus hijos matriculados." },
+        { title: "2. Pago Online de Pensiones", endpoint: "POST /api/v1/parent/payments/checkout", desc: "Cancela cuotas pendientes mediante pasarela de pago." },
+        { title: "3. Firma de Consentimientos", endpoint: "POST /api/v1/activities/consents/sign", desc: "Autoriza participación en paseos o talleres escolares." },
+        { title: "4. Compra en Tienda Virtual", endpoint: "POST /api/v1/commerce/orders/checkout", desc: "Adquiere uniformes y libros con recojo en colegio." }
+      ]
+    };
+
+    let currentRole = 'director';
+    let currentStepIdx = 0;
+
+    function loadRoleFlow(role) {
+      currentRole = role;
+      currentStepIdx = 0;
+      document.querySelectorAll('.role-chip').forEach(c => c.classList.remove('selected'));
+      event.currentTarget.classList.add('selected');
+      renderTimeline();
+    }
+
+    function renderTimeline() {
+      const flow = roleFlows[currentRole];
+      const container = document.getElementById('flow-timeline');
+      container.innerHTML = flow.map((step, idx) => {
+        let statusClass = '';
+        if (idx === currentStepIdx) statusClass = 'active';
+        else if (idx < currentStepIdx) statusClass = 'completed';
+
+        return `
+          <div class="step-item ${statusClass}">
+            <div class="step-node">${idx < currentStepIdx ? '✓' : idx + 1}</div>
+            <div class="step-card">
+              <div class="step-header">
+                <span class="step-title">${step.title}</span>
+                <span class="step-endpoint">${step.endpoint}</span>
+              </div>
+              <div class="step-desc">${step.desc}</div>
+              <span class="event-badge">Paso ${idx + 1} de ${flow.length}</span>
+            </div>
+          </div>
+        `;
+      }).join('');
+    }
+
+    function nextStep() {
+      const flow = roleFlows[currentRole];
+      if (currentStepIdx < flow.length - 1) {
+        currentStepIdx++;
+        renderTimeline();
+      }
+    }
+
+    function prevStep() {
+      if (currentStepIdx > 0) {
+        currentStepIdx--;
+        renderTimeline();
+      }
+    }
+
+    function resetFlow() {
+      currentStepIdx = 0;
+      renderTimeline();
+    }
+
+    // Initial render
+    renderTimeline();
+  </script>
+</body>
+</html>
