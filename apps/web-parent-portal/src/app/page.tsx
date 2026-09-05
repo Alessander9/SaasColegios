@@ -389,6 +389,7 @@ function ParentPortalContent() {
   const [productQty, setProductQty] = useState(1);
 
   const [reportModal, setReportModal] = useState<ChildReport | null>(null);
+  const [childQrModal, setChildQrModal] = useState<ChildReport | null>(null);
   const [messageModal, setMessageModal] = useState<Message | null>(null);
   const [notifOpen, setNotifOpen] = useState(false);
 
@@ -992,18 +993,25 @@ function ParentPortalContent() {
                           {child.pendingBills.length > 0 ? `S/. ${child.pendingBills[0].amount}` : '✓ Al día'}
                         </span>
                       </div>
-                      <div className="flex gap-2 pt-2">
+                      <div className="grid grid-cols-3 gap-1.5 pt-2">
                         <button
                           onClick={() => { setSelectedChildIndex(idx); setActiveTab('academics'); }}
-                          className="flex-1 py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-xs rounded-xl transition-colors"
+                          className="py-2 bg-emerald-50 hover:bg-emerald-100 text-emerald-700 font-bold text-[11px] rounded-xl transition-colors text-center"
                         >
                           Ver Notas
                         </button>
                         <button
                           onClick={() => setReportModal(child)}
-                          className="flex-1 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-xs rounded-xl transition-colors"
+                          className="py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold text-[11px] rounded-xl transition-colors text-center"
                         >
                           📄 Reporte
+                        </button>
+                        <button
+                          onClick={() => setChildQrModal(child)}
+                          className="py-2 bg-teal-50 hover:bg-teal-100 text-teal-800 font-bold text-[11px] rounded-xl transition-colors text-center border border-teal-200 shadow-2xs"
+                          title="Ver Fotocheck QR para ingreso escolar"
+                        >
+                          🪪 QR ID
                         </button>
                       </div>
                     </div>
@@ -1631,6 +1639,93 @@ function ParentPortalContent() {
                 className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-2xl transition-colors"
               >
                 Cerrar
+              </button>
+            </div>
+          </div>
+        )}
+      </Modal>
+
+      {/* 🪪 Modal: Fotocheck Escolar con Código QR (Credencial de Ingreso) */}
+      <Modal isOpen={!!childQrModal} onClose={() => setChildQrModal(null)} title={`🪪 Fotocheck Digital — ${childQrModal?.name}`} size="md">
+        {childQrModal && (
+          <div className="space-y-5">
+            <div className="bg-gradient-to-br from-slate-900 via-emerald-950 to-slate-950 text-white p-6 rounded-3xl border border-emerald-500/30 shadow-xl space-y-4 text-center relative overflow-hidden">
+              <div className="flex items-center justify-between text-[10px] font-black uppercase text-emerald-300 border-b border-white/10 pb-2">
+                <span>COLEGIO SAN CLEO</span>
+                <span>AÑO LECTIVO 2026</span>
+              </div>
+
+              <div className="flex flex-col items-center gap-2">
+                <div className="w-16 h-16 rounded-2xl bg-white text-slate-900 flex items-center justify-center text-3xl shadow-lg border-2 border-emerald-400">
+                  {childQrModal.photo}
+                </div>
+                <h3 className="text-lg font-black text-white">{childQrModal.name}</h3>
+                <p className="text-xs text-emerald-200 font-bold">{childQrModal.gradeSection}</p>
+                <span className="font-mono text-xs font-black bg-white/10 px-3 py-1 rounded-full text-emerald-300 border border-emerald-400/30">
+                  {childQrModal.code}
+                </span>
+              </div>
+
+              {/* Dynamic QR Code */}
+              <div className="p-4 bg-white rounded-2xl inline-block shadow-inner mx-auto">
+                <svg className="w-40 h-40" viewBox="0 0 100 100" fill="none">
+                  {/* Outer Frame */}
+                  <rect x="5" y="5" width="90" height="90" fill="#ffffff" rx="6" />
+                  {/* Position detection markers */}
+                  <rect x="10" y="10" width="24" height="24" fill="#047857" rx="3" />
+                  <rect x="14" y="14" width="16" height="16" fill="#ffffff" rx="2" />
+                  <rect x="18" y="18" width="8" height="8" fill="#064e3b" rx="1" />
+
+                  <rect x="66" y="10" width="24" height="24" fill="#047857" rx="3" />
+                  <rect x="70" y="14" width="16" height="16" fill="#ffffff" rx="2" />
+                  <rect x="74" y="18" width="8" height="8" fill="#064e3b" rx="1" />
+
+                  <rect x="10" y="66" width="24" height="24" fill="#047857" rx="3" />
+                  <rect x="14" y="70" width="16" height="16" fill="#ffffff" rx="2" />
+                  <rect x="18" y="74" width="8" height="8" fill="#064e3b" rx="1" />
+
+                  {/* QR Data Matrix */}
+                  <rect x="40" y="12" width="6" height="6" fill="#0f172a" />
+                  <rect x="50" y="12" width="6" height="6" fill="#0f172a" />
+                  <rect x="44" y="22" width="8" height="6" fill="#0f172a" />
+                  <rect x="12" y="40" width="6" height="6" fill="#0f172a" />
+                  <rect x="22" y="44" width="6" height="8" fill="#0f172a" />
+                  <rect x="36" y="36" width="8" height="8" fill="#047857" rx="1" />
+                  <rect x="48" y="36" width="6" height="6" fill="#0f172a" />
+                  <rect x="58" y="40" width="8" height="6" fill="#0f172a" />
+                  <rect x="72" y="44" width="6" height="6" fill="#0f172a" />
+                  <rect x="82" y="40" width="6" height="6" fill="#0f172a" />
+                  <rect x="38" y="52" width="6" height="8" fill="#0f172a" />
+                  <rect x="48" y="48" width="8" height="6" fill="#047857" />
+                  <rect x="60" y="52" width="6" height="6" fill="#0f172a" />
+                  <rect x="70" y="56" width="6" height="8" fill="#0f172a" />
+                  <rect x="40" y="68" width="8" height="6" fill="#0f172a" />
+                  <rect x="52" y="66" width="6" height="6" fill="#0f172a" />
+                  <rect x="62" y="70" width="8" height="6" fill="#047857" rx="1" />
+                  <rect x="76" y="68" width="6" height="6" fill="#0f172a" />
+                  <rect x="44" y="80" width="6" height="6" fill="#0f172a" />
+                  <rect x="54" y="78" width="8" height="6" fill="#0f172a" />
+                  <rect x="66" y="82" width="6" height="6" fill="#0f172a" />
+                  <rect x="78" y="78" width="6" height="6" fill="#0f172a" />
+                </svg>
+              </div>
+              <p className="text-[11px] text-emerald-200">Presenta este código en el kiosko de la puerta principal</p>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => setChildQrModal(null)}
+                className="flex-1 py-3 border border-slate-300 text-slate-700 font-bold text-sm rounded-2xl hover:bg-slate-50 transition-colors"
+              >
+                Cerrar
+              </button>
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 py-3 bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-sm rounded-2xl transition-colors flex items-center justify-center gap-2 shadow-sm"
+              >
+                <span>🖨️</span> Imprimir Fotocheck
               </button>
             </div>
           </div>

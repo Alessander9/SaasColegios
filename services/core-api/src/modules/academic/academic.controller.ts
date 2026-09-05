@@ -18,6 +18,7 @@ import {
   CreateEvaluationDto,
   SubmitGradesDto,
   RecordDailyAttendanceDto,
+  ScanQrAttendanceDto,
   CreateEvaluationScaleDto,
   CreateCompetencyDto,
   SubmitDescriptiveConclusionDto,
@@ -187,6 +188,18 @@ export class AcademicController {
     @Body() dto: RecordDailyAttendanceDto
   ) {
     return this.academicService.recordDailyAttendance(this.extractTenantId(user), dto);
+  }
+
+  @Post('attendance/scan-qr')
+  @RequirePermission(Permissions.ACADEMIC_ATTENDANCE_RECORD)
+  @ApiOperation({
+    summary: 'Record automatic student attendance via gate QR code scanner (Emits AttendanceRecorded.v1)',
+  })
+  scanQrAttendance(
+    @CurrentUser() user: AuthenticatedUser,
+    @Body() dto: ScanQrAttendanceDto
+  ) {
+    return this.academicService.recordAttendanceByQr(this.extractTenantId(user), dto);
   }
 
   @Get('attendance/:sectionId')

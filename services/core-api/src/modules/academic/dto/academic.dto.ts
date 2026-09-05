@@ -186,6 +186,33 @@ export class RecordDailyAttendanceDto {
   records!: RecordDailyAttendanceItemDto[];
 }
 
+export class ScanQrAttendanceDto {
+  @ApiProperty({ example: 'ALU-2026-001', description: 'Student code, enrollment code, student UUID or raw QR JSON' })
+  @IsString()
+  @IsNotEmpty()
+  qrCode!: string;
+
+  @ApiPropertyOptional({ example: '2026-04-15', description: 'Date of attendance (defaults to current date)' })
+  @IsString()
+  @IsOptional()
+  date?: string;
+
+  @ApiPropertyOptional({ example: '07:48:00', description: 'Exact time of arrival' })
+  @IsString()
+  @IsOptional()
+  arrivalTime?: string;
+
+  @ApiPropertyOptional({ example: 'PORTERIA-PRINCIPAL', description: 'Terminal or kiosk station identifier' })
+  @IsString()
+  @IsOptional()
+  terminalId?: string;
+
+  @ApiPropertyOptional({ example: '08:00:00', description: 'Limit cutoff time for on-time arrivals' })
+  @IsString()
+  @IsOptional()
+  cutoffTime?: string;
+}
+
 /* ────────────────────────────────────────────────────────────
    CONFIGURABLE SCALE & EVALUATION ENGINE DTOS
    ──────────────────────────────────────────────────────────── */

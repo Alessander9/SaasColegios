@@ -4761,21 +4761,84 @@ function TeacherPortalContent() {
           )}
 
           {/* ────────────────────────────────────────────────────────────
-             TAB 3: CONTROL DE ASISTENCIA
+             TAB 3: CONTROL DE ASISTENCIA (MANERA 2: REGISTRO MANUAL POR DOCENTE)
              ──────────────────────────────────────────────────────────── */}
           {activeTab === 'attendance' && (
             <div className="space-y-6 animate-fade-in">
-              {/* Date & Batch Actions */}
+              {/* Header Hero Banner */}
+              <div className="bg-gradient-to-r from-slate-900 via-emerald-950 to-teal-950 text-white rounded-3xl p-6 sm:p-7 shadow-xl border border-emerald-900/40 relative overflow-hidden">
+                <div className="absolute top-0 right-0 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
+                
+                <div className="relative z-10 flex flex-col md:flex-row justify-between md:items-center gap-4">
+                  <div className="space-y-1.5 max-w-xl">
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="px-3 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-400/30 text-[11px] font-black text-emerald-200 uppercase tracking-wider">
+                        📱 Manera 2 • Registro Manual en Aula
+                      </span>
+                      <span className="px-3 py-0.5 rounded-full bg-teal-500/20 border border-teal-400/30 text-[11px] font-bold text-teal-200">
+                        {activeSection?.section.name}
+                      </span>
+                      <span className="px-3 py-0.5 rounded-full bg-white/10 border border-white/20 text-[11px] font-bold text-white">
+                        {activeSection?.course.name}
+                      </span>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-black tracking-tight text-white">
+                      Toma de Asistencia Diaria por Docente
+                    </h2>
+                    <p className="text-xs sm:text-sm text-emerald-100/90 font-medium">
+                      Registra la puntualidad y asistencia en tiempo real desde tu dispositivo móvil o computadora. Sincronizado con el sistema central del colegio.
+                    </p>
+                  </div>
+
+                  <div className="flex flex-wrap items-center gap-2 self-start md:self-center">
+                    <Button
+                      variant="primary"
+                      className="bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/30 text-xs py-2.5 px-4 font-black"
+                      onClick={handleSaveAttendance}
+                    >
+                      💾 Guardar Asistencia
+                    </Button>
+                  </div>
+                </div>
+
+                {/* Live Attendance Counter Strip */}
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mt-6 pt-5 border-t border-white/10 text-center">
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-xs">
+                    <p className="text-[10px] uppercase font-bold text-slate-300">En Lista</p>
+                    <p className="text-2xl font-black text-white mt-0.5">{students.length}</p>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-xs">
+                    <p className="text-[10px] uppercase font-bold text-emerald-300">Presentes</p>
+                    <p className="text-2xl font-black text-emerald-400 mt-0.5">
+                      {students.filter((s) => s.attendance === 'PRESENT').length}
+                    </p>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-xs">
+                    <p className="text-[10px] uppercase font-bold text-amber-300">Tardanzas</p>
+                    <p className="text-2xl font-black text-amber-300 mt-0.5">
+                      {students.filter((s) => s.attendance === 'TARDY').length}
+                    </p>
+                  </div>
+                  <div className="bg-white/5 border border-white/10 rounded-2xl p-3 backdrop-blur-xs">
+                    <p className="text-[10px] uppercase font-bold text-rose-300">Inasistencias</p>
+                    <p className="text-2xl font-black text-rose-400 mt-0.5">
+                      {students.filter((s) => s.attendance === 'ABSENT' || s.attendance === 'EXCUSED').length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              {/* Date & Batch Actions Toolbar */}
               <div className="bg-white rounded-3xl border border-slate-200 p-5 shadow-sm flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                 <div className="flex flex-wrap items-center gap-3">
                   <div>
                     <label htmlFor="attendance-date" className="block text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">
-                      Fecha de Asistencia
+                      Fecha de Sesión:
                     </label>
                     <input
                       id="attendance-date"
                       type="date"
-                      className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-1.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                      className="bg-slate-50 border border-slate-200 rounded-xl px-3.5 py-1.5 text-xs font-bold text-slate-800 focus:ring-2 focus:ring-emerald-500 focus:outline-none"
                       value={attendanceDate}
                       onChange={(e) => setAttendanceDate(e.target.value)}
                     />
@@ -4785,7 +4848,7 @@ function TeacherPortalContent() {
                     <button
                       type="button"
                       onClick={handleMarkAllPresent}
-                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors flex items-center gap-1.5"
+                      className="px-3.5 py-2 rounded-xl text-xs font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 hover:bg-emerald-100 transition-colors flex items-center gap-1.5 shadow-2xs"
                     >
                       <span>⚡</span>
                       <span>Marcar Todos Presentes</span>
@@ -4793,13 +4856,12 @@ function TeacherPortalContent() {
                   </div>
                 </div>
 
-                <Button
-                  variant="primary"
-                  className="bg-emerald-600 hover:bg-emerald-700 shadow-md shadow-emerald-600/30 text-xs py-2 px-4"
-                  onClick={handleSaveAttendance}
-                >
-                  💾 Guardar Asistencia del Día
-                </Button>
+                <div className="text-xs font-bold text-slate-500">
+                  <span>Asistencia: </span>
+                  <span className="text-emerald-700 font-black">
+                    {((students.filter((s) => s.attendance === 'PRESENT').length / (students.length || 1)) * 100).toFixed(0)}% de asistencia
+                  </span>
+                </div>
               </div>
 
               {/* Attendance Table */}
@@ -4809,7 +4871,7 @@ function TeacherPortalContent() {
                     <thead className="bg-slate-50 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-200">
                       <tr>
                         <th className="px-5 py-3.5">Estudiante</th>
-                        <th className="px-5 py-3.5">Estado de Asistencia</th>
+                        <th className="px-5 py-3.5">Estado de Asistencia (Marcar con 1 Clic)</th>
                         <th className="px-5 py-3.5">Observación / Justificación</th>
                       </tr>
                     </thead>
@@ -4872,7 +4934,7 @@ function TeacherPortalContent() {
                             <input
                               type="text"
                               placeholder="Motivo de tardanza o justificación..."
-                              className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all"
+                              className="w-full bg-slate-50 hover:bg-white focus:bg-white border border-slate-200 rounded-xl px-3.5 py-1.5 text-xs text-slate-800 placeholder:text-slate-400 focus:ring-2 focus:ring-emerald-500 focus:outline-none transition-all"
                               value={st.remarks || ''}
                               onChange={(e) => handleRemarksChange(st.id, e.target.value)}
                             />

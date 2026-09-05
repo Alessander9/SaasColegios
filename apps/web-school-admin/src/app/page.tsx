@@ -6,6 +6,8 @@ import { Button } from '@cole/ui-components';
 import { AuthProvider, useAuth } from '../lib/auth-context';
 import { LoginModal } from '../components/login-modal';
 import ToastModal, { type ToastData } from '../components/ToastModal';
+import { AttendanceQrKioskModal, type ScanRecord } from '../components/AttendanceQrKioskModal';
+import { StudentQrIdCardModal, type StudentIdCardData } from '../components/StudentQrIdCardModal';
 import {
   calculatePayroll,
   getCourses,
@@ -350,6 +352,12 @@ function SchoolAdminDashboard() {
   const [productSearch, setProductSearch] = useState('');
   const [selectedProductCategoryFilter, setSelectedProductCategoryFilter] = useState<string>('TODOS');
   
+  // 📸 Control de Asistencia: Modalidad 1 (QR Kiosko) vs Modalidad 2 (Docente Manual) vs Híbrido
+  const [attendanceModality, setAttendanceModality] = useState<'QR_KIOSK' | 'MANUAL_TEACHER' | 'HYBRID'>('HYBRID');
+  const [showQrKioskModal, setShowQrKioskModal] = useState(false);
+  const [selectedStudentForQrCard, setSelectedStudentForQrCard] = useState<StudentIdCardData | null>(null);
+  const [attendanceCutoffTime, setAttendanceCutoffTime] = useState('08:00:00');
+
   // 📊 Business Intelligence & Reporting States
   const [biSettings, setBiSettings] = useState({
     monthlyTargetRevenue: 25000,
@@ -980,7 +988,7 @@ function SchoolAdminDashboard() {
     showToast(`✓ Asignatura ${created.name} (${created.level} - ${created.grade}) agregada a la malla curricular.`);
   };
 
-  // Add Student handler
+  // Add Student handler & auto-generate QR Fotocheck
   const handleAddStudentSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const created = {
@@ -998,8 +1006,44 @@ function SchoolAdminDashboard() {
     };
     setStudents([created, ...students]);
     setShowAddStudentModal(false);
+    
+    // Auto-generate and open the Official Student ID Card with QR Code
+    setSelectedStudentForQrCard({
+      id: created.id,
+      code: created.code,
+      name: created.name,
+      level: created.level,
+      grade: created.grade,
+      section: created.section,
+      parentName: created.parentName,
+      parentPhone: created.parentPhone,
+      academicYear: '2026',
+    });
+
     setNewStudent({ code: '', name: '', level: 'Primaria', grade: '1er Grado Primaria', section: 'A', parentName: '', parentPhone: '' });
-    showToast(`✓ Estudiante ${created.name} (${created.level} - ${created.grade}) matriculado con éxito.`);
+    showToast(`✓ Estudiante ${created.name} matriculado. Se autogeneró su Fotocheck Escolar con Código QR.`);
+  };
+
+  // QR Kiosk scan receiver
+  const handleQrKioskScan = (record: ScanRecord) => {
+    setAttendance((prev) => {
+      const existingIdx = prev.findIndex((a) => a.studentId === record.studentId || a.studentName === record.studentName);
+      const newEntry = {
+        studentId: record.studentId,
+        studentName: record.studentName,
+        grade: record.grade,
+        section: record.section,
+        status: record.status === 'PRESENTE' ? 'PRESENTE' : 'TARDANZA',
+        arrivalTime: record.arrivalTime,
+      };
+      if (existingIdx >= 0) {
+        const copy = [...prev];
+        copy[existingIdx] = newEntry;
+        return copy;
+      }
+      return [newEntry, ...prev];
+    });
+    showToast(`✓ Ingreso QR Registrado: ${record.studentName} (${record.status})`, record.status === 'PRESENTE' ? 'success' : 'info');
   };
 
   // Add Product handler
@@ -3553,36 +3597,241 @@ function SchoolAdminDashboard() {
           )}
 
           {/* ────────────────────────────────────────────────────────────
-             TAB: CONTROL DIARIO DE ASISTENCIA
+             TAB: CONTROL DE ASISTENCIA (MODALIDAD 1: QR KIOSKO | MODALIDAD 2: DOCENTE MANUAL)
              ──────────────────────────────────────────────────────────── */}
           {activeTab === 'attendance' && (
-            <div className="space-y-6 animate-in">
-              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+            <div className="space-y-6 animate-in fade-in duration-300">
+              {/* Header Banner */}
+              <div className="bg-white rounded-3xl border border-slate-200 shadow-sm p-6 flex flex-col lg:flex-row justify-between items-start lg:items-center gap-4">
                 <div>
-                  <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-100">
-                    Control de Asistencia Biométrico / Aula
-                  </span>
-                  <h2 className="text-xl font-black text-slate-900 mt-1">Toma de Asistencia Diaria</h2>
-                  <p className="text-xs text-slate-500">Registro en tiempo real por sección con envío de notificación a apoderados.</p>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[10px] font-extrabold uppercase tracking-wider text-teal-600 bg-teal-50 px-2.5 py-0.5 rounded-full border border-teal-100">
+                      Módulo Institucional de Asistencia
+                    </span>
+                    <span className="text-[10px] font-extrabold text-indigo-700 bg-indigo-50 px-2.5 py-0.5 rounded-full border border-indigo-200 flex items-center gap-1 shadow-2xs">
+                      <span>⚡</span> 2 Modalidades de Registro
+                    </span>
+                  </div>
+                  <h2 className="text-xl font-black text-slate-900 mt-1">Control y Gestión de Asistencia Escolar</h2>
+                  <p className="text-xs text-slate-500">
+                    Configura la modalidad institucional: Escaneo de Código QR en puerta o Toma manual por el docente en aula.
+                  </p>
                 </div>
-                <div className="flex items-center gap-3">
-                  <input
-                    type="date"
-                    value={selectedAttendanceDate}
-                    onChange={(e) => setSelectedAttendanceDate(e.target.value)}
-                    className="px-3.5 py-2 bg-slate-50 border border-slate-300 rounded-xl text-xs font-bold text-slate-800"
-                  />
-                  <Button size="sm" variant="primary" onClick={() => showToast('✓ Registro de asistencia de hoy guardado correctamente.')}>
-                    💾 Guardar Asistencia
+
+                <div className="flex flex-wrap items-center gap-3">
+                  <div className="flex items-center gap-1.5 bg-slate-50 border border-slate-200 px-3 py-1.5 rounded-xl text-xs font-bold text-slate-700">
+                    <span>📅 Fecha:</span>
+                    <input
+                      type="date"
+                      value={selectedAttendanceDate}
+                      onChange={(e) => setSelectedAttendanceDate(e.target.value)}
+                      className="bg-transparent text-slate-900 font-bold focus:outline-none cursor-pointer"
+                    />
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowQrKioskModal(true)}
+                    className="px-4 py-2 bg-gradient-to-r from-teal-600 to-emerald-600 hover:from-teal-700 hover:to-emerald-700 text-white font-extrabold text-xs rounded-xl shadow-md shadow-teal-500/20 transition-all flex items-center gap-2 active:scale-95"
+                  >
+                    <span className="text-sm">📷</span> Abrir Kiosko QR en Vivo
+                  </button>
+                  <Button size="sm" variant="outline" onClick={() => showToast('✓ Registro consolidado de asistencia guardado en el servidor.')}>
+                    💾 Guardar Cambios
                   </Button>
                 </div>
               </div>
 
-              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-                <div className="p-4 bg-slate-50 border-b border-slate-200 flex items-center justify-between">
-                  <span className="text-xs font-bold text-slate-700">Sección Activa: Primaria 1° "A" & Nido 5 Años</span>
-                  <span className="text-xs font-bold text-emerald-700">Asistencia Registrada: 83.3%</span>
+              {/* Selector de Modalidad Institucional (Manera 1 vs Manera 2 vs Híbrido) */}
+              <div className="bg-white rounded-2xl border border-slate-200 p-5 shadow-2xs space-y-4">
+                <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+                  <div>
+                    <h3 className="text-sm font-black text-slate-900 flex items-center gap-2">
+                      <span>⚙️</span> Seleccionar Modalidad Activa para la Toma de Asistencia
+                    </h3>
+                    <p className="text-xs text-slate-500 font-medium mt-0.5">
+                      Define cómo se registrará el ingreso de los alumnos en el colegio y en las aulas.
+                    </p>
+                  </div>
+                  <span className="text-[11px] font-black px-3 py-1 rounded-full bg-teal-50 text-teal-800 border border-teal-200 self-start sm:self-auto">
+                    {attendanceModality === 'QR_KIOSK' ? 'Manera 1: Kiosko QR Activo' : attendanceModality === 'MANUAL_TEACHER' ? 'Manera 2: Docente Manual Activo' : 'Modo Híbrido: Ambos Activos'}
+                  </span>
                 </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {/* Opción 1: Automática con Lector QR */}
+                  <div
+                    onClick={() => {
+                      setAttendanceModality('QR_KIOSK');
+                      showToast('✓ Modalidad cambiada: Manera 1 - Lector QR Automático en Puerta.');
+                    }}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                      attendanceModality === 'QR_KIOSK'
+                        ? 'border-teal-600 bg-teal-50/40 shadow-sm ring-1 ring-teal-500/30'
+                        : 'border-slate-200 bg-slate-50/60 hover:bg-slate-50 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-teal-600 text-white flex items-center justify-center text-xl font-black shadow-inner">
+                        📷
+                      </div>
+                      <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                        attendanceModality === 'QR_KIOSK' ? 'border-teal-600 bg-teal-600' : 'border-slate-300'
+                      }`}>
+                        {attendanceModality === 'QR_KIOSK' && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </span>
+                    </div>
+                    <h4 className="font-extrabold text-sm text-slate-900 mt-3">Manera 1: Lector QR Automático</h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      El alumno escanea su Fotocheck Escolar con código QR en el tótem o kiosko de la puerta principal. Detección instantánea y cálculo de tardanzas.
+                    </p>
+                    <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-bold text-teal-700">
+                      <span>✓ Cero filas en portería</span>
+                      <span>✓ Fotocheck autogenerado</span>
+                    </div>
+                  </div>
+
+                  {/* Opción 2: Manual por Docente en Celular o PC */}
+                  <div
+                    onClick={() => {
+                      setAttendanceModality('MANUAL_TEACHER');
+                      showToast('✓ Modalidad cambiada: Manera 2 - Registro Manual por Docente en Aula.');
+                    }}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                      attendanceModality === 'MANUAL_TEACHER'
+                        ? 'border-indigo-600 bg-indigo-50/40 shadow-sm ring-1 ring-indigo-500/30'
+                        : 'border-slate-200 bg-slate-50/60 hover:bg-slate-50 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center text-xl font-black shadow-inner">
+                        📱
+                      </div>
+                      <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                        attendanceModality === 'MANUAL_TEACHER' ? 'border-indigo-600 bg-indigo-600' : 'border-slate-300'
+                      }`}>
+                        {attendanceModality === 'MANUAL_TEACHER' && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </span>
+                    </div>
+                    <h4 className="font-extrabold text-sm text-slate-900 mt-3">Manera 2: Toma Manual por Docente</h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      El profesor toma lista directamente desde su celular o computadora al ingresar al aula de clases. Con 1 clic marca presente, tardanza o falta justificada.
+                    </p>
+                    <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-bold text-indigo-700">
+                      <span>✓ App Móvil & Web</span>
+                      <span>✓ Control por asignatura</span>
+                    </div>
+                  </div>
+
+                  {/* Opción 3: Modo Híbrido (Ambos Sincronizados) */}
+                  <div
+                    onClick={() => {
+                      setAttendanceModality('HYBRID');
+                      showToast('✓ Modalidad cambiada: Modo Híbrido (Kiosko QR en Puerta + Validación Docente en Aula).');
+                    }}
+                    className={`p-4 rounded-2xl border-2 transition-all cursor-pointer relative ${
+                      attendanceModality === 'HYBRID'
+                        ? 'border-emerald-600 bg-emerald-50/40 shadow-sm ring-1 ring-emerald-500/30'
+                        : 'border-slate-200 bg-slate-50/60 hover:bg-slate-50 hover:border-slate-300'
+                    }`}
+                  >
+                    <div className="flex items-start justify-between">
+                      <div className="w-10 h-10 rounded-xl bg-emerald-600 text-white flex items-center justify-center text-xl font-black shadow-inner">
+                        🔄
+                      </div>
+                      <span className={`w-4 h-4 rounded-full border-2 flex items-center justify-center ${
+                        attendanceModality === 'HYBRID' ? 'border-emerald-600 bg-emerald-600' : 'border-slate-300'
+                      }`}>
+                        {attendanceModality === 'HYBRID' && <span className="w-1.5 h-1.5 rounded-full bg-white" />}
+                      </span>
+                    </div>
+                    <h4 className="font-extrabold text-sm text-slate-900 mt-3">Modo Híbrido (Recomendado)</h4>
+                    <p className="text-xs text-slate-600 mt-1 leading-relaxed">
+                      Kiosko QR en puerta principal para registro biométrico de ingreso y el docente valida en aula cualquier ajuste o justificación de inasistencia.
+                    </p>
+                    <div className="mt-3 pt-2.5 border-t border-slate-200/60 flex items-center justify-between text-[11px] font-bold text-emerald-700">
+                      <span>✓ Máxima precisión</span>
+                      <span>✓ Doble verificación</span>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Configuración de Tolerancia de Hora de Ingreso */}
+                <div className="p-3.5 bg-slate-50 rounded-xl border border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-3 text-xs">
+                  <div className="flex items-center gap-2">
+                    <span className="font-extrabold text-slate-700">⏰ Hora Límite de Tolerancia / Corte:</span>
+                    <input
+                      type="time"
+                      step="1"
+                      value={attendanceCutoffTime}
+                      onChange={(e) => {
+                        setAttendanceCutoffTime(e.target.value);
+                        showToast(`✓ Hora límite de tolerancia establecida a las ${e.target.value}`);
+                      }}
+                      className="px-2.5 py-1 bg-white border border-slate-300 rounded-lg font-mono font-bold text-slate-900 focus:outline-none focus:ring-2 focus:ring-teal-500"
+                    />
+                    <span className="text-[11px] text-slate-500">(Escaneos posteriores a esta hora se marcan como TARDANZA)</span>
+                  </div>
+                  <button
+                    type="button"
+                    onClick={() => setShowQrKioskModal(true)}
+                    className="px-3 py-1.5 bg-teal-600 hover:bg-teal-700 text-white font-extrabold text-xs rounded-xl shadow-xs transition-all flex items-center justify-center gap-1.5"
+                  >
+                    <span>🖥️</span> Lanzar Pantalla de Kiosko
+                  </button>
+                </div>
+              </div>
+
+              {/* KPIs de Asistencia del Día */}
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
+                  <p className="text-[11px] font-bold text-slate-500 uppercase">Alumnos en Nómina</p>
+                  <p className="text-2xl font-black text-slate-900">{attendance.length}</p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
+                  <p className="text-[11px] font-bold text-emerald-600 uppercase">Presentes a Tiempo</p>
+                  <p className="text-2xl font-black text-emerald-700">
+                    {attendance.filter((a) => a.status === 'PRESENTE').length}
+                  </p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
+                  <p className="text-[11px] font-bold text-amber-600 uppercase">Tardanzas Registradas</p>
+                  <p className="text-2xl font-black text-amber-600">
+                    {attendance.filter((a) => a.status === 'TARDANZA').length}
+                  </p>
+                </div>
+                <div className="p-4 rounded-2xl bg-white border border-slate-200 shadow-2xs space-y-1">
+                  <p className="text-[11px] font-bold text-rose-600 uppercase">Inasistencias / Faltas</p>
+                  <p className="text-2xl font-black text-rose-600">
+                    {attendance.filter((a) => a.status === 'FALTA_JUSTIFICADA' || a.status === 'ABSENT').length}
+                  </p>
+                </div>
+              </div>
+
+              {/* Tabla de Asistencia en Tiempo Real */}
+              <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+                <div className="p-4 bg-slate-50 border-b border-slate-200 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="text-xs font-black text-slate-800">
+                      📋 Registros de Asistencia ({selectedAttendanceDate})
+                    </span>
+                    <span className="text-[11px] font-bold text-teal-700 bg-teal-50 border border-teal-200 px-2 py-0.5 rounded-full">
+                      Puntualidad: {((attendance.filter((a) => a.status === 'PRESENTE').length / (attendance.length || 1)) * 100).toFixed(0)}%
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAttendance((curr) => curr.map((a) => ({ ...a, status: 'PRESENTE', arrivalTime: a.arrivalTime === '-' ? '07:45 AM' : a.arrivalTime })));
+                        showToast('✓ Todos los alumnos marcados como PRESENTES.');
+                      }}
+                      className="text-xs font-bold text-indigo-700 hover:text-indigo-900 bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 px-2.5 py-1 rounded-lg transition-colors"
+                    >
+                      ✓ Marcar Todos Presentes
+                    </button>
+                  </div>
+                </div>
+
                 <div className="overflow-x-auto">
                   <table className="w-full text-left text-sm text-slate-600">
                     <thead className="bg-slate-50 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-200">
@@ -3591,56 +3840,112 @@ function SchoolAdminDashboard() {
                         <th className="px-6 py-3.5">Grado / Sección</th>
                         <th className="px-6 py-3.5">Hora de Ingreso</th>
                         <th className="px-6 py-3.5">Estado de Asistencia</th>
-                        <th className="px-6 py-3.5 text-right">Marcar Estado</th>
+                        <th className="px-6 py-3.5 text-center">Fotocheck QR</th>
+                        <th className="px-6 py-3.5 text-right">Marcar Estado (Docente)</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
-                      {attendance.map((att) => (
-                        <tr key={att.studentId} className="hover:bg-slate-50/70">
-                          <td className="px-6 py-4 font-bold text-slate-900">{att.studentName}</td>
-                          <td className="px-6 py-4 text-xs text-slate-700">{att.grade} ({att.section})</td>
-                          <td className="px-6 py-4 text-xs font-mono font-semibold text-slate-800">{att.arrivalTime}</td>
-                          <td className="px-6 py-4">
-                            <span className={`text-xs font-bold px-2.5 py-0.5 rounded-full ${
-                              att.status === 'PRESENTE'
-                                ? 'bg-emerald-100 text-emerald-800'
-                                : att.status === 'TARDANZA'
-                                ? 'bg-amber-100 text-amber-800'
-                                : 'bg-rose-100 text-rose-800'
-                            }`}>
-                              {att.status}
-                            </span>
-                          </td>
-                          <td className="px-6 py-4 text-right">
-                            <div className="flex justify-end gap-1.5">
+                      {attendance.map((att) => {
+                        const matchingStudent = students.find((s) => s.id === att.studentId || s.name === att.studentName);
+                        return (
+                          <tr key={att.studentId} className="hover:bg-slate-50/70 transition-colors">
+                            <td className="px-6 py-4">
+                              <p className="font-bold text-slate-900">{att.studentName}</p>
+                              {matchingStudent && (
+                                <p className="text-[11px] font-mono text-slate-400">{matchingStudent.code}</p>
+                              )}
+                            </td>
+                            <td className="px-6 py-4 text-xs text-slate-700">
+                              <span className="font-semibold text-slate-800">{att.grade}</span> ({att.section})
+                            </td>
+                            <td className="px-6 py-4 text-xs font-mono font-bold text-slate-800">
+                              <span className="bg-slate-100 px-2 py-1 rounded-md border border-slate-200">
+                                {att.arrivalTime}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4">
+                              <span className={`text-xs font-bold px-2.5 py-1 rounded-full border ${
+                                att.status === 'PRESENTE'
+                                  ? 'bg-emerald-50 text-emerald-800 border-emerald-200'
+                                  : att.status === 'TARDANZA'
+                                  ? 'bg-amber-50 text-amber-800 border-amber-200'
+                                  : 'bg-rose-50 text-rose-800 border-rose-200'
+                              }`}>
+                                {att.status === 'PRESENTE' && '🟢 PRESENTE'}
+                                {att.status === 'TARDANZA' && '🟡 TARDANZA'}
+                                {att.status === 'FALTA_JUSTIFICADA' && '🔵 FALTA JUSTIFICADA'}
+                                {att.status === 'ABSENT' && '🔴 INASISTENCIA'}
+                              </span>
+                            </td>
+                            <td className="px-6 py-4 text-center">
                               <button
-                                onClick={() => handleToggleAttendance(att.studentId, 'PRESENTE')}
-                                className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
-                                  att.status === 'PRESENTE' ? 'bg-emerald-600 text-white' : 'bg-slate-100 text-slate-700'
-                                }`}
+                                type="button"
+                                onClick={() => {
+                                  if (matchingStudent) {
+                                    setSelectedStudentForQrCard({
+                                      id: matchingStudent.id,
+                                      code: matchingStudent.code,
+                                      name: matchingStudent.name,
+                                      level: matchingStudent.level,
+                                      grade: matchingStudent.grade,
+                                      section: matchingStudent.section,
+                                      parentName: matchingStudent.parentName,
+                                      parentPhone: matchingStudent.parentPhone,
+                                      academicYear: '2026',
+                                    });
+                                  } else {
+                                    setSelectedStudentForQrCard({
+                                      id: att.studentId,
+                                      code: `ALU-2026-${att.studentId.slice(-3)}`,
+                                      name: att.studentName,
+                                      level: 'Primaria',
+                                      grade: att.grade,
+                                      section: att.section,
+                                      parentName: `Familia ${att.studentName.split(' ').slice(-1)[0]}`,
+                                      parentPhone: '987 654 321',
+                                      academicYear: '2026',
+                                    });
+                                  }
+                                }}
+                                className="px-2.5 py-1 text-xs font-bold bg-slate-100 hover:bg-teal-50 hover:text-teal-700 text-slate-700 rounded-lg border border-slate-200 hover:border-teal-200 transition-colors inline-flex items-center gap-1"
                               >
-                                🟢 Presente
+                                <span>🪪</span> Ver QR
                               </button>
-                              <button
-                                onClick={() => handleToggleAttendance(att.studentId, 'TARDANZA')}
-                                className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
-                                  att.status === 'TARDANZA' ? 'bg-amber-500 text-white' : 'bg-slate-100 text-slate-700'
-                                }`}
-                              >
-                                🟡 Tardanza
-                              </button>
-                              <button
-                                onClick={() => handleToggleAttendance(att.studentId, 'FALTA_JUSTIFICADA')}
-                                className={`text-[10px] font-bold px-2.5 py-1 rounded-lg border ${
-                                  att.status === 'FALTA_JUSTIFICADA' ? 'bg-blue-500 text-white' : 'bg-slate-100 text-slate-700'
-                                }`}
-                              >
-                                🔵 Falta
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
+                            </td>
+                            <td className="px-6 py-4 text-right">
+                              <div className="flex justify-end gap-1.5">
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleAttendance(att.studentId, 'PRESENTE')}
+                                  className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
+                                    att.status === 'PRESENTE' ? 'bg-emerald-600 text-white border-emerald-600 shadow-xs' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                                  }`}
+                                >
+                                  Presente
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleAttendance(att.studentId, 'TARDANZA')}
+                                  className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
+                                    att.status === 'TARDANZA' ? 'bg-amber-500 text-white border-amber-500 shadow-xs' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                                  }`}
+                                >
+                                  Tardanza
+                                </button>
+                                <button
+                                  type="button"
+                                  onClick={() => handleToggleAttendance(att.studentId, 'FALTA_JUSTIFICADA')}
+                                  className={`text-[11px] font-bold px-2.5 py-1 rounded-lg border transition-all ${
+                                    att.status === 'FALTA_JUSTIFICADA' ? 'bg-blue-600 text-white border-blue-600 shadow-xs' : 'bg-slate-100 text-slate-700 border-slate-200 hover:bg-slate-200'
+                                  }`}
+                                >
+                                  Falta
+                                </button>
+                              </div>
+                            </td>
+                          </tr>
+                        );
+                      })}
                     </tbody>
                   </table>
                 </div>
@@ -4126,7 +4431,8 @@ function SchoolAdminDashboard() {
                         <th className="px-6 py-3.5">Apoderado</th>
                         <th className="px-6 py-3.5">Promedio</th>
                         <th className="px-6 py-3.5">Pensión</th>
-                        <th className="px-6 py-3.5 text-right">Ficha</th>
+                        <th className="px-6 py-3.5 text-center">Fotocheck QR</th>
+                        <th className="px-6 py-3.5 text-right">Acciones</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-slate-100 font-medium">
@@ -4151,10 +4457,32 @@ function SchoolAdminDashboard() {
                               {stu.tuitionStatus}
                             </span>
                           </td>
+                          <td className="px-6 py-4 text-center">
+                            <button
+                              type="button"
+                              onClick={() => {
+                                setSelectedStudentForQrCard({
+                                  id: stu.id,
+                                  code: stu.code,
+                                  name: stu.name,
+                                  level: stu.level,
+                                  grade: stu.grade,
+                                  section: stu.section,
+                                  parentName: stu.parentName,
+                                  parentPhone: stu.parentPhone,
+                                  academicYear: '2026',
+                                });
+                              }}
+                              className="px-2.5 py-1 text-xs font-bold bg-teal-50 hover:bg-teal-100 text-teal-800 rounded-lg border border-teal-200 transition-colors inline-flex items-center gap-1 shadow-2xs"
+                              title="Ver e Imprimir Fotocheck con Código QR"
+                            >
+                              <span>🪪</span> Fotocheck QR
+                            </button>
+                          </td>
                           <td className="px-6 py-4 text-right">
                             <button
                               onClick={() => setSelectedStudentDetail(stu)}
-                              className="text-xs font-bold text-cyan-700 bg-cyan-50 px-2.5 py-1 rounded-lg border border-cyan-100"
+                              className="text-xs font-bold text-cyan-700 bg-cyan-50 hover:bg-cyan-100 px-2.5 py-1 rounded-lg border border-cyan-100 transition-colors"
                             >
                               🔍 Ver Expediente
                             </button>
@@ -7011,6 +7339,29 @@ function SchoolAdminDashboard() {
           </div>
         </div>
       )}
+
+      {/* 📸 Kiosko de Asistencia QR en Vivo (Manera 1: Escaneo Automático) */}
+      <AttendanceQrKioskModal
+        isOpen={showQrKioskModal}
+        onClose={() => setShowQrKioskModal(false)}
+        cutoffTime={attendanceCutoffTime}
+        studentsList={students.map((s) => ({
+          id: s.id,
+          code: s.code,
+          name: s.name,
+          level: (s as any).level || 'Primaria',
+          grade: s.grade,
+          section: s.section,
+        }))}
+        onRecordAttendance={handleQrKioskScan}
+      />
+
+      {/* 🪪 Fotocheck Escolar con Código QR Autogenerado */}
+      <StudentQrIdCardModal
+        isOpen={Boolean(selectedStudentForQrCard)}
+        onClose={() => setSelectedStudentForQrCard(null)}
+        student={selectedStudentForQrCard}
+      />
 
       {/* Login Modal JWT */}
       <LoginModal isOpen={showAuthModal} onClose={() => setShowAuthModal(false)} />

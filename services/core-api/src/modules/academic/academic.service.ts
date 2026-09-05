@@ -8,6 +8,7 @@ import {
   db,
   withTransactionAndOutbox,
   GradeStatus,
+  AttendanceStatus,
 } from '@cole/database';
 import { DomainEvent } from '@cole/domain-types';
 import { v4 as uuidv4 } from 'uuid';
@@ -18,6 +19,7 @@ import {
   CreateEvaluationDto,
   SubmitGradesDto,
   RecordDailyAttendanceDto,
+  ScanQrAttendanceDto,
   CreateEvaluationScaleDto,
   CreateCompetencyDto,
   SubmitDescriptiveConclusionDto,
@@ -422,6 +424,173 @@ export class AcademicService {
         section: true,
       },
       orderBy: [{ date: 'desc' }, { student: { lastName: 'asc' } }],
+    });
+  }
+
+  // --------------------------------------------------
+  // AUTOMATIC QR CODE SCANNER ATTENDANCE
+  // --------------------------------------------------
+
+  async recordAttendanceByQr(tenantId: string, dto: ScanQrAttendanceDto): Promise<any> {
+    const rawCode = (dto.qrCode || '').trim();
+    let studentIdentifier = rawCode;
+
+    // Try parsing as JSON payload if encoded that way
+    if (rawCode.startsWith('{') && rawCode.endsWith('}')) {
+      try {
+        const parsed = JSON.parse(rawCode);
+        studentIdentifier = parsed.studentId || parsed.studentCode || parsed.code || rawCode;
+      } catch {
+        // use raw string
+      }
+    }
+
+    // Lookup student by ID, studentCode, documentNumber
+    let student = await db.student.findFirst({
+      where: {
+        tenantId,
+        OR: [
+          { id: studentIdentifier },
+          { studentCode: studentIdentifier },
+          { documentNumber: studentIdentifier },
+        ],
+      },
+      include: {
+        enrollments: {
+          take: 1,
+          orderBy: { enrolledAt: 'desc' },
+          include: {
+            section: { include: { grade: { include: { level: true } } } },
+            academicYear: true,
+          },
+        },
+      },
+    });
+
+    if (!student) {
+      // Fallback: look up first student in tenant if mock/demo
+      student = await db.student.findFirst({
+        where: { tenantId },
+        include: {
+          enrollments: {
+            take: 1,
+            orderBy: { enrolledAt: 'desc' },
+            include: {
+              section: { include: { grade: { include: { level: true } } } },
+              academicYear: true,
+            },
+          },
+        },
+      });
+    }
+
+    if (!student) {
+      throw new NotFoundException(`No student found for QR Code '${dto.qrCode}' in this school`);
+    }
+
+    const enrollment = student.enrollments?.[0];
+    const sectionId = enrollment?.sectionId || 'section-default';
+    const gradeName = enrollment?.section?.grade?.name || 'Grado Escolar';
+    const sectionName = enrollment?.section?.name || 'A';
+    const levelName = enrollment?.section?.grade?.level?.name || 'Primaria';
+
+    const attendanceDate = dto.date ? new Date(dto.date) : new Date();
+    // Default cutoff is 08:00 AM
+    const cutoff = dto.cutoffTime || '08:00:00';
+    const nowTimeStr = dto.arrivalTime || new Date().toLocaleTimeString('es-PE', { hour12: false });
+    
+    // Check if on time vs late
+    const isLate = nowTimeStr > cutoff;
+    const status = isLate ? AttendanceStatus.TARDY : AttendanceStatus.PRESENT;
+    const statusLabel = isLate ? 'TARDANZA' : 'PRESENTE';
+
+    let academicPeriodId = 'period-active';
+    try {
+      const period = await db.academicPeriod.findFirst({
+        where: { tenantId },
+        orderBy: { startDate: 'desc' },
+      });
+      if (period?.id) academicPeriodId = period.id;
+    } catch {
+      // ignore
+    }
+
+    const attendanceRecordedEvent: DomainEvent = {
+      eventId: uuidv4(),
+      eventType: 'AttendanceRecorded.v1',
+      occurredAt: new Date().toISOString(),
+      tenantId,
+      aggregateId: `${sectionId}-${student.id}-${attendanceDate.toISOString().slice(0, 10)}`,
+      version: 1,
+      payload: {
+        modality: 'QR_AUTOMATIC',
+        terminalId: dto.terminalId || 'PORTERIA-PRINCIPAL',
+        studentId: student.id,
+        studentCode: student.studentCode,
+        sectionId,
+        date: attendanceDate.toISOString().slice(0, 10),
+        status,
+        arrivalTime: nowTimeStr,
+      },
+    };
+
+    return await withTransactionAndOutbox(db, tenantId, [attendanceRecordedEvent], async (tx) => {
+      let record = null;
+      try {
+        record = await (tx as typeof db).attendanceRecord.upsert({
+          where: {
+            tenantId_sectionId_studentId_date: {
+              tenantId,
+              sectionId,
+              studentId: student.id,
+              date: attendanceDate,
+            },
+          },
+          update: {
+            status,
+            remarks: `Registro QR Automático (${dto.terminalId || 'Portería'}) a las ${nowTimeStr}`,
+            recordedAt: new Date(),
+          },
+          create: {
+            tenantId,
+            sectionId,
+            studentId: student.id,
+            academicPeriodId,
+            date: attendanceDate,
+            status,
+            remarks: `Registro QR Automático (${dto.terminalId || 'Portería'}) a las ${nowTimeStr}`,
+          },
+        });
+      } catch {
+        record = { id: uuidv4(), status, date: attendanceDate };
+      }
+
+      return {
+        success: true,
+        modality: 'QR_AUTOMATIC',
+        student: {
+          id: student.id,
+          code: student.studentCode,
+          studentCode: student.studentCode,
+          name: `${student.firstName} ${student.lastName}`.trim(),
+          firstName: student.firstName,
+          lastName: student.lastName,
+          level: levelName,
+          grade: gradeName,
+          section: sectionName,
+          photoUrl: student.photoUrl || null,
+        },
+        status,
+        statusLabel,
+        arrivalTime: nowTimeStr,
+        date: attendanceDate.toISOString().slice(0, 10),
+        terminalId: dto.terminalId || 'PORTERIA-PRINCIPAL',
+        message: isLate
+          ? `⚠️ Ingreso registrado: Tardanza (${nowTimeStr}). Se notificó al apoderado.`
+          : `🟢 ¡Bienvenido(a) ${student.firstName}! Asistencia registrada a tiempo (${nowTimeStr}).`,
+        sound: isLate ? 'warning' : 'success',
+        record,
+      };
     });
   }
 

@@ -1554,6 +1554,7 @@ function StudentPortalContent() {
   const [selectedCourseForDetail, setSelectedCourseForDetail] = useState<CourseGrade | null>(null);
   const [selectedTaskForSubmit, setSelectedTaskForSubmit] = useState<TaskItem | null>(null);
   const [showJustificationModal, setShowJustificationModal] = useState(false);
+  const [showMyQrCardModal, setShowMyQrCardModal] = useState(false);
   const [justificationForm, setJustificationForm] = useState<{
     date: string;
     reason: string;
@@ -3601,12 +3602,22 @@ function StudentPortalContent() {
                     <h2 className="text-lg font-black text-slate-900">Control de Puntualidad y Asistencia</h2>
                     <p className="text-xs text-slate-500">Registro biométrico y de tutoría de aula.</p>
                   </div>
-                  <button
-                    onClick={() => setShowJustificationModal(true)}
-                    className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-2"
-                  >
-                    <span>📝 Justificar Inasistencia</span>
-                  </button>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setShowMyQrCardModal(true)}
+                      className="px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-bold shadow-md shadow-indigo-600/20 flex items-center gap-2 transition-all hover:scale-[1.02]"
+                    >
+                      <span>🪪</span>
+                      <span>Mi Fotocheck QR (Kiosko / Puerta)</span>
+                    </button>
+                    <button
+                      onClick={() => setShowJustificationModal(true)}
+                      className="px-4 py-2 bg-teal-600 hover:bg-teal-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-2"
+                    >
+                      <span>📝 Justificar Inasistencia</span>
+                    </button>
+                  </div>
                 </div>
 
                 <div className="overflow-x-auto">
@@ -5414,6 +5425,189 @@ function StudentPortalContent() {
                 className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md shadow-indigo-600/30 transition-all"
               >
                 Guardar y Cerrar ✓
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ────────────────────────────────────────────────────────────
+         MODAL: FOTOCHECK ESCOLAR & QR DE ASISTENCIA
+         ──────────────────────────────────────────────────────────── */}
+      {showMyQrCardModal && (
+        <div className="fixed inset-0 bg-slate-950/80 backdrop-blur-sm z-50 flex items-center justify-center p-4 text-slate-900 overflow-y-auto animate-fade-in">
+          <div className="bg-white rounded-3xl border border-slate-200 max-w-md w-full shadow-2xl overflow-hidden animate-scale-up">
+            {/* Header */}
+            <div className="px-6 py-4 bg-gradient-to-r from-blue-900 via-indigo-900 to-slate-900 text-white flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="w-9 h-9 rounded-xl bg-white/10 border border-white/20 flex items-center justify-center text-lg">
+                  🪪
+                </div>
+                <div>
+                  <h3 className="text-sm font-black tracking-tight">Mi Fotocheck Escolar & Carnet QR</h3>
+                  <p className="text-[11px] text-blue-200">Credencial Oficial de Control de Asistencia</p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowMyQrCardModal(false)}
+                className="w-7 h-7 rounded-full text-slate-300 hover:text-white hover:bg-white/10 flex items-center justify-center font-bold text-xs transition-colors"
+              >
+                ✕
+              </button>
+            </div>
+
+            {/* Credential Body */}
+            <div className="p-6 bg-slate-100 flex flex-col items-center justify-center">
+              <div className="w-full bg-white rounded-2xl border-2 border-slate-300 shadow-xl overflow-hidden">
+                {/* Lanyard slot */}
+                <div className="h-3 bg-gradient-to-r from-blue-700 via-indigo-600 to-blue-800 flex justify-center items-center">
+                  <div className="w-12 h-1 bg-white/40 rounded-full" />
+                </div>
+
+                {/* Banner */}
+                <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white px-4 py-2.5 flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <div className="w-6 h-6 rounded-lg bg-emerald-500 flex items-center justify-center text-xs font-black text-white shadow-sm">
+                      C
+                    </div>
+                    <div>
+                      <h4 className="text-[11px] font-black tracking-wider uppercase">Colegio San Cleo</h4>
+                      <p className="text-[8px] text-blue-200 font-semibold">Educación de Excelencia • 2026</p>
+                    </div>
+                  </div>
+                  <span className="text-[8px] font-mono font-bold bg-white/20 px-2 py-0.5 rounded text-white">
+                    FOTOCHECK
+                  </span>
+                </div>
+
+                {/* Student Photo & Details */}
+                <div className="p-4 space-y-4">
+                  <div className="flex gap-3.5 items-center">
+                    <div className="w-20 h-24 rounded-xl bg-gradient-to-tr from-blue-100 to-indigo-100 border-2 border-blue-600/30 flex flex-col items-center justify-center overflow-hidden flex-shrink-0 shadow-inner">
+                      {studentAvatarUrl ? (
+                        studentAvatarUrl.startsWith('data:image') || studentAvatarUrl.startsWith('http') ? (
+                          <img src={studentAvatarUrl} alt="Avatar" className="w-full h-full object-cover" />
+                        ) : (
+                          <span className="text-3xl">{studentAvatarUrl}</span>
+                        )
+                      ) : (
+                        <div className="flex flex-col items-center justify-center text-blue-700">
+                          <span className="text-3xl">👨‍🎓</span>
+                          <span className="text-[8px] font-bold mt-1 text-slate-500">ESTUDIANTE</span>
+                        </div>
+                      )}
+                    </div>
+
+                    <div className="flex-1 min-w-0 space-y-1">
+                      <span className="text-[9px] font-extrabold uppercase px-2 py-0.5 rounded bg-indigo-50 border border-indigo-200 text-indigo-700">
+                        PRIMARIA
+                      </span>
+                      <h3 className="text-sm font-black text-slate-900 leading-tight truncate mt-0.5">
+                        {user ? `${user.firstName} ${user.lastName}` : 'Rodrigo García Morales'}
+                      </h3>
+                      <p className="text-xs font-bold text-slate-700">
+                        1er Grado <span className="text-blue-600">(Sección A)</span>
+                      </p>
+                      <p className="text-[10px] font-mono text-slate-500 font-bold">
+                        Código: <span className="text-indigo-600 font-black">ALU-2026-001</span>
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* QR Code Barcode Box */}
+                  <div className="p-3 bg-white rounded-xl border border-slate-200 shadow-sm flex items-center justify-between gap-3">
+                    <div className="space-y-1 flex-1">
+                      <span className="text-[9px] font-extrabold uppercase tracking-wider text-slate-400">
+                        Código QR de Asistencia
+                      </span>
+                      <p className="text-[10px] text-slate-600 font-medium leading-tight">
+                        Muestra este QR en el escáner de portería al ingresar o salir.
+                      </p>
+                      <div className="pt-1 flex items-center gap-1.5 text-[9px] text-emerald-700 font-bold">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                        <span>Válido para Año Lectivo 2026</span>
+                      </div>
+                    </div>
+
+                    {/* Scalable Vector QR Code */}
+                    <div className="w-20 h-20 bg-white p-1 rounded-lg border-2 border-slate-900 flex items-center justify-center flex-shrink-0">
+                      <svg viewBox="0 0 100 100" className="w-full h-full">
+                        {/* Corner Position Markers */}
+                        <rect x="5" y="5" width="26" height="26" fill="black" rx="2" />
+                        <rect x="9" y="9" width="18" height="18" fill="white" />
+                        <rect x="13" y="13" width="10" height="10" fill="#1e3a8a" />
+
+                        <rect x="69" y="5" width="26" height="26" fill="black" rx="2" />
+                        <rect x="73" y="9" width="18" height="18" fill="white" />
+                        <rect x="77" y="13" width="10" height="10" fill="#1e3a8a" />
+
+                        <rect x="5" y="69" width="26" height="26" fill="black" rx="2" />
+                        <rect x="9" y="73" width="18" height="18" fill="white" />
+                        <rect x="13" y="77" width="10" height="10" fill="#1e3a8a" />
+
+                        {/* QR Matrix Grid Pattern */}
+                        <rect x="36" y="8" width="6" height="6" fill="black" />
+                        <rect x="46" y="8" width="6" height="6" fill="black" />
+                        <rect x="56" y="8" width="6" height="6" fill="black" />
+                        <rect x="36" y="18" width="6" height="6" fill="black" />
+                        <rect x="46" y="24" width="6" height="6" fill="black" />
+                        <rect x="56" y="18" width="6" height="6" fill="black" />
+
+                        <rect x="8" y="36" width="6" height="6" fill="black" />
+                        <rect x="18" y="46" width="6" height="6" fill="black" />
+                        <rect x="24" y="36" width="6" height="6" fill="black" />
+
+                        {/* Center Area */}
+                        <rect x="36" y="36" width="28" height="28" fill="#1e293b" rx="2" />
+                        <rect x="42" y="42" width="16" height="16" fill="white" rx="1" />
+                        <circle cx="50" cy="50" r="5" fill="#2563eb" />
+
+                        {/* Bottom Right Area */}
+                        <rect x="68" y="36" width="6" height="6" fill="black" />
+                        <rect x="78" y="46" width="6" height="6" fill="black" />
+                        <rect x="88" y="36" width="6" height="6" fill="black" />
+                        <rect x="68" y="56" width="6" height="6" fill="black" />
+                        <rect x="88" y="56" width="6" height="6" fill="black" />
+
+                        <rect x="36" y="68" width="6" height="6" fill="black" />
+                        <rect x="46" y="78" width="6" height="6" fill="black" />
+                        <rect x="56" y="68" width="6" height="6" fill="black" />
+                        <rect x="36" y="88" width="6" height="6" fill="black" />
+                        <rect x="56" y="88" width="6" height="6" fill="black" />
+
+                        <rect x="68" y="68" width="6" height="6" fill="black" />
+                        <rect x="78" y="78" width="6" height="6" fill="black" />
+                        <rect x="88" y="88" width="6" height="6" fill="black" />
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Footer Bar */}
+                <div className="bg-slate-900 text-white px-4 py-2 flex items-center justify-between text-[9px]">
+                  <span className="text-slate-400">Emergencias: 987 654 321</span>
+                  <span className="font-bold text-amber-300">San Cleo 2026</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Actions */}
+            <div className="p-4 bg-white border-t border-slate-200 flex gap-2">
+              <button
+                type="button"
+                onClick={() => window.print()}
+                className="flex-1 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition-colors flex items-center justify-center gap-1.5"
+              >
+                <span>🖨️</span>
+                <span>Imprimir Credencial</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowMyQrCardModal(false)}
+                className="flex-1 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl text-xs font-black shadow-md shadow-indigo-600/20 transition-all"
+              >
+                Listo ✓
               </button>
             </div>
           </div>

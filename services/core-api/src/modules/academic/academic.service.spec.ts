@@ -198,5 +198,55 @@ describe('AcademicService', () => {
     expect(summary.topScore).toBeCloseTo(1588.75, 2);
     expect((db as any).mockExamResult.upsert).toHaveBeenCalledTimes(2);
   });
+
+  it('should process automated QR code scanner attendance for student on time and tardy', async () => {
+    (db.student.findFirst as jest.Mock).mockResolvedValue({
+      id: 'stud-1',
+      studentCode: 'ALU-2026-001',
+      firstName: 'Mateo',
+      lastName: 'García Morales',
+      enrollments: [
+        {
+          id: 'enr-1',
+          sectionId: 'sec-1',
+          section: {
+            name: 'A',
+            grade: { name: '1er Grado Primaria', level: { name: 'Primaria' } },
+          },
+        },
+      ],
+    });
+
+    (db as any).academicPeriod = {
+      findFirst: jest.fn().mockResolvedValue({ id: 'period-2026' }),
+    };
+
+    // 1. On time scan (07:45 AM before 08:00 cutoff)
+    const onTimeResult = await service.recordAttendanceByQr('tenant-1', {
+      qrCode: 'ALU-2026-001',
+      arrivalTime: '07:45:00',
+      cutoffTime: '08:00:00',
+      terminalId: 'PORTERIA-PRINCIPAL',
+    });
+
+    expect(onTimeResult.success).toBe(true);
+    expect(onTimeResult.status).toBe('PRESENT');
+    expect(onTimeResult.statusLabel).toBe('PRESENTE');
+    expect(onTimeResult.sound).toBe('success');
+    expect(onTimeResult.student.name).toBe('Mateo García Morales');
+
+    // 2. Late scan (08:15 AM after 08:00 cutoff)
+    const lateResult = await service.recordAttendanceByQr('tenant-1', {
+      qrCode: '{"studentId":"stud-1","code":"ALU-2026-001"}',
+      arrivalTime: '08:15:00',
+      cutoffTime: '08:00:00',
+      terminalId: 'PORTERIA-PRINCIPAL',
+    });
+
+    expect(lateResult.success).toBe(true);
+    expect(lateResult.status).toBe('TARDY');
+    expect(lateResult.statusLabel).toBe('TARDANZA');
+    expect(lateResult.sound).toBe('warning');
+  });
 });
 
