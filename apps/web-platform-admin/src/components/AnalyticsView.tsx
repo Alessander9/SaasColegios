@@ -36,46 +36,47 @@ const MOCK_TENANTS: PlatformTenant[] = [
   { id: 't-3', slug: 'montessori', name: 'Academia Montessori', subdomain: 'montessori', status: 'TRIAL', planId: 'p1', plan: { id: 'p1', code: 'PLAN_BASIC', name: 'Básico', maxStudents: 150, maxTeachers: 15, maxStorageGb: 10, features: [], monthlyPrice: 99, annualPrice: 990, isActive: true, createdAt: '', updatedAt: '' }, createdAt: '2026-07-20T00:00:00Z', updatedAt: '2026-08-15T00:00:00Z' },
 ];
 
-/* ── Simple SVG Bar Chart ── */
-function BarChart({ data, labelKey, valueKey, color, maxValue }: {
-  data: any[];
-  labelKey: string;
-  valueKey: string;
-  color: string;
-  maxValue?: number;
-}) {
-  const max = maxValue || Math.max(...data.map((d) => Number(d[valueKey]) || 0), 1);
+/* ── Minimalist SVG Line & Bar Chart ── */
+function MinimalistAreaChart({ data }: { data: GrowthTimeline[] }) {
+  const max = Math.max(...data.map((d) => d.students), 2000);
+  const points = data.map((d, i) => {
+    const x = (i / (data.length - 1)) * 400;
+    const y = 140 - (d.students / max) * 110;
+    return `${x},${y}`;
+  }).join(' ');
+
+  const areaPoints = `0,140 ${points} 400,140`;
 
   return (
     <div className="w-full">
-      <svg viewBox="0 0 400 180" className="w-full h-auto">
-        {/* Grid lines */}
-        {[0, 0.25, 0.5, 0.75, 1].map((pct) => (
-          <line key={pct} x1="0" y1={160 - pct * 140} x2="400" y2={160 - pct * 140} stroke="#1e293b" strokeWidth="0.5" />
+      <svg viewBox="0 0 400 170" className="w-full h-auto">
+        <defs>
+          <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
+            <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+          </linearGradient>
+        </defs>
+
+        {/* Horizontal Grid */}
+        {[0, 0.33, 0.66, 1].map((p) => (
+          <line key={p} x1="0" y1={140 - p * 110} x2="400" y2={140 - p * 110} stroke="#1e293b" strokeWidth="0.5" strokeDasharray="4 4" />
         ))}
-        {/* Bars */}
+
+        {/* Area fill */}
+        <polygon points={areaPoints} fill="url(#areaGradient)" />
+
+        {/* Line */}
+        <polyline points={points} fill="none" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+
+        {/* Data points */}
         {data.map((d, i) => {
-          const val = Number(d[valueKey]) || 0;
-          const barH = (val / max) * 140;
-          const x = (i / data.length) * 400 + (400 / data.length) * 0.15;
-          const w = (400 / data.length) * 0.6;
+          const x = (i / (data.length - 1)) * 400;
+          const y = 140 - (d.students / max) * 110;
           return (
             <g key={i}>
-              <rect
-                x={x}
-                y={160 - barH}
-                width={w}
-                height={barH}
-                rx={4}
-                fill={color}
-                opacity={0.85}
-                className="hover:opacity-100 transition-opacity"
-              />
-              <text x={x + w / 2} y={160 - barH - 6} textAnchor="middle" className="fill-white text-[10px] font-bold">
-                {typeof val === 'number' ? val.toLocaleString() : val}
-              </text>
-              <text x={x + w / 2} y={175} textAnchor="middle" className="fill-slate-500 text-[8px] font-medium">
-                {String(d[labelKey]).slice(-5)}
+              <circle cx={x} cy={y} r="3.5" fill="#0b0f19" stroke="#818cf8" strokeWidth="2" />
+              <text x={x} y={160} textAnchor="middle" className="fill-slate-400 text-[9px] font-medium">
+                {d.month.slice(5)}
               </text>
             </g>
           );
@@ -85,9 +86,6 @@ function BarChart({ data, labelKey, valueKey, color, maxValue }: {
   );
 }
 
-/* ────────────────────────────────────────────────────────────
-   ANALYTICS VIEW
-   ──────────────────────────────────────────────────────────── */
 export default function AnalyticsView() {
   const [growth, setGrowth] = useState<GrowthTimeline[]>(MOCK_GROWTH);
   const [modules, setModules] = useState<ModuleUsage[]>(MOCK_MODULES);
@@ -98,9 +96,9 @@ export default function AnalyticsView() {
     setLoading(true);
     try {
       const [g, m, t] = await Promise.all([
-        getPlatformGrowth().catch(() => MOCK_GROWTH),
-        getModuleUsage().catch(() => MOCK_MODULES),
-        getTenants().catch(() => MOCK_TENANTS),
+        getPlatformGrowth(),
+        getModuleUsage(),
+        getTenants(),
       ]);
       setGrowth(g);
       setModules(m);
@@ -111,136 +109,93 @@ export default function AnalyticsView() {
 
   useEffect(() => { reload(); }, [reload]);
 
-  const mrr = tenants.reduce((a, t) => a + (t.plan?.monthlyPrice ?? 0), 0);
-  const revenueByPlan = tenants.reduce<Record<string, number>>((acc, t) => {
-    const pn = t.plan?.name ?? 'Desconocido';
-    acc[pn] = (acc[pn] || 0) + (t.plan?.monthlyPrice ?? 0);
-    return acc;
-  }, {});
+  const latest = growth[growth.length - 1] ?? { students: 1645, tenants: 3 };
+  const first = growth[0] ?? { students: 320, tenants: 1 };
+  const growthRate = Math.round(((latest.students - first.students) / first.students) * 100);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-white">Analíticas de Plataforma</h1>
-        <p className="text-sm text-slate-400 mt-1">Crecimiento, uso de módulos y distribución de ingresos</p>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-800/60">
+        <div>
+          <h2 className="text-xl font-bold text-white tracking-tight">Analíticas de Crecimiento</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Evolución de alumnos activos y adopción de módulos</p>
+        </div>
+
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+            +{growthRate}% Crecimiento Total
+          </span>
+        </div>
       </div>
 
-      {loading ? (
-        <div className="text-center py-16 text-slate-500 text-sm">Cargando analíticas...</div>
-      ) : (
-        <>
-          {/* Revenue Distribution */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-white">Distribución de Ingresos por Plan (MRR)</h2>
-              <span className="text-xs font-bold text-emerald-400 bg-emerald-500/10 px-3 py-1 rounded-full border border-emerald-500/20">
-                ${mrr.toLocaleString()}/mes total
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {Object.entries(revenueByPlan).map(([plan, revenue], i) => {
-                const pct = mrr > 0 ? Math.round((revenue / mrr) * 100) : 0;
-                const colors = ['bg-emerald-500', 'bg-indigo-500', 'bg-violet-500'];
-                return (
-                  <div key={plan} className="p-5 rounded-2xl bg-slate-950 border border-slate-800 space-y-3">
-                    <div className="flex items-center justify-between">
-                      <span className="text-xs font-bold text-white">{plan}</span>
-                      <span className="text-[10px] font-bold text-slate-400">{pct}%</span>
-                    </div>
-                    <p className="text-2xl font-black text-white">${revenue.toLocaleString()}</p>
-                    <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
-                      <div className={`h-full rounded-full ${colors[i % colors.length]}`} style={{ width: `${pct}%` }} />
-                    </div>
-                    <p className="text-[10px] text-slate-500">{tenants.filter((t) => t.plan?.name === plan).length} colegios</p>
-                  </div>
-                );
-              })}
-            </div>
+      {/* Main Chart Card */}
+      <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 space-y-4 shadow-sm">
+        <div className="flex items-center justify-between">
+          <div>
+            <h3 className="text-sm font-bold text-white">Curva de Alumnos Activos</h3>
+            <p className="text-[11px] text-slate-400">Total de estudiantes en la plataforma por mes</p>
+          </div>
+          <div className="text-right">
+            <span className="text-xl font-bold text-white">{latest.students.toLocaleString()}</span>
+            <p className="text-[10px] text-slate-400">Estudiantes Activos</p>
+          </div>
+        </div>
+
+        <div className="pt-2">
+          <MinimalistAreaChart data={growth} />
+        </div>
+      </div>
+
+      {/* Grid: Module Adoption & Tenant Capacity */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+        {/* Module Adoption */}
+        <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 space-y-3 shadow-sm">
+          <div>
+            <h3 className="text-sm font-bold text-white">Adopción por Módulo</h3>
+            <p className="text-[11px] text-slate-400">% de colegios con el módulo activo</p>
           </div>
 
-          {/* Growth Timeline */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-white">Crecimiento de Alumnos en el Tiempo</h2>
-              <span className="text-[10px] font-bold text-slate-500 bg-slate-800 px-2.5 py-1 rounded-full">Últimos 7 meses</span>
-            </div>
-            <div className="bg-slate-950 rounded-2xl p-5 border border-slate-800/60">
-              <BarChart
-                data={growth}
-                labelKey="month"
-                valueKey="students"
-                color="#6366f1"
-              />
-            </div>
-          </div>
-
-          {/* Tenant Growth */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-white">Crecimiento de Colegios</h2>
-              <span className="text-[10px] font-bold text-slate-500 bg-slate-800 px-2.5 py-1 rounded-full">Últimos 7 meses</span>
-            </div>
-            <div className="bg-slate-950 rounded-2xl p-5 border border-slate-800/60">
-              <BarChart
-                data={growth}
-                labelKey="month"
-                valueKey="tenants"
-                color="#10b981"
-              />
-            </div>
-          </div>
-
-          {/* Module Usage */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-bold text-white">Uso de Módulos por Colegios</h2>
-              <span className="text-[10px] font-bold text-slate-500 bg-slate-800 px-2.5 py-1 rounded-full">{modules.length} módulos</span>
-            </div>
-            <div className="space-y-3">
-              {modules.sort((a, b) => b.usagePercentage - a.usagePercentage).map((m) => (
-                <div key={m.module} className="flex items-center gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/60">
-                  <div className="w-32 min-w-0">
-                    <p className="text-xs font-bold text-white truncate">{m.module}</p>
-                  </div>
-                  <div className="flex-1">
-                    <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
-                      <div
-                        className={`h-full rounded-full transition-all duration-500 ${
-                          m.usagePercentage === 100 ? 'bg-emerald-500' :
-                          m.usagePercentage >= 60 ? 'bg-indigo-500' :
-                          m.usagePercentage >= 30 ? 'bg-amber-500' : 'bg-rose-500'
-                        }`}
-                        style={{ width: `${m.usagePercentage}%` }}
-                      />
-                    </div>
-                  </div>
-                  <div className="w-20 text-right">
-                    <p className="text-xs font-bold text-white">{m.tenantCount}/{tenants.length}</p>
-                    <p className="text-[10px] text-slate-500">{m.usagePercentage}%</p>
-                  </div>
+          <div className="space-y-2.5 pt-1">
+            {modules.map((m) => (
+              <div key={m.module} className="space-y-1">
+                <div className="flex items-center justify-between text-xs">
+                  <span className="font-medium text-slate-300">{m.module}</span>
+                  <span className="text-slate-400">{m.usagePercentage}% ({m.tenantCount} inst.)</span>
                 </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Summary Cards */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-            {[
-              { label: 'Tasa de Conversión Trial → Active', value: '67%', icon: '🔄', color: 'text-emerald-400' },
-              { label: 'Crecimiento Mensual (Alumnos)', value: growth.length >= 2 ? `+${growth[growth.length - 1].students - growth[growth.length - 2].students}` : '—', icon: '📈', color: 'text-indigo-400' },
-              { label: 'Módulo Más Usado', value: modules[0]?.module ?? '—', icon: '🏆', color: 'text-amber-400' },
-              { label: 'Ingreso Promedio/Colegio', value: tenants.length > 0 ? `$${Math.round(mrr / tenants.length)}` : '$0', icon: '💰', color: 'text-violet-400' },
-            ].map((c) => (
-              <div key={c.label} className="p-5 rounded-2xl bg-slate-900 border border-slate-800 text-center space-y-2">
-                <span className="text-2xl">{c.icon}</span>
-                <p className={`text-xl font-black ${c.color}`}>{c.value}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase">{c.label}</p>
+                <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                  <div
+                    className={`h-full rounded-full transition-all duration-300 ${
+                      m.usagePercentage >= 80 ? 'bg-indigo-500' : m.usagePercentage >= 50 ? 'bg-cyan-500' : 'bg-slate-600'
+                    }`}
+                    style={{ width: `${m.usagePercentage}%` }}
+                  />
+                </div>
               </div>
             ))}
           </div>
-        </>
-      )}
+        </div>
+
+        {/* Growth by Month Table */}
+        <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 space-y-3 shadow-sm">
+          <div>
+            <h3 className="text-sm font-bold text-white">Historial Mensual</h3>
+            <p className="text-[11px] text-slate-400">Desglose mensual de instituciones y alumnos</p>
+          </div>
+
+          <div className="divide-y divide-slate-800/60">
+            {growth.map((g) => (
+              <div key={g.month} className="py-2.5 flex items-center justify-between text-xs first:pt-1 last:pb-1">
+                <span className="font-mono text-slate-300">{g.month}</span>
+                <div className="flex items-center gap-4">
+                  <span className="text-slate-400">{g.tenants} colegios</span>
+                  <span className="font-semibold text-white">{g.students.toLocaleString()} alumnos</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

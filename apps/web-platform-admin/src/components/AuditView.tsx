@@ -43,25 +43,10 @@ const ACTION_STYLES: Record<string, { bg: string; text: string; border: string }
   CREATE: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
   UPDATE: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
   PUBLISH: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' },
-  REVERSE: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' },
+  REVERSE: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
   DELETE: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' },
 };
 
-const RESOURCE_ICONS: Record<string, string> = {
-  student: '👨‍🎓',
-  payment: '💰',
-  grade: '📝',
-  attendance: '📋',
-  order: '🛍️',
-  employee: '👥',
-  tenant: '🏫',
-  activity: '🎯',
-  payroll: '💼',
-};
-
-/* ────────────────────────────────────────────────────────────
-   AUDIT VIEW
-   ──────────────────────────────────────────────────────────── */
 export default function AuditView() {
   const [logs, setLogs] = useState<AuditLog[]>(MOCK_LOGS);
   const [stats, setStats] = useState<AuditStats>(MOCK_STATS);
@@ -88,164 +73,138 @@ export default function AuditView() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-black text-white">Registro de Auditoría</h1>
-        <p className="text-sm text-slate-400 mt-1">Historial completo de acciones en la plataforma</p>
-      </div>
-
-      <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-        {/* Stats Sidebar */}
-        <div className="lg:col-span-1 space-y-5">
-          {/* Top Resources */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Por Recurso</h3>
-            <div className="space-y-2.5">
-              {stats.byResource.map((r) => (
-                <div key={r.resource} className="flex items-center gap-2.5">
-                  <span className="text-sm w-6">{RESOURCE_ICONS[r.resource] ?? '📄'}</span>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex justify-between text-[10px] mb-0.5">
-                      <span className="font-bold text-white capitalize">{r.resource}</span>
-                      <span className="text-slate-500">{r.count}</span>
-                    </div>
-                    <div className="w-full h-1 bg-slate-800 rounded-full overflow-hidden">
-                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: `${Math.min((r.count / (stats.byResource[0]?.count || 1)) * 100, 100)}%` }} />
-                    </div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          {/* Top Actions */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Por Acción</h3>
-            <div className="space-y-2">
-              {stats.topActions.map((a) => {
-                const sty = ACTION_STYLES[a.action] ?? ACTION_STYLES.CREATE;
-                return (
-                  <div key={a.action} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/60">
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sty.bg} ${sty.text} ${sty.border}`}>{a.action}</span>
-                    <span className="text-xs font-bold text-white">{a.count}</span>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          {/* Top Actors */}
-          <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Usuarios Más Activos</h3>
-            <div className="space-y-2">
-              {stats.topActors.map((a) => (
-                <div key={a.actorId} className="flex items-center gap-3 p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/60">
-                  <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-indigo-500/30 to-violet-500/30 border border-indigo-500/20 flex items-center justify-center text-[9px] font-bold text-indigo-300">
-                    {a.email.charAt(0).toUpperCase()}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-[10px] font-bold text-white truncate">{a.email}</p>
-                    <p className="text-[9px] text-slate-500">{a.count} acciones</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-800/60">
+        <div>
+          <h2 className="text-xl font-bold text-white tracking-tight">Registro de Auditoría & Seguridad</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Trazabilidad inmutable de eventos de dominio multi-tenant</p>
         </div>
 
-        {/* Logs Table */}
-        <div className="lg:col-span-3 bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          {/* Filters */}
-          <div className="p-5 border-b border-slate-800 flex flex-col sm:flex-row gap-3">
-            <select
-              value={filterAction}
-              onChange={(e) => setFilterAction(e.target.value)}
-              className="px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-            >
-              <option value="">Todas las Acciones</option>
-              <option value="CREATE">CREATE</option>
-              <option value="UPDATE">UPDATE</option>
-              <option value="PUBLISH">PUBLISH</option>
-              <option value="REVERSE">REVERSE</option>
-              <option value="DELETE">DELETE</option>
-            </select>
-            <select
-              value={filterResource}
-              onChange={(e) => setFilterResource(e.target.value)}
-              className="px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-xl text-white text-xs font-bold focus:outline-none focus:ring-2 focus:ring-indigo-500/50"
-            >
-              <option value="">Todos los Recursos</option>
-              <option value="student">Student</option>
-              <option value="payment">Payment</option>
-              <option value="grade">Grade</option>
-              <option value="attendance">Attendance</option>
-              <option value="order">Order</option>
-              <option value="employee">Employee</option>
-              <option value="tenant">Tenant</option>
-            </select>
-            <span className="text-[10px] font-bold text-slate-500 bg-slate-800 px-3 py-2 rounded-xl self-center">
-              {logs.length} registros
-            </span>
-          </div>
+        <div className="flex items-center gap-2">
+          <span className="text-[11px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg">
+            Total Eventos: {logs.length}
+          </span>
+        </div>
+      </div>
 
-          {/* Log entries */}
-          <div className="divide-y divide-slate-800/60">
-            {loading ? (
-              <div className="p-12 text-center text-slate-500 text-sm">Cargando logs de auditoría...</div>
-            ) : logs.length === 0 ? (
-              <div className="p-12 text-center text-slate-500 text-sm">No se encontraron registros con los filtros aplicados.</div>
-            ) : (
-              logs.map((log) => {
-                const sty = ACTION_STYLES[log.action] ?? ACTION_STYLES.CREATE;
-                const isExpanded = expandedLog === log.id;
-                return (
-                  <div key={log.id} className="hover:bg-slate-800/30 transition-colors">
-                    <button
-                      onClick={() => setExpandedLog(isExpanded ? null : log.id)}
-                      className="w-full flex items-center gap-4 px-5 py-4 text-left"
-                    >
-                      <span className="text-sm w-6">{RESOURCE_ICONS[log.resource] ?? '📄'}</span>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
-                          <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${sty.bg} ${sty.text} ${sty.border}`}>
+      {/* Filter Row */}
+      <div className="flex flex-wrap gap-3">
+        <select
+          value={filterAction}
+          onChange={(e) => setFilterAction(e.target.value)}
+          className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+        >
+          <option value="">Todas las Acciones</option>
+          <option value="CREATE">CREATE</option>
+          <option value="UPDATE">UPDATE</option>
+          <option value="PUBLISH">PUBLISH</option>
+          <option value="REVERSE">REVERSE</option>
+          <option value="DELETE">DELETE</option>
+        </select>
+
+        <select
+          value={filterResource}
+          onChange={(e) => setFilterResource(e.target.value)}
+          className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+        >
+          <option value="">Todos los Recursos</option>
+          <option value="student">student</option>
+          <option value="payment">payment</option>
+          <option value="grade">grade</option>
+          <option value="attendance">attendance</option>
+          <option value="order">order</option>
+          <option value="employee">employee</option>
+          <option value="tenant">tenant</option>
+        </select>
+      </div>
+
+      {/* Audit Log Table */}
+      <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 overflow-hidden shadow-sm">
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs text-slate-300">
+            <thead className="bg-slate-950 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-800">
+              <tr>
+                <th className="px-5 py-3">Acción</th>
+                <th className="px-5 py-3">Recurso</th>
+                <th className="px-5 py-3">Actor / Usuario</th>
+                <th className="px-5 py-3">Tenant</th>
+                <th className="px-5 py-3">Timestamp</th>
+                <th className="px-5 py-3 text-right">Payload</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-slate-800/60 font-medium">
+              {loading ? (
+                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Cargando logs de seguridad...</td></tr>
+              ) : logs.length === 0 ? (
+                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">No se encontraron eventos registrados.</td></tr>
+              ) : (
+                logs.map((log) => {
+                  const sty = ACTION_STYLES[log.action] ?? ACTION_STYLES.CREATE;
+                  const isExpanded = expandedLog === log.id;
+
+                  return (
+                    <React.Fragment key={log.id}>
+                      <tr className="hover:bg-slate-800/40 transition-colors">
+                        <td className="px-5 py-3.5">
+                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${sty.bg} ${sty.text} ${sty.border}`}>
                             {log.action}
                           </span>
-                          <span className="text-xs font-bold text-white">{log.resource}</span>
-                          <span className="text-[10px] text-slate-500 font-mono">#{log.resourceId}</span>
-                        </div>
-                        <p className="text-[10px] text-slate-500 mt-0.5">
-                          por {log.actorEmail ?? log.actorId} • {new Date(log.timestamp).toLocaleString('es-PE')}
-                        </p>
-                      </div>
-                      <span className={`text-xs transition-transform ${isExpanded ? 'rotate-90' : ''}`}>→</span>
-                    </button>
-                    {isExpanded && (
-                      <div className="px-5 pb-4 space-y-3">
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                          {log.before && (
-                            <div className="p-3 rounded-xl bg-rose-500/5 border border-rose-500/20">
-                              <p className="text-[10px] font-bold text-rose-400 uppercase mb-1.5">Antes</p>
-                              <pre className="text-[10px] text-slate-300 font-mono whitespace-pre-wrap">{JSON.stringify(log.before, null, 2)}</pre>
+                        </td>
+
+                        <td className="px-5 py-3.5">
+                          <span className="font-mono text-white text-[11px] bg-slate-800 px-2 py-0.5 rounded">
+                            {log.resource}:{log.resourceId}
+                          </span>
+                        </td>
+
+                        <td className="px-5 py-3.5">
+                          <p className="text-white text-xs">{log.actorEmail}</p>
+                          <p className="text-[10px] text-slate-500 font-mono">ID: {log.actorId}</p>
+                        </td>
+
+                        <td className="px-5 py-3.5 font-mono text-[10px] text-slate-400">
+                          {log.tenantId}
+                        </td>
+
+                        <td className="px-5 py-3.5 text-slate-400 text-[11px]">
+                          {new Date(log.timestamp).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}
+                        </td>
+
+                        <td className="px-5 py-3.5 text-right">
+                          <button
+                            onClick={() => setExpandedLog(isExpanded ? null : log.id)}
+                            className="px-2.5 py-1 text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-all"
+                          >
+                            {isExpanded ? 'Ocultar' : 'Ver JSON'}
+                          </button>
+                        </td>
+                      </tr>
+
+                      {isExpanded && (
+                        <tr className="bg-slate-950">
+                          <td colSpan={6} className="px-5 py-4">
+                            <div className="p-3 bg-[#080b12] border border-slate-800 rounded-lg text-xs font-mono text-slate-300 space-y-2">
+                              {log.before && (
+                                <div>
+                                  <p className="text-[10px] font-bold text-slate-500 uppercase">Estado Anterior (Before):</p>
+                                  <pre className="text-rose-300 mt-1">{JSON.stringify(log.before, null, 2)}</pre>
+                                </div>
+                              )}
+                              {log.after && (
+                                <div>
+                                  <p className="text-[10px] font-bold text-slate-500 uppercase">Estado Resultante (After):</p>
+                                  <pre className="text-emerald-300 mt-1">{JSON.stringify(log.after, null, 2)}</pre>
+                                </div>
+                              )}
                             </div>
-                          )}
-                          {log.after && (
-                            <div className="p-3 rounded-xl bg-emerald-500/5 border border-emerald-500/20">
-                              <p className="text-[10px] font-bold text-emerald-400 uppercase mb-1.5">Después</p>
-                              <pre className="text-[10px] text-slate-300 font-mono whitespace-pre-wrap">{JSON.stringify(log.after, null, 2)}</pre>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex gap-4 text-[10px] text-slate-500">
-                          <span>ID: <span className="font-mono text-slate-400">{log.id}</span></span>
-                          <span>Tenant: <span className="font-mono text-slate-400">{log.tenantId}</span></span>
-                          {log.ipAddress && <span>IP: <span className="font-mono text-slate-400">{log.ipAddress}</span></span>}
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                );
-              })
-            )}
-          </div>
+                          </td>
+                        </tr>
+                      )}
+                    </React.Fragment>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </div>

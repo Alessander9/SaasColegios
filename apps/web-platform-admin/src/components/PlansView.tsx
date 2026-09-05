@@ -4,28 +4,22 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { getPlans, createPlan, type PlatformPlan, type CreatePlanDto } from '../lib/api';
 
 const MOCK_PLANS: PlatformPlan[] = [
-  { id: 'p1', code: 'PLAN_BASIC', name: 'Básico', description: 'Plan de inicio para colegios pequeños que recién empiezan su digitalización', maxStudents: 150, maxTeachers: 15, maxStorageGb: 10, features: ['academic', 'enrollment', 'notifications'], monthlyPrice: 99, annualPrice: 990, isActive: true, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 'p2', code: 'PLAN_PRO', name: 'Profesional', description: 'Para colegios en crecimiento que necesitan finanzas y comercio integrado', maxStudents: 500, maxTeachers: 50, maxStorageGb: 50, features: ['academic', 'enrollment', 'finance', 'commerce', 'notifications'], monthlyPrice: 199, annualPrice: 1990, isActive: true, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
-  { id: 'p3', code: 'PLAN_ENT', name: 'Enterprise', description: 'Solución integral para grandes instituciones con todas las funcionalidades', maxStudents: 1500, maxTeachers: 150, maxStorageGb: 200, features: ['academic', 'enrollment', 'finance', 'commerce', 'activities', 'hr', 'payroll', 'notifications', 'documents', 'reporting'], monthlyPrice: 399, annualPrice: 3990, isActive: true, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+  { id: 'p1', code: 'PLAN_BASIC', name: 'Básico', description: 'Plan de inicio para instituciones de nivel primario o guarderías', maxStudents: 150, maxTeachers: 15, maxStorageGb: 10, features: ['academic', 'enrollment', 'notifications'], monthlyPrice: 99, annualPrice: 990, isActive: true, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+  { id: 'p2', code: 'PLAN_PRO', name: 'Profesional', description: 'Para colegios integrados con tesorería, tienda escolar y cobranzas', maxStudents: 500, maxTeachers: 50, maxStorageGb: 50, features: ['academic', 'enrollment', 'finance', 'commerce', 'notifications'], monthlyPrice: 199, annualPrice: 1990, isActive: true, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
+  { id: 'p3', code: 'PLAN_ENT', name: 'Enterprise', description: 'Solución integral corporativa con RRHH, planillas y BI avanzado', maxStudents: 1500, maxTeachers: 150, maxStorageGb: 200, features: ['academic', 'enrollment', 'finance', 'commerce', 'activities', 'hr', 'payroll', 'notifications', 'documents', 'reporting'], monthlyPrice: 399, annualPrice: 3990, isActive: true, createdAt: '2025-01-01T00:00:00Z', updatedAt: '2025-01-01T00:00:00Z' },
 ];
 
 const ALL_FEATURES = [
-  { key: 'academic', label: '📋 Académico', desc: 'Calificaciones, asistencia, libretas' },
-  { key: 'enrollment', label: '📝 Matrícula', desc: 'Gestión de inscripciones' },
-  { key: 'finance', label: '💰 Finanzas', desc: 'Pensiones, cobros, pagos' },
-  { key: 'commerce', label: '🛍️ Comercio', desc: 'Tienda escolar online' },
-  { key: 'activities', label: '🎯 Actividades', desc: 'Talleres extracurriculares' },
-  { key: 'hr', label: '👥 RRHH', desc: 'Personal y contratos' },
-  { key: 'payroll', label: '💼 Planillas', desc: 'Nómina y sueldos' },
-  { key: 'notifications', label: '🔔 Notificaciones', desc: 'Alertas y recordatorios' },
-  { key: 'documents', label: '📄 Documentos', desc: 'Archivos y reportes' },
-  { key: 'reporting', label: '📊 Reportes', desc: 'Analítica e inteligencia' },
-];
-
-const PLAN_COLORS = [
-  { gradient: 'from-emerald-500 to-teal-600', glow: 'shadow-emerald-500/20', border: 'border-emerald-500/30', badge: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' },
-  { gradient: 'from-indigo-500 to-violet-600', glow: 'shadow-indigo-500/20', border: 'border-indigo-500/30', badge: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' },
-  { gradient: 'from-violet-500 to-purple-600', glow: 'shadow-violet-500/20', border: 'border-violet-500/30', badge: 'bg-violet-500/10 text-violet-400 border-violet-500/20' },
+  { key: 'academic', label: 'Gestión Académica & Notas', desc: 'Calificaciones, libretas, asistencia' },
+  { key: 'enrollment', label: 'Matrícula & Fichas', desc: 'Inscripción y gestión de familias' },
+  { key: 'finance', label: 'Tesorería & Facturación', desc: 'Pensiones, cobros automáticos' },
+  { key: 'commerce', label: 'Tienda Escolar Online', desc: 'Uniformes, libros y catálogo' },
+  { key: 'activities', label: 'Talleres Extracurriculares', desc: 'Inscripción a actividades' },
+  { key: 'hr', label: 'Recursos Humanos', desc: 'Legajos docentes y contratos' },
+  { key: 'payroll', label: 'Planillas & Nóminas', desc: 'Cálculo de haberes y boletas' },
+  { key: 'notifications', label: 'Notificaciones Push / Email', desc: 'Canal oficial de avisos' },
+  { key: 'documents', label: 'Gestor Documental', desc: 'Almacenamiento seguro en nube' },
+  { key: 'reporting', label: 'Reportes Ejecutivos & BI', desc: 'Inteligencia de gestión escolar' },
 ];
 
 /* ── Create Plan Modal ── */
@@ -33,11 +27,11 @@ function CreatePlanModal({ onClose, onCreated }: { onClose: () => void; onCreate
   const [code, setCode] = useState('');
   const [name, setName] = useState('');
   const [description, setDescription] = useState('');
-  const [monthlyPrice, setMonthlyPrice] = useState(0);
-  const [annualPrice, setAnnualPrice] = useState(0);
-  const [maxStudents, setMaxStudents] = useState(100);
-  const [maxTeachers, setMaxTeachers] = useState(10);
-  const [maxStorageGb, setMaxStorageGb] = useState(5);
+  const [monthlyPrice, setMonthlyPrice] = useState(149);
+  const [annualPrice, setAnnualPrice] = useState(1490);
+  const [maxStudents, setMaxStudents] = useState(300);
+  const [maxTeachers, setMaxTeachers] = useState(30);
+  const [maxStorageGb, setMaxStorageGb] = useState(25);
   const [selectedFeatures, setSelectedFeatures] = useState<string[]>(['academic', 'enrollment', 'notifications']);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -73,83 +67,154 @@ function CreatePlanModal({ onClose, onCreated }: { onClose: () => void; onCreate
   };
 
   return (
-    <div className="fixed inset-0 bg-black/80 flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 sm:p-8 max-w-2xl w-full max-h-[90vh] overflow-y-auto text-slate-100" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-black text-white">Crear Nuevo Plan Comercial</h3>
-          <button onClick={onClose} className="p-2 rounded-xl hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">✕</button>
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div className="bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto text-slate-100 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+          <div>
+            <h3 className="text-base font-bold text-white">Crear Nuevo Plan Comercial</h3>
+            <p className="text-xs text-slate-400">Definición de cuotas y entitlements</p>
+          </div>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">✕</button>
         </div>
-        <form onSubmit={handleSubmit} className="space-y-5">
-          <div className="grid grid-cols-2 gap-4">
+
+        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Código del Plan</label>
-              <input type="text" required placeholder="PLAN_PLUS" value={code} onChange={(e) => setCode(e.target.value)} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm font-mono focus:outline-none focus:ring-2 focus:ring-indigo-500/50" />
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Código del Plan</label>
+              <input
+                type="text"
+                required
+                placeholder="PLAN_PLUS"
+                value={code}
+                onChange={(e) => setCode(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs font-mono focus:outline-none focus:border-indigo-500"
+              />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Nombre</label>
-              <input type="text" required placeholder="Plus" value={name} onChange={(e) => setName(e.target.value)} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" />
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nombre</label>
+              <input
+                type="text"
+                required
+                placeholder="Plus"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+              />
             </div>
           </div>
+
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Descripción</label>
-            <input type="text" placeholder="Plan intermedio con finanzas" value={description} onChange={(e) => setDescription(e.target.value)} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" />
+            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Descripción</label>
+            <input
+              type="text"
+              placeholder="Para colegios medianos con finanzas y cobranza"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+            />
           </div>
-          <div className="grid grid-cols-2 gap-4">
+
+          <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Precio Mensual ($)</label>
-              <input type="number" required min={0} value={monthlyPrice} onChange={(e) => setMonthlyPrice(Number(e.target.value))} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" />
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Precio Mensual ($)</label>
+              <input
+                type="number"
+                required
+                min={0}
+                value={monthlyPrice}
+                onChange={(e) => setMonthlyPrice(Number(e.target.value))}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+              />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Precio Anual ($)</label>
-              <input type="number" min={0} value={annualPrice} onChange={(e) => setAnnualPrice(Number(e.target.value))} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" />
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Precio Anual ($)</label>
+              <input
+                type="number"
+                required
+                min={0}
+                value={annualPrice}
+                onChange={(e) => setAnnualPrice(Number(e.target.value))}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+              />
             </div>
           </div>
-          <div className="grid grid-cols-3 gap-4">
+
+          <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Max Alumnos</label>
-              <input type="number" required min={1} value={maxStudents} onChange={(e) => setMaxStudents(Number(e.target.value))} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" />
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Máx. Alumnos</label>
+              <input
+                type="number"
+                required
+                min={1}
+                value={maxStudents}
+                onChange={(e) => setMaxStudents(Number(e.target.value))}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+              />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Max Profesores</label>
-              <input type="number" required min={1} value={maxTeachers} onChange={(e) => setMaxTeachers(Number(e.target.value))} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" />
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Máx. Docentes</label>
+              <input
+                type="number"
+                required
+                min={1}
+                value={maxTeachers}
+                onChange={(e) => setMaxTeachers(Number(e.target.value))}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+              />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-500 uppercase mb-1.5">Almacenamiento (GB)</label>
-              <input type="number" required min={1} value={maxStorageGb} onChange={(e) => setMaxStorageGb(Number(e.target.value))} className="w-full px-4 py-3 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/50" />
+              <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Storage (GB)</label>
+              <input
+                type="number"
+                required
+                min={1}
+                value={maxStorageGb}
+                onChange={(e) => setMaxStorageGb(Number(e.target.value))}
+                className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+              />
             </div>
           </div>
+
           <div>
-            <label className="block text-[10px] font-bold text-slate-500 uppercase mb-2">Módulos Incluidos</label>
-            <div className="grid grid-cols-2 gap-2">
-              {ALL_FEATURES.map((f) => (
-                <button
-                  key={f.key}
-                  type="button"
-                  onClick={() => toggleFeature(f.key)}
-                  className={`flex items-center gap-2.5 p-3 rounded-xl text-left transition-all border ${
-                    selectedFeatures.includes(f.key)
-                      ? 'bg-indigo-500/10 border-indigo-500/30 text-white'
-                      : 'bg-slate-950/60 border-slate-800/60 text-slate-500 hover:border-slate-700'
-                  }`}
-                >
-                  <span className={`w-4 h-4 rounded border-2 flex items-center justify-center text-[8px] font-bold ${
-                    selectedFeatures.includes(f.key) ? 'bg-indigo-500 border-indigo-500 text-white' : 'border-slate-700'
-                  }`}>
-                    {selectedFeatures.includes(f.key) ? '✓' : ''}
-                  </span>
-                  <div>
-                    <p className="text-xs font-bold">{f.label}</p>
-                    <p className="text-[10px] text-slate-500">{f.desc}</p>
-                  </div>
-                </button>
-              ))}
+            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-2">Entitlements / Módulos Habilitados</label>
+            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-1 bg-slate-950 border border-slate-800 rounded-lg">
+              {ALL_FEATURES.map((f) => {
+                const selected = selectedFeatures.includes(f.key);
+                return (
+                  <button
+                    type="button"
+                    key={f.key}
+                    onClick={() => toggleFeature(f.key)}
+                    className={`flex items-center gap-2 p-2 rounded text-left transition-all text-xs ${
+                      selected ? 'bg-indigo-600/20 text-indigo-300 border border-indigo-500/30' : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[10px] border ${selected ? 'bg-indigo-600 text-white border-indigo-500' : 'border-slate-700'}`}>
+                      {selected && '✓'}
+                    </span>
+                    <span className="truncate">{f.label}</span>
+                  </button>
+                );
+              })}
             </div>
           </div>
-          {error && <div className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-xl p-3">{error}</div>}
-          <div className="flex justify-end gap-3 pt-4 border-t border-slate-800">
-            <button type="button" onClick={onClose} className="px-5 py-2.5 rounded-xl border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 text-xs font-bold transition-all">Cancelar</button>
-            <button type="submit" disabled={saving} className="px-6 py-2.5 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 transition-all disabled:opacity-50">
-              {saving ? 'Creando...' : 'Crear Plan'}
+
+          {error && <div className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg p-2.5">{error}</div>}
+
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+            <button
+              type="button"
+              onClick={onClose}
+              className="px-4 py-2 rounded-lg border border-slate-800 text-slate-400 hover:text-white text-xs font-semibold transition-all"
+            >
+              Cancelar
+            </button>
+            <button
+              type="submit"
+              disabled={saving}
+              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+            >
+              {saving ? 'Guardando...' : 'Crear Plan'}
             </button>
           </div>
         </form>
@@ -158,13 +223,12 @@ function CreatePlanModal({ onClose, onCreated }: { onClose: () => void; onCreate
   );
 }
 
-/* ────────────────────────────────────────────────────────────
-   PLANS VIEW
-   ──────────────────────────────────────────────────────────── */
+/* ── Main Plans View ── */
 export default function PlansView() {
   const [plans, setPlans] = useState<PlatformPlan[]>(MOCK_PLANS);
   const [loading, setLoading] = useState(true);
   const [showCreate, setShowCreate] = useState(false);
+  const [annualBilling, setAnnualBilling] = useState(false);
 
   const reload = useCallback(async () => {
     setLoading(true);
@@ -179,99 +243,117 @@ export default function PlansView() {
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      {/* Header & Controls */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-800/60">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">Planes Comerciales</h1>
-          <p className="text-sm text-slate-400 mt-1">Catálogo de suscripciones y tiers disponibles</p>
+          <h2 className="text-xl font-bold text-white tracking-tight">Catálogo de Planes Comerciales</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Suscripciones SaaS, cuotas y entitlements por nivel</p>
         </div>
-        <button onClick={() => setShowCreate(true)} className="px-5 py-3 rounded-xl bg-gradient-to-r from-indigo-500 to-violet-600 hover:from-indigo-600 hover:to-violet-700 text-white text-xs font-bold shadow-lg shadow-indigo-500/25 transition-all flex items-center gap-2">
-          <span>+</span>
-          <span>Crear Nuevo Plan</span>
-        </button>
+
+        <div className="flex items-center gap-3">
+          {/* Annual Toggle */}
+          <div className="flex items-center gap-2 px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs">
+            <span className={`text-[11px] ${!annualBilling ? 'font-semibold text-white' : 'text-slate-400'}`}>Mensual</span>
+            <button
+              onClick={() => setAnnualBilling(!annualBilling)}
+              className={`w-8 h-4 rounded-full transition-colors relative ${annualBilling ? 'bg-indigo-600' : 'bg-slate-700'}`}
+            >
+              <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${annualBilling ? 'left-4.5' : 'left-0.5'}`} />
+            </button>
+            <span className={`text-[11px] ${annualBilling ? 'font-semibold text-emerald-400' : 'text-slate-400'}`}>
+              Anual <span className="text-[9px] bg-emerald-500/20 text-emerald-300 px-1 py-0.2 rounded font-bold">-16%</span>
+            </span>
+          </div>
+
+          <button
+            onClick={() => setShowCreate(true)}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+          >
+            <span>+</span>
+            <span>Nuevo Plan</span>
+          </button>
+        </div>
       </div>
 
-      {/* Plan Cards */}
-      {loading ? (
-        <div className="text-center py-16 text-slate-500 text-sm">Cargando planes...</div>
-      ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {plans.map((plan, i) => {
-            const colors = PLAN_COLORS[i % PLAN_COLORS.length];
-            return (
-              <div key={plan.id} className={`relative overflow-hidden bg-slate-900 border border-slate-800 rounded-3xl p-7 space-y-5 hover:-translate-y-1 transition-transform duration-300 shadow-xl ${colors.glow}`}>
-                {/* Decorative gradient */}
-                <div className={`absolute top-0 right-0 w-32 h-32 bg-gradient-to-br ${colors.gradient} opacity-[0.07] rounded-bl-[80px]`} />
+      {/* Plan Cards Grid */}
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
+        {loading ? (
+          <div className="col-span-3 text-center py-12 text-xs text-slate-500">Cargando planes...</div>
+        ) : (
+          plans.map((plan) => {
+            const price = annualBilling ? Math.round(plan.annualPrice / 12) : plan.monthlyPrice;
 
-                {/* Plan Header */}
-                <div className="space-y-3">
+            return (
+              <div
+                key={plan.id}
+                className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 flex flex-col justify-between hover:border-slate-700/80 transition-all duration-200"
+              >
+                <div className="space-y-4">
+                  {/* Top Badge & Code */}
                   <div className="flex items-center justify-between">
-                    <span className={`text-[10px] font-extrabold uppercase tracking-widest px-3 py-1 rounded-full border ${colors.badge}`}>
+                    <span className="text-xs font-bold text-white tracking-tight">{plan.name}</span>
+                    <span className="text-[10px] font-mono text-slate-400 bg-slate-950 px-2 py-0.5 rounded border border-slate-800">
                       {plan.code}
                     </span>
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${plan.isActive ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'bg-slate-800 text-slate-500 border border-slate-700'}`}>
-                      {plan.isActive ? '🟢 Activo' : '🔴 Inactivo'}
-                    </span>
                   </div>
-                  <h2 className="text-xl font-black text-white">{plan.name}</h2>
-                  <p className="text-xs text-slate-400 leading-relaxed">{plan.description}</p>
-                </div>
 
-                {/* Pricing */}
-                <div className="flex items-baseline gap-2">
-                  <span className="text-4xl font-black text-white">${plan.monthlyPrice}</span>
-                  <span className="text-xs text-slate-500 font-bold">/mes</span>
-                </div>
-                <p className="text-[10px] text-slate-500 -mt-3">Anual: ${plan.annualPrice} (${Math.round(plan.annualPrice / 12)}/mes)</p>
+                  <p className="text-xs text-slate-400 leading-relaxed min-h-[36px]">{plan.description}</p>
 
-                {/* Limits */}
-                <div className="grid grid-cols-3 gap-3">
-                  {[
-                    { label: 'Alumnos', value: plan.maxStudents, icon: '👨‍🎓' },
-                    { label: 'Profesores', value: plan.maxTeachers, icon: '👩‍🏫' },
-                    { label: 'Almacenamiento', value: `${plan.maxStorageGb}GB`, icon: '💾' },
-                  ].map((l) => (
-                    <div key={l.label} className="p-2.5 rounded-xl bg-slate-950/60 border border-slate-800/60 text-center">
-                      <span className="text-sm">{l.icon}</span>
-                      <p className="text-sm font-black text-white mt-0.5">{l.value}</p>
-                      <p className="text-[9px] font-bold text-slate-500 uppercase">{l.label}</p>
+                  {/* Pricing */}
+                  <div className="pt-2 border-t border-slate-800/60">
+                    <div className="flex items-baseline gap-1">
+                      <span className="text-3xl font-bold text-white tracking-tight">${price}</span>
+                      <span className="text-xs text-slate-500 font-medium">/ mes</span>
                     </div>
-                  ))}
-                </div>
-
-                {/* Features */}
-                <div className="space-y-2">
-                  <h3 className="text-[10px] font-bold text-slate-500 uppercase tracking-wider">Módulos Incluidos</h3>
-                  <div className="flex flex-wrap gap-1.5">
-                    {plan.features.map((f) => {
-                      const feat = ALL_FEATURES.find((x) => x.key === f);
-                      return (
-                        <span key={f} className="text-[10px] font-bold text-slate-300 bg-slate-800/80 px-2 py-1 rounded-lg border border-slate-700/60">
-                          {feat?.label ?? f}
-                        </span>
-                      );
-                    })}
+                    {annualBilling && (
+                      <p className="text-[10px] text-emerald-400 mt-0.5">Facturado anualmente: ${plan.annualPrice}/año</p>
+                    )}
                   </div>
-                </div>
 
-                {/* Missing features */}
-                {ALL_FEATURES.filter((x) => !plan.features.includes(x.key)).length > 0 && (
-                  <div className="pt-3 border-t border-slate-800/60 space-y-1.5">
-                    <h3 className="text-[10px] font-bold text-slate-600 uppercase tracking-wider">No Incluido</h3>
-                    <div className="flex flex-wrap gap-1.5">
-                      {ALL_FEATURES.filter((x) => !plan.features.includes(x.key)).map((f) => (
-                        <span key={f.key} className="text-[10px] font-medium text-slate-600 bg-slate-950/40 px-2 py-1 rounded-lg border border-slate-800/40 line-through">
-                          {f.label}
-                        </span>
-                      ))}
+                  {/* Quotas */}
+                  <div className="grid grid-cols-3 gap-2 py-3 px-3 bg-slate-950/80 border border-slate-800/60 rounded-lg text-center">
+                    <div>
+                      <p className="text-sm font-bold text-white">{plan.maxStudents}</p>
+                      <p className="text-[9px] text-slate-500 uppercase">Alumnos</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">{plan.maxTeachers}</p>
+                      <p className="text-[9px] text-slate-500 uppercase">Docentes</p>
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-white">{plan.maxStorageGb} GB</p>
+                      <p className="text-[9px] text-slate-500 uppercase">Storage</p>
                     </div>
                   </div>
-                )}
+
+                  {/* Feature Checklist */}
+                  <div className="space-y-2 pt-1">
+                    <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">Entitlements Incluidos</p>
+                    <div className="space-y-1.5">
+                      {ALL_FEATURES.map((feat) => {
+                        const included = plan.features.includes(feat.key);
+                        return (
+                          <div
+                            key={feat.key}
+                            className={`flex items-center gap-2 text-xs ${included ? 'text-slate-200' : 'text-slate-600 line-through'}`}
+                          >
+                            <span className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                              included ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-600'
+                            }`}>
+                              {included ? '✓' : '×'}
+                            </span>
+                            <span className="text-[11px] truncate">{feat.label}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                </div>
               </div>
             );
-          })}
-        </div>
-      )}
+          })
+        )}
+      </div>
 
       {showCreate && <CreatePlanModal onClose={() => setShowCreate(false)} onCreated={reload} />}
     </div>

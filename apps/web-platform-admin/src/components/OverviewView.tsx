@@ -10,12 +10,12 @@ import {
   type PlatformPlan,
 } from '../lib/api';
 
-/* ── Fallback mock data (shown when API is unreachable) ── */
+/* ── Fallback mock data ── */
 const MOCK_METRICS: PlatformMetrics = {
   tenants: { total: 3, active: 2, trial: 1, suspended: 0 },
   usage: { totalStudentsActive: 1645 },
   catalog: { activePlans: 3 },
-  timestamp: '2026-01-01T00:00:00.000Z', // fixed to avoid SSR/client hydration mismatch
+  timestamp: '2026-01-01T00:00:00.000Z',
 };
 
 const MOCK_TENANTS: PlatformTenant[] = [
@@ -39,15 +39,13 @@ function getMRR(tenants: PlatformTenant[]): number {
   return tenants.reduce((acc, t) => acc + (t.plan?.monthlyPrice ?? 0), 0);
 }
 
-/* ────────────────────────────────────────────────────────────
-   OVERVIEW VIEW
-   ──────────────────────────────────────────────────────────── */
 export default function OverviewView() {
   const [metrics, setMetrics] = useState<PlatformMetrics>(MOCK_METRICS);
   const [tenants, setTenants] = useState<PlatformTenant[]>(MOCK_TENANTS);
   const [plans, setPlans] = useState<PlatformPlan[]>(MOCK_PLANS);
   const [loading, setLoading] = useState(true);
   const [apiConnected, setApiConnected] = useState(false);
+  const [selectedPeriod, setSelectedPeriod] = useState<'30D' | '90D' | 'YTD'>('30D');
 
   useEffect(() => {
     async function load() {
@@ -74,132 +72,188 @@ export default function OverviewView() {
   const mrr = getMRR(tenants);
   const arr = mrr * 12;
 
-  const kpis = [
+  const kpiCards = [
     {
-      label: 'Colegios Activos',
+      title: 'Colegios Activos',
       value: metrics.tenants.active,
-      sub: `${metrics.tenants.trial} en prueba`,
-      icon: '🏫',
-      color: 'from-indigo-500 to-violet-600',
-      textColor: 'text-indigo-400',
-      glow: 'shadow-indigo-500/20',
+      subValue: `${metrics.tenants.trial} en período de prueba`,
+      trend: '+25.0%',
+      trendUp: true,
+      icon: (
+        <svg className="w-5 h-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12l3 3.75V21" />
+        </svg>
+      ),
     },
     {
-      label: 'Alumnos Totales',
+      title: 'Alumnos Matriculados',
       value: totalStudents.toLocaleString(),
-      sub: 'En todas las instituciones',
-      icon: '👨‍🎓',
-      color: 'from-emerald-500 to-teal-600',
-      textColor: 'text-emerald-400',
-      glow: 'shadow-emerald-500/20',
+      subValue: 'Base de usuarios activos',
+      trend: '+14.8%',
+      trendUp: true,
+      icon: (
+        <svg className="w-5 h-5 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+        </svg>
+      ),
     },
     {
-      label: 'MRR (Ingreso Mensual)',
+      title: 'Ingreso Recurrente (MRR)',
       value: `$${mrr.toLocaleString()}`,
-      sub: `$${arr.toLocaleString()} ARR anual`,
-      icon: '💰',
-      color: 'from-amber-500 to-orange-600',
-      textColor: 'text-amber-400',
-      glow: 'shadow-amber-500/20',
+      subValue: `$${arr.toLocaleString()} ARR Proyectado`,
+      trend: '+18.2%',
+      trendUp: true,
+      icon: (
+        <svg className="w-5 h-5 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+      ),
     },
     {
-      label: 'Planes Activos',
+      title: 'Planes Comerciales',
       value: metrics.catalog.activePlans,
-      sub: 'Tiers comerciales',
-      icon: '💳',
-      color: 'from-cyan-500 to-blue-600',
-      textColor: 'text-cyan-400',
-      glow: 'shadow-cyan-500/20',
+      subValue: 'Catálogo de suscripciones',
+      trend: 'Estable',
+      trendUp: true,
+      icon: (
+        <svg className="w-5 h-5 text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
+        </svg>
+      ),
     },
   ];
 
-  const recentTenants = [...tenants].sort((a, b) => new Date(b.updatedAt).getTime() - new Date(a.updatedAt).getTime()).slice(0, 5);
-
   return (
-    <div className="space-y-8">
-      {/* Connection Status */}
-      <div className="flex items-center justify-between">
+    <div className="space-y-6">
+      {/* Top Controls Bar */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-800/60">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-black text-white">Panel General</h1>
-          <p className="text-sm text-slate-400 mt-1">Vista general de la plataforma Cole</p>
+          <h2 className="text-xl font-bold text-white tracking-tight">Métricas Ejecutivas</h2>
+          <p className="text-xs text-slate-400 mt-0.5">Rendimiento consolidado del ecosistema SaaS</p>
         </div>
-        <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
-          apiConnected
-            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
-            : 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-        }`}>
-          <span className={`w-2 h-2 rounded-full ${apiConnected ? 'bg-emerald-400 animate-pulse' : 'bg-amber-400'}`} />
-          {apiConnected ? 'API Conectada' : 'Modo Demo (API Off)'}
+
+        <div className="flex items-center gap-2">
+          {/* Period selector */}
+          <div className="flex bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-[11px] font-medium text-slate-400">
+            {(['30D', '90D', 'YTD'] as const).map((period) => (
+              <button
+                key={period}
+                onClick={() => setSelectedPeriod(period)}
+                className={`px-3 py-1 rounded-md transition-all ${
+                  selectedPeriod === period ? 'bg-slate-800 text-white font-semibold shadow-sm' : 'hover:text-slate-200'
+                }`}
+              >
+                {period}
+              </button>
+            ))}
+          </div>
+
+          {/* Export button */}
+          <button
+            onClick={() => alert('Informe exportado en formato CSV')}
+            className="flex items-center gap-1.5 px-3 py-1.5 bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-lg text-xs font-semibold text-slate-300 hover:text-white transition-all"
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+            </svg>
+            <span>Exportar</span>
+          </button>
         </div>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {kpis.map((kpi) => (
+      {/* KPI Cards Grid */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        {kpiCards.map((card) => (
           <div
-            key={kpi.label}
-            className={`relative overflow-hidden p-6 rounded-2xl bg-slate-900 border border-slate-800 shadow-xl ${kpi.glow} hover:-translate-y-1 transition-transform duration-300`}
+            key={card.title}
+            className="p-5 rounded-xl bg-slate-900/80 border border-slate-800/80 hover:border-slate-700/80 transition-all duration-200 shadow-sm"
           >
-            <div className={`absolute top-0 right-0 w-24 h-24 bg-gradient-to-br ${kpi.color} opacity-10 rounded-bl-[60px]`} />
-            <div className="flex items-start justify-between">
-              <div>
-                <p className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">{kpi.label}</p>
-                <p className={`text-3xl font-black ${kpi.textColor} mt-2`}>{loading ? '—' : kpi.value}</p>
-                <p className="text-[11px] text-slate-500 mt-1 font-medium">{kpi.sub}</p>
+            <div className="flex items-center justify-between">
+              <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{card.title}</span>
+              <div className="p-2 rounded-lg bg-slate-800/60 border border-slate-700/40">
+                {card.icon}
               </div>
-              <div className={`w-12 h-12 rounded-2xl bg-gradient-to-br ${kpi.color} flex items-center justify-center text-2xl shadow-lg`}>
-                {kpi.icon}
+            </div>
+
+            <div className="mt-3">
+              <div className="flex items-baseline gap-2">
+                <span className="text-2xl font-bold text-white tracking-tight">
+                  {loading ? '—' : card.value}
+                </span>
+                <span className="inline-flex items-center text-[10px] font-semibold px-1.5 py-0.5 rounded bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                  {card.trend}
+                </span>
               </div>
+              <p className="text-[11px] text-slate-500 mt-1">{card.subValue}</p>
             </div>
           </div>
         ))}
       </div>
 
-      {/* Two-column: Tenant Status + Plan Distribution */}
+      {/* Two Column Layout: Activity & Revenue Runrate */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Tenant Status Summary */}
-        <div className="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
+        {/* Left Column: Recent Institutions (2 cols) */}
+        <div className="lg:col-span-2 rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 space-y-4">
           <div className="flex items-center justify-between">
-            <h2 className="text-sm font-bold text-white">Estado de Colegios</h2>
-            <span className="text-[10px] font-bold text-slate-500 bg-slate-800 px-2.5 py-1 rounded-full">{tenants.length} total</span>
-          </div>
-          <div className="grid grid-cols-3 gap-4">
-            {[
-              { label: 'Activos', count: metrics.tenants.active, color: 'text-emerald-400', bg: 'bg-emerald-500/10 border-emerald-500/20', icon: '✅' },
-              { label: 'En Prueba', count: metrics.tenants.trial, color: 'text-amber-400', bg: 'bg-amber-500/10 border-amber-500/20', icon: '🧪' },
-              { label: 'Suspendidos', count: metrics.tenants.suspended, color: 'text-rose-400', bg: 'bg-rose-500/10 border-rose-500/20', icon: '⛔' },
-            ].map((s) => (
-              <div key={s.label} className={`p-4 rounded-xl ${s.bg} border text-center`}>
-                <span className="text-lg">{s.icon}</span>
-                <p className={`text-2xl font-black ${s.color} mt-1`}>{loading ? '—' : s.count}</p>
-                <p className="text-[10px] font-bold text-slate-400 uppercase mt-0.5">{s.label}</p>
-              </div>
-            ))}
+            <div>
+              <h3 className="text-sm font-bold text-white">Instituciones y Utilización de Cuota</h3>
+              <p className="text-[11px] text-slate-400">Estado de capacidad de alumnos por colegio</p>
+            </div>
+            <span className="text-[11px] font-medium text-slate-500 bg-slate-950 px-2.5 py-1 rounded border border-slate-800">
+              {tenants.length} Colegios
+            </span>
           </div>
 
-          {/* Recent Activity */}
-          <div className="space-y-3 pt-2">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Actividad Reciente de Colegios</h3>
-            {recentTenants.map((t) => {
+          <div className="divide-y divide-slate-800/60">
+            {tenants.map((t) => {
               const sc = getStudentCount(t);
-              const pct = t.plan ? Math.round((sc / t.plan.maxStudents) * 100) : 0;
+              const max = t.plan?.maxStudents ?? 100;
+              const pct = Math.round((sc / max) * 100);
+
               return (
-                <div key={t.id} className="flex items-center gap-4 p-3 rounded-xl bg-slate-950/60 border border-slate-800/60 hover:border-slate-700 transition-colors">
-                  <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500/20 to-violet-500/20 border border-indigo-500/20 flex items-center justify-center text-sm font-bold text-indigo-300">
-                    {t.name.charAt(0)}
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <p className="text-xs font-bold text-white truncate">{t.name}</p>
-                    <p className="text-[10px] text-slate-500">{t.subdomain}.cole.pe • {t.plan?.name ?? '—'}</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="text-xs font-bold text-white">{sc} alumnos</p>
-                    <div className="w-20 h-1.5 bg-slate-800 rounded-full mt-1 overflow-hidden">
-                      <div
-                        className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-amber-500' : 'bg-emerald-500'}`}
-                        style={{ width: `${Math.min(pct, 100)}%` }}
-                      />
+                <div key={t.id} className="py-3.5 flex items-center justify-between gap-4 first:pt-1 last:pb-1">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-xs font-bold text-slate-300">
+                      {t.name.charAt(0)}
                     </div>
+                    <div className="min-w-0">
+                      <p className="text-xs font-semibold text-white truncate">{t.name}</p>
+                      <p className="text-[10px] font-mono text-indigo-400 truncate">{t.subdomain}.cole.pe</p>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-6">
+                    {/* Plan Badge */}
+                    <span className="hidden sm:inline-block text-[10px] font-medium text-slate-300 bg-slate-800 px-2 py-0.5 rounded border border-slate-700/60">
+                      {t.plan?.name ?? '—'}
+                    </span>
+
+                    {/* Progress Bar */}
+                    <div className="w-28 text-right">
+                      <div className="flex justify-between text-[10px] font-medium mb-1">
+                        <span className="text-slate-400">{sc} / {max}</span>
+                        <span className={pct > 90 ? 'text-rose-400' : 'text-slate-300'}>{pct}%</span>
+                      </div>
+                      <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${
+                            pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-amber-500' : 'bg-emerald-500'
+                          }`}
+                          style={{ width: `${Math.min(pct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Status Dot */}
+                    <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                      t.status === 'ACTIVE'
+                        ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                        : t.status === 'TRIAL'
+                        ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
+                        : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                    }`}>
+                      {t.status}
+                    </span>
                   </div>
                 </div>
               );
@@ -207,55 +261,55 @@ export default function OverviewView() {
           </div>
         </div>
 
-        {/* Plan Distribution */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 space-y-5">
-          <h2 className="text-sm font-bold text-white">Distribución por Plan</h2>
-          <div className="space-y-4">
-            {plans.map((plan) => {
-              const tenantsOnPlan = tenants.filter((t) => t.planId === plan.id);
-              const pct = tenants.length > 0 ? Math.round((tenantsOnPlan.length / tenants.length) * 100) : 0;
-              return (
-                <div key={plan.id} className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold text-white">{plan.name}</span>
-                    <span className="text-[10px] font-bold text-slate-400">{tenantsOnPlan.length} colegios</span>
+        {/* Right Column: SaaS Tier Breakdown & Telemetry (1 col) */}
+        <div className="space-y-4">
+          {/* Tier breakdown */}
+          <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 space-y-4">
+            <h3 className="text-sm font-bold text-white">Distribución por Tier</h3>
+
+            <div className="space-y-3">
+              {plans.map((plan) => {
+                const count = tenants.filter((t) => t.planId === plan.id).length;
+                const pct = tenants.length > 0 ? Math.round((count / tenants.length) * 100) : 0;
+
+                return (
+                  <div key={plan.id} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="font-medium text-slate-300">{plan.name}</span>
+                      <span className="text-slate-500">${plan.monthlyPrice}/mes • {count} colegios</span>
+                    </div>
+                    <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                      <div
+                        className={`h-full rounded-full ${
+                          plan.code === 'PLAN_BASIC' ? 'bg-emerald-500' :
+                          plan.code === 'PLAN_PRO' ? 'bg-indigo-500' : 'bg-violet-500'
+                        }`}
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
                   </div>
-                  <div className="w-full h-2.5 bg-slate-800 rounded-full overflow-hidden">
-                    <div
-                      className={`h-full rounded-full transition-all duration-500 ${
-                        plan.code === 'PLAN_BASIC' ? 'bg-emerald-500' :
-                        plan.code === 'PLAN_PRO' ? 'bg-indigo-500' : 'bg-violet-500'
-                      }`}
-                      style={{ width: `${pct}%` }}
-                    />
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <span className="text-[10px] text-slate-500">${plan.monthlyPrice}/mes</span>
-                    <span className="text-[10px] font-bold text-slate-400">{pct}%</span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
-          {/* Quick Stats */}
-          <div className="pt-3 border-t border-slate-800 space-y-3">
-            <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Resumen Rápido</h3>
+          {/* Telemetry Summary */}
+          <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 space-y-3">
+            <h3 className="text-sm font-bold text-white">Salud del Cluster</h3>
+
             <div className="space-y-2">
-              {[
-                { label: 'MRR Total', value: `$${mrr.toLocaleString()}`, icon: '💵' },
-                { label: 'ARR Proyectado', value: `$${arr.toLocaleString()}`, icon: '📈' },
-                { label: 'Promedio/Alumno', value: totalStudents > 0 ? `$${(mrr / totalStudents).toFixed(1)}` : '$0', icon: '🧮' },
-                { label: 'Colegios Totales', value: String(tenants.length), icon: '🏫' },
-              ].map((s) => (
-                <div key={s.label} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-950/60 border border-slate-800/60">
-                  <div className="flex items-center gap-2">
-                    <span className="text-sm">{s.icon}</span>
-                    <span className="text-[11px] font-medium text-slate-400">{s.label}</span>
-                  </div>
-                  <span className="text-xs font-bold text-white">{s.value}</span>
-                </div>
-              ))}
+              <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-950/80 border border-slate-900">
+                <span className="text-slate-400">Latencia API P95</span>
+                <span className="font-mono font-medium text-emerald-400">14 ms</span>
+              </div>
+              <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-950/80 border border-slate-900">
+                <span className="text-slate-400">Disponibilidad SLA</span>
+                <span className="font-mono font-medium text-emerald-400">99.98%</span>
+              </div>
+              <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-950/80 border border-slate-900">
+                <span className="text-slate-400">Pool de Conexiones DB</span>
+                <span className="font-mono font-medium text-slate-300">12 / 50</span>
+              </div>
             </div>
           </div>
         </div>

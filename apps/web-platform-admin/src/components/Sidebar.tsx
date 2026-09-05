@@ -12,86 +12,169 @@ interface SidebarProps {
   userName?: string;
 }
 
-const NAV_ITEMS: { id: DashboardView; label: string; icon: string; description: string }[] = [
-  { id: 'overview', label: 'Panel General', icon: '📊', description: 'KPIs y métricas globales' },
-  { id: 'tenants', label: 'Colegios', icon: '🏫', description: 'Gestión de tenantes' },
-  { id: 'plans', label: 'Planes', icon: '💳', description: 'Catálogo comercial' },
-  { id: 'analytics', label: 'Analíticas', icon: '📈', description: 'Crecimiento y uso' },
-  { id: 'audit', label: 'Auditoría', icon: '🛡️', description: 'Logs de actividad' },
+interface NavItem {
+  id: DashboardView;
+  label: string;
+  description: string;
+  badge?: string;
+  icon: (active: boolean) => React.ReactNode;
+}
+
+const NAV_ITEMS: NavItem[] = [
+  {
+    id: 'overview',
+    label: 'Panel General',
+    description: 'Métricas y KPIs ejecutivos',
+    icon: (active) => (
+      <svg className={`w-4 h-4 ${active ? 'text-indigo-400' : 'text-slate-400 group-hover:text-slate-200'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'tenants',
+    label: 'Colegios',
+    description: 'Gestión de instituciones',
+    badge: 'Multi-Tenant',
+    icon: (active) => (
+      <svg className={`w-4 h-4 ${active ? 'text-indigo-400' : 'text-slate-400 group-hover:text-slate-200'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 21h19.5m-18-18v18m10.5-18v18m6-13.5V21M6.75 6.75h.75m-.75 3h.75m-.75 3h.75m3-6h.75m-.75 3h.75m-.75 3h.75M6.75 21v-3.375c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125V21M3 3h12l3 3.75V21" />
+      </svg>
+    ),
+  },
+  {
+    id: 'plans',
+    label: 'Planes Comerciales',
+    description: 'Tiers & Entitlements',
+    icon: (active) => (
+      <svg className={`w-4 h-4 ${active ? 'text-indigo-400' : 'text-slate-400 group-hover:text-slate-200'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 8.25h19.5M2.25 9h19.5m-16.5 5.25h6m-6 2.25h3m-3.75 3h15a2.25 2.25 0 002.25-2.25V6.75A2.25 2.25 0 0019.5 4.5h-15a2.25 2.25 0 00-2.25 2.25v10.5A2.25 2.25 0 004.5 19.5z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'analytics',
+    label: 'Analíticas',
+    description: 'Crecimiento y adopción',
+    icon: (active) => (
+      <svg className={`w-4 h-4 ${active ? 'text-indigo-400' : 'text-slate-400 group-hover:text-slate-200'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M3 13.125C3 12.504 3.504 12 4.125 12h2.25c.621 0 1.125.504 1.125 1.125v6.75C7.5 20.496 6.996 21 6.375 21h-2.25A2.25 2.25 0 013 18.75v-5.625zM9.75 8.625c0-.621.504-1.125 1.125-1.125h2.25c.621 0 1.125.504 1.125 1.125v11.25c0 .621-.504 1.125-1.125 1.125h-2.25a2.25 2.25 0 01-1.125-1.125V8.625zM16.5 4.125c0-.621.504-1.125 1.125-1.125h2.25C20.496 3 21 3.504 21 4.125v15.75c0 .621-.504 1.125-1.125 1.125h-2.25a2.25 2.25 0 01-1.125-1.125V4.125z" />
+      </svg>
+    ),
+  },
+  {
+    id: 'audit',
+    label: 'Auditoría & Seguridad',
+    description: 'Trazabilidad de eventos',
+    icon: (active) => (
+      <svg className={`w-4 h-4 ${active ? 'text-indigo-400' : 'text-slate-400 group-hover:text-slate-200'}`} fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+        <path strokeLinecap="round" strokeLinejoin="round" d="M9 12.75L11.25 15 15 9.75m-3-7.036A11.959 11.959 0 013.598 6 11.99 11.99 0 003 9.749c0 5.592 3.824 10.29 9 11.623 5.176-1.332 9-6.03 9-11.622 0-1.31-.21-2.571-.598-3.751h-.152c-3.196 0-6.1-1.248-8.25-3.285z" />
+      </svg>
+    ),
+  },
 ];
 
 export default function Sidebar({ activeView, onViewChange, onLogout, userEmail, userName }: SidebarProps) {
   return (
-    <aside className="fixed left-0 top-0 bottom-0 w-72 bg-slate-950 border-r border-slate-800/80 flex flex-col z-40">
-      {/* Logo */}
-      <div className="p-6 border-b border-slate-800/80">
+    <aside className="fixed left-0 top-0 bottom-0 w-64 bg-[#090d16] border-r border-slate-800/80 flex flex-col z-40 select-none">
+      {/* Brand Header */}
+      <div className="h-16 px-5 flex items-center justify-between border-b border-slate-800/80">
         <div className="flex items-center gap-3">
-          <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-indigo-500 via-violet-600 to-emerald-500 flex items-center justify-center text-white text-2xl shadow-lg shadow-indigo-500/25">
-            🎓
+          <div className="w-8 h-8 rounded-lg bg-indigo-600/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-black text-sm">
+            C
           </div>
           <div>
-            <div className="flex items-center gap-2">
-              <span className="font-black text-xl tracking-tight text-white">COLE</span>
-              <span className="text-[9px] font-extrabold uppercase tracking-widest text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
-                Super Admin
+            <div className="flex items-center gap-1.5">
+              <span className="font-extrabold text-sm tracking-tight text-white">COLE</span>
+              <span className="text-[9px] font-semibold uppercase tracking-wider text-slate-400 bg-slate-800 px-1.5 py-0.2 rounded">
+                SaaS
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 font-medium">Panel de Control Global</p>
+            <p className="text-[10px] text-slate-500 font-medium leading-none mt-0.5">Executive Control</p>
           </div>
         </div>
       </div>
 
-      {/* Navigation */}
-      <nav className="flex-1 p-4 space-y-1.5 overflow-y-auto">
+      {/* Navigation Links */}
+      <div className="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+        <div className="px-3 pb-2 pt-1">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Módulos de Plataforma</p>
+        </div>
+
         {NAV_ITEMS.map((item) => {
           const isActive = activeView === item.id;
           return (
             <button
               key={item.id}
               onClick={() => onViewChange(item.id)}
-              className={`w-full flex items-center gap-3.5 px-4 py-3.5 rounded-xl text-left transition-all duration-200 group ${
+              className={`w-full flex items-center gap-3 px-3 py-2.5 rounded-lg text-left transition-all duration-150 group ${
                 isActive
-                  ? 'bg-gradient-to-r from-indigo-500/20 to-violet-500/10 border border-indigo-500/30 shadow-lg shadow-indigo-500/10'
-                  : 'hover:bg-slate-800/60 border border-transparent'
+                  ? 'bg-slate-800/90 text-white font-semibold border border-slate-700/60 shadow-sm'
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-900/60 border border-transparent'
               }`}
             >
-              <span className={`text-xl w-8 h-8 flex items-center justify-center rounded-lg ${
-                isActive ? 'bg-indigo-500/20' : 'bg-slate-800/60 group-hover:bg-slate-800'
-              }`}>
-                {item.icon}
+              <span className={`p-1.5 rounded-md ${isActive ? 'bg-indigo-500/15' : 'bg-slate-900 group-hover:bg-slate-800'}`}>
+                {item.icon(isActive)}
               </span>
               <div className="flex-1 min-w-0">
-                <p className={`text-sm font-bold ${isActive ? 'text-white' : 'text-slate-300 group-hover:text-white'}`}>
-                  {item.label}
-                </p>
-                <p className={`text-[10px] font-medium ${isActive ? 'text-indigo-300' : 'text-slate-500 group-hover:text-slate-400'}`}>
-                  {item.description}
-                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-xs truncate">{item.label}</span>
+                  {item.badge && (
+                    <span className="text-[9px] font-medium text-slate-400 bg-slate-800/80 px-1.5 py-0.2 rounded">
+                      {item.badge}
+                    </span>
+                  )}
+                </div>
               </div>
-              {isActive && (
-                <div className="w-1.5 h-1.5 rounded-full bg-indigo-400 shadow-[0_0_8px_rgba(129,140,248,0.6)]" />
-              )}
             </button>
           );
         })}
-      </nav>
 
-      {/* User Info & Logout */}
-      <div className="p-4 border-t border-slate-800/80 space-y-3">
-        <div className="flex items-center gap-3 px-3 py-2">
-          <div className="w-9 h-9 rounded-xl bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-white text-xs font-bold shadow-md">
+        <div className="pt-6 px-3 pb-2">
+          <p className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Infraestructura</p>
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-950/60 border border-slate-900 text-xs">
+            <span className="text-[11px] text-slate-400">PostgreSQL</span>
+            <span className="flex items-center gap-1.5 text-[10px] font-medium text-emerald-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+              Conectado
+            </span>
+          </div>
+          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-950/60 border border-slate-900 text-xs">
+            <span className="text-[11px] text-slate-400">Redis Cache</span>
+            <span className="flex items-center gap-1.5 text-[10px] font-medium text-cyan-400">
+              <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
+              Sincronizado
+            </span>
+          </div>
+          <div className="flex items-center justify-between px-3 py-2 rounded-lg bg-slate-950/60 border border-slate-900 text-xs">
+            <span className="text-[11px] text-slate-400">Cluster Multi-Tenant</span>
+            <span className="text-[10px] font-mono text-indigo-300">v1.0.0</span>
+          </div>
+        </div>
+      </div>
+
+      {/* User Footer */}
+      <div className="p-3 border-t border-slate-800/80 space-y-2">
+        <div className="flex items-center gap-2.5 px-2 py-1.5 rounded-lg bg-slate-900/60 border border-slate-800/60">
+          <div className="w-7 h-7 rounded-md bg-indigo-600/30 border border-indigo-500/30 flex items-center justify-center text-indigo-300 text-xs font-bold">
             {userName ? userName.charAt(0).toUpperCase() : 'SA'}
           </div>
           <div className="flex-1 min-w-0">
-            <p className="text-xs font-bold text-white truncate">{userName || 'Super Admin'}</p>
-            <p className="text-[10px] text-slate-500 truncate">{userEmail || 'admin@cole.pe'}</p>
+            <p className="text-xs font-bold text-white truncate leading-tight">{userName || 'Super Admin'}</p>
+            <p className="text-[10px] text-slate-400 truncate leading-tight mt-0.5">{userEmail || 'admin@cole.pe'}</p>
           </div>
         </div>
+
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-xl bg-slate-800/60 hover:bg-rose-500/10 border border-slate-800 hover:border-rose-500/30 text-slate-400 hover:text-rose-400 text-xs font-bold transition-all"
+          className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-lg bg-slate-900 hover:bg-rose-500/10 border border-slate-800 hover:border-rose-500/30 text-slate-400 hover:text-rose-400 text-xs font-semibold transition-all"
         >
-          <span>🚪</span>
+          <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 9V5.25A2.25 2.25 0 0013.5 3h-6a2.25 2.25 0 00-2.25 2.25v13.5A2.25 2.25 0 007.5 21h6a2.25 2.25 0 002.25-2.25V15M12 9l-3 3m0 0l3 3m-3-3h12.75" />
+          </svg>
           <span>Cerrar Sesión</span>
         </button>
       </div>
