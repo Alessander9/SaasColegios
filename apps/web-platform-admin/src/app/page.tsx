@@ -12,39 +12,8 @@ import TenantsView from '../components/TenantsView';
 import PlansView from '../components/PlansView';
 import AnalyticsView from '../components/AnalyticsView';
 import AuditView from '../components/AuditView';
-
-interface Tenant {
-  id: string;
-  name: string;
-  subdomain: string;
-  status: 'ACTIVE' | 'TRIAL' | 'SUSPENDED';
-  planName: string;
-  studentsCount: number;
-  maxStudents: number;
-  features: string[];
-}
-
-interface Plan {
-  id: string;
-  name: string;
-  code: string;
-  monthlyPrice: number;
-  maxStudents: number;
-  maxTeachers: number;
-  features: string[];
-}
-
-const INITIAL_PLANS: Plan[] = [
-  { id: 'p1', name: 'Básico', code: 'PLAN_BASIC', monthlyPrice: 99, maxStudents: 150, maxTeachers: 15, features: ['academic', 'enrollment', 'notifications'] },
-  { id: 'p2', name: 'Profesional', code: 'PLAN_PRO', monthlyPrice: 199, maxStudents: 500, maxTeachers: 50, features: ['academic', 'enrollment', 'finance', 'commerce', 'notifications'] },
-  { id: 'p3', name: 'Enterprise', code: 'PLAN_ENTERPRISE', monthlyPrice: 399, maxStudents: 1500, maxTeachers: 150, features: ['academic', 'enrollment', 'finance', 'commerce', 'activities', 'hr', 'payroll', 'notifications', 'documents', 'reporting'] },
-];
-
-const INITIAL_TENANTS: Tenant[] = [
-  { id: 't-1', name: 'Colegio San Cleo (Nido • Primaria • Secundaria • Pre-U)', subdomain: 'sancleo', status: 'ACTIVE', planName: 'Profesional', studentsCount: 480, maxStudents: 600, features: ['academic', 'enrollment', 'finance', 'commerce', 'notifications'] },
-  { id: 't-2', name: 'Inmaculada Concepción', subdomain: 'inmaculada', status: 'ACTIVE', planName: 'Enterprise', studentsCount: 1120, maxStudents: 1500, features: ['academic', 'enrollment', 'finance', 'commerce', 'activities', 'hr', 'payroll', 'reporting'] },
-  { id: 't-3', name: 'Academia Montessori', subdomain: 'montessori', status: 'TRIAL', planName: 'Básico', studentsCount: 45, maxStudents: 150, features: ['academic', 'enrollment', 'notifications'] },
-];
+import { CurrencyProvider } from '../context/CurrencyContext';
+import CurrencySelector from '../components/CurrencySelector';
 
 /* ────────────────────────────────────────────────────────────
    SUPER ADMIN LOGIN SCREEN
@@ -163,7 +132,7 @@ function LoginScreen({ onLogin, onBackToHome }: { onLogin: () => void; onBackToH
 /* ────────────────────────────────────────────────────────────
    SUPER ADMIN DASHBOARD VIEW (CONTROL CENTER)
    ──────────────────────────────────────────────────────────── */
-function Dashboard({ onLogout }: { onLogout: () => void }) {
+function DashboardContent({ onLogout }: { onLogout: () => void }) {
   const [activeView, setActiveView] = useState<DashboardView>('overview');
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
@@ -201,6 +170,9 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
           </div>
 
           <div className="flex items-center gap-3">
+            {/* Currency Selector (Soles S/ • Dólares $ • Euros €) */}
+            <CurrencySelector />
+
             {/* Live System Health Pulse */}
             <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
               <div className="flex items-center gap-1.5">
@@ -223,7 +195,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             {activeView !== 'tenants' && (
               <button
                 onClick={() => setActiveView('tenants')}
-                className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-all flex items-center gap-1.5"
+                className="btn-interactive px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-all flex items-center gap-1.5"
               >
                 <span>+</span>
                 <span>Registrar Colegio</span>
@@ -234,7 +206,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="p-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 transition-colors shadow-sm"
+                className="btn-interactive p-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 transition-colors shadow-sm"
                 title="Alertas del Sistema"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -243,18 +215,18 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               </button>
 
               {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 space-y-3 z-50">
+                <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 space-y-3 z-50 animate-view">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                     <span className="text-xs font-bold text-slate-900">Eventos de Plataforma</span>
                     <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">Operativo</span>
                   </div>
                   <div className="space-y-2 text-xs">
-                    <div className="p-2.5 rounded-lg bg-blue-50/40 border border-blue-100">
+                    <div className="p-2.5 rounded-lg bg-blue-50/40 border border-blue-100 hover-lift-sm transition-all">
                       <p className="font-semibold text-slate-900">Suscripción Renovada</p>
                       <p className="text-slate-600 text-[11px] mt-0.5">Colegio San Cleo ha renovado Plan Profesional automáticamente.</p>
                       <span className="text-[9px] text-blue-600 font-medium">Hace 15 min</span>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-purple-50/40 border border-purple-100">
+                    <div className="p-2.5 rounded-lg bg-purple-50/40 border border-purple-100 hover-lift-sm transition-all">
                       <p className="font-semibold text-slate-900">Prueba Iniciada</p>
                       <p className="text-slate-600 text-[11px] mt-0.5">Academia Montessori inició prueba de 14 días.</p>
                       <span className="text-[9px] text-purple-600 font-medium">Hace 2 horas</span>
@@ -265,7 +237,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             </div>
 
             {/* Logout button */}
-            <Button variant="outline" onClick={onLogout} className="text-xs py-1 px-2.5 border-slate-200 text-slate-700 hover:bg-slate-50">
+            <Button variant="outline" onClick={onLogout} className="btn-interactive text-xs py-1 px-2.5 border-slate-200 text-slate-700 hover:bg-slate-50">
               Cerrar Sesión
             </Button>
           </div>
@@ -281,6 +253,14 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
         </main>
       </div>
     </div>
+  );
+}
+
+function Dashboard({ onLogout }: { onLogout: () => void }) {
+  return (
+    <CurrencyProvider>
+      <DashboardContent onLogout={onLogout} />
+    </CurrencyProvider>
   );
 }
 

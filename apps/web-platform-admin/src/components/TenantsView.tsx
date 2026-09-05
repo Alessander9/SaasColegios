@@ -5,6 +5,7 @@ import {
   getTenants, getPlans, createTenant, updateTenant, getTenantById, checkEntitlement,
   type PlatformTenant, type PlatformPlan, type CreateTenantDto,
 } from '../lib/api';
+import { useCurrency } from '../context/CurrencyContext';
 
 /* ── Fallback mock data ── */
 const MOCK_PLANS: PlatformPlan[] = [
@@ -45,6 +46,7 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
   onClose: () => void;
   onUpdated: () => void;
 }) {
+  const { formatMoney } = useCurrency();
   const [detail, setDetail] = useState<PlatformTenant>(tenant);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -90,18 +92,18 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
   const pct = plan ? Math.round((sc / plan.maxStudents) * 100) : 0;
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto text-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-view" onClick={onClose}>
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto text-slate-800 shadow-2xl hover-lift-sm" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex items-start justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-orange-500 flex items-center justify-center text-white text-base font-black shadow-md shadow-indigo-500/20">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-orange-500 flex items-center justify-center text-white text-base font-black shadow-md shadow-indigo-500/20 transition-transform duration-300 hover:scale-105">
               {detail.name.charAt(0)}
             </div>
             <div>
               <div className="flex items-center gap-2">
                 <h2 className="text-base font-bold text-slate-900 leading-tight">{detail.name}</h2>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border transition-all ${
                   detail.status === 'ACTIVE'
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                     : detail.status === 'TRIAL'
@@ -114,7 +116,7 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
               <p className="text-xs font-mono font-medium text-blue-600 mt-0.5">{detail.subdomain}.cole.pe</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all btn-interactive">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -122,35 +124,35 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-slate-400 text-xs">Cargando telemetría...</div>
+          <div className="p-12 text-center text-slate-400 text-xs animate-pulse">Cargando telemetría...</div>
         ) : (
           <div className="p-6 space-y-6">
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-100">
+              <div className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-100 hover-lift-sm transition-all duration-300 group">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-blue-700 uppercase">Capacidad Alumnos</span>
-                  <span className="text-blue-600">👥</span>
+                  <span className="text-blue-600 group-hover:scale-110 transition-transform">👥</span>
                 </div>
                 <p className="text-xl font-bold text-slate-900 mt-1">{sc} <span className="text-xs font-normal text-slate-500">/ {plan?.maxStudents ?? '—'}</span></p>
                 <div className="w-full h-1 bg-blue-200 rounded-full mt-2 overflow-hidden">
-                  <div className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : 'bg-blue-600'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+                  <div className={`h-full rounded-full transition-all duration-500 ${pct > 90 ? 'bg-rose-500' : 'bg-blue-600'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-orange-50/50 border border-orange-100">
+              <div className="p-3.5 rounded-xl bg-orange-50/50 border border-orange-100 hover-lift-sm transition-all duration-300 group">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-orange-700 uppercase">Facturación MRR</span>
-                  <span className="text-orange-600">💵</span>
+                  <span className="text-orange-600 group-hover:scale-110 transition-transform">💵</span>
                 </div>
-                <p className="text-xl font-bold text-orange-700 mt-1">${plan?.monthlyPrice ?? 0} <span className="text-xs font-normal text-slate-500">/mes</span></p>
+                <p className="text-xl font-bold text-orange-700 mt-1">{formatMoney(plan?.monthlyPrice ?? 0)} <span className="text-xs font-normal text-slate-500">/mes</span></p>
                 <p className="text-[10px] text-slate-500 mt-1 font-semibold">Plan {plan?.name}</p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-purple-50/50 border border-purple-100">
+              <div className="p-3.5 rounded-xl bg-purple-50/50 border border-purple-100 hover-lift-sm transition-all duration-300 group">
                 <div className="flex items-center justify-between">
                   <span className="text-[10px] font-bold text-purple-700 uppercase">Módulos Activos</span>
-                  <span className="text-purple-600">⚡</span>
+                  <span className="text-purple-600 group-hover:scale-110 transition-transform">⚡</span>
                 </div>
                 <p className="text-xl font-bold text-purple-700 mt-1">{plan?.features.length ?? 0} <span className="text-xs font-normal text-slate-500">activos</span></p>
                 <p className="text-[10px] text-slate-500 mt-1 font-semibold">Entitlements OK</p>
@@ -172,12 +174,12 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
                   const featMeta = FEATURE_LABELS[f] ?? { label: f, icon: '📦' };
 
                   return (
-                    <div key={f} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-xs">
+                    <div key={f} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/60 transition-all duration-200 text-xs group">
                       <div className="flex items-center gap-2">
-                        <span className="text-xs">{featMeta.icon}</span>
+                        <span className="text-xs group-hover:scale-110 transition-transform">{featMeta.icon}</span>
                         <span className="font-semibold text-slate-800">{featMeta.label}</span>
                       </div>
-                      <span className={`text-[10px] font-bold ${allowed ? 'text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200' : 'text-rose-600'}`}>
+                      <span className={`text-[10px] font-bold transition-all ${allowed ? 'text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200' : 'text-rose-600'}`}>
                         {allowed ? '✓ Activo' : '✗ Bloqueado'}
                       </span>
                     </div>
@@ -198,7 +200,7 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
                   <select
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value as PlatformTenant['status'])}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm transition-all"
                   >
                     <option value="ACTIVE">ACTIVE (Operativo - Verde)</option>
                     <option value="TRIAL">TRIAL (Período de prueba - Naranja)</option>
@@ -212,10 +214,10 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
                   <select
                     value={editPlanId}
                     onChange={(e) => setEditPlanId(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm transition-all"
                   >
                     {plans.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name} — ${p.monthlyPrice}/mes ({p.maxStudents} alumnos)</option>
+                      <option key={p.id} value={p.id}>{p.name} — {formatMoney(p.monthlyPrice)}/mes ({p.maxStudents} alumnos)</option>
                     ))}
                   </select>
                 </div>
@@ -226,14 +228,14 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
             <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-all hover:bg-slate-50"
+                className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-all hover:bg-slate-50 btn-interactive"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+                className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm hover:shadow-blue-500/25 transition-all disabled:opacity-50 btn-interactive"
               >
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
@@ -251,6 +253,7 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
   onClose: () => void;
   onCreated: () => void;
 }) {
+  const { formatMoney } = useCurrency();
   const [name, setName] = useState('');
   const [subdomain, setSubdomain] = useState('');
   const [slug, setSlug] = useState('');
@@ -284,8 +287,8 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full text-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-view" onClick={onClose}>
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full text-slate-800 shadow-2xl hover-lift-sm" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div className="flex items-center gap-2">
             <span className="p-1 rounded bg-blue-100 text-blue-700">🏫</span>
@@ -294,7 +297,7 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
               <p className="text-xs text-slate-500">Provisión de tenant multi-tenant</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">✕</button>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 btn-interactive">✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
@@ -335,7 +338,7 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
               className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
             >
               {plans.map((p) => (
-                <option key={p.id} value={p.id}>{p.name} — ${p.monthlyPrice}/mes ({p.maxStudents} alumnos)</option>
+                <option key={p.id} value={p.id}>{p.name} — {formatMoney(p.monthlyPrice)}/mes ({p.maxStudents} alumnos)</option>
               ))}
             </select>
           </div>
@@ -350,14 +353,14 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-all hover:bg-slate-50"
+              className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-all hover:bg-slate-50 btn-interactive"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50 btn-interactive"
             >
               {saving ? 'Creando...' : 'Crear Colegio'}
             </button>
@@ -370,6 +373,7 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
 
 /* ── Main Tenants View ── */
 export default function TenantsView() {
+  const { config } = useCurrency();
   const [tenants, setTenants] = useState<PlatformTenant[]>(MOCK_TENANTS);
   const [plans, setPlans] = useState<PlatformPlan[]>(MOCK_PLANS);
   const [loading, setLoading] = useState(true);
@@ -397,17 +401,17 @@ export default function TenantsView() {
   });
 
   return (
-    <div className="space-y-5">
+    <div className="space-y-5 animate-view">
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <h2 className="text-xl font-bold text-slate-900 tracking-tight">Directorio de Colegios</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Gestión de instituciones, cuotas y suscripciones</p>
+          <p className="text-xs text-slate-500 mt-0.5">Gestión de instituciones, cuotas y suscripciones ({config.name} • {config.symbol})</p>
         </div>
 
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+          className="btn-interactive flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
         >
           <span>+</span>
           <span>Registrar Colegio</span>

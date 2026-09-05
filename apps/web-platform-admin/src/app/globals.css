@@ -7,83 +7,67 @@ body {
   color: #0f172a;
 }
 
-/* Smooth transitions for the login card */
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(12px) scale(0.98); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
+/* ── Smooth micro-animations & visible hovers ── */
+.hover-lift {
+  transition: transform 0.22s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.22s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.22s ease;
+}
+.hover-lift:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 14px 28px -6px rgba(15, 23, 42, 0.09), 0 6px 12px -4px rgba(15, 23, 42, 0.05);
 }
 
-.animate-in {
-  animation: fadeIn 0.5s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.hover-lift-sm {
+  transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), box-shadow 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease;
+}
+.hover-lift-sm:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px -4px rgba(15, 23, 42, 0.08);
 }
 
-/* ── Mesh gradient blob animations ── */
-@keyframes meshFloat1 {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(80px, 40px) scale(1.1);
-  }
-  50% {
-    transform: translate(30px, 80px) scale(0.95);
-  }
-  75% {
-    transform: translate(-40px, 20px) scale(1.05);
-  }
+.hover-glow-blue:hover {
+  border-color: #93c5fd;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12), 0 10px 20px -5px rgba(59, 130, 246, 0.15);
 }
 
-@keyframes meshFloat2 {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(-60px, 50px) scale(1.05);
-  }
-  50% {
-    transform: translate(-30px, -60px) scale(1.1);
-  }
-  75% {
-    transform: translate(50px, -30px) scale(0.95);
-  }
+.hover-glow-orange:hover {
+  border-color: #fdba74;
+  box-shadow: 0 0 0 3px rgba(249, 115, 22, 0.12), 0 10px 20px -5px rgba(249, 115, 22, 0.15);
 }
 
-@keyframes meshFloat3 {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
-  }
-  25% {
-    transform: translate(50px, -40px) scale(1.1);
-  }
-  50% {
-    transform: translate(-40px, -20px) scale(0.9);
-  }
-  75% {
-    transform: translate(-20px, 50px) scale(1.05);
-  }
+.hover-glow-emerald:hover {
+  border-color: #6ee7b7;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.12), 0 10px 20px -5px rgba(16, 185, 129, 0.15);
 }
 
-@keyframes meshFloat4 {
-  0%, 100% {
-    transform: translate(0, 0) scale(1);
+.hover-glow-purple:hover {
+  border-color: #c4b5fd;
+  box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.12), 0 10px 20px -5px rgba(139, 92, 246, 0.15);
+}
+
+.btn-interactive {
+  transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.btn-interactive:hover {
+  transform: translateY(-1px) scale(1.02);
+}
+.btn-interactive:active {
+  transform: translateY(1px) scale(0.97);
+}
+
+/* Modal and view entrance animation */
+@keyframes viewFadeSlide {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
   }
-  33% {
-    transform: translate(-70px, 30px) scale(1.15);
-  }
-  66% {
-    transform: translate(40px, -50px) scale(0.9);
+  to {
+    opacity: 1;
+    transform: translateY(0);
   }
 }
 
-/* ── Shield icon hover animations ── */
-@keyframes shieldRotate {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
-}
-
-@keyframes shieldGlowSpin {
-  from { transform: rotate(0deg); }
-  to { transform: rotate(360deg); }
+.animate-view {
+  animation: viewFadeSlide 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
 }
 
 /* Fix for dark theme inputs autofill */
@@ -94,3 +78,4 @@ input:-webkit-autofill:focus {
   -webkit-box-shadow: 0 0 0px 1000px rgba(255, 255, 255, 0.06) inset;
   transition: background-color 5000s ease-in-out 0s;
 }
+

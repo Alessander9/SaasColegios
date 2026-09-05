@@ -71,13 +71,13 @@ export default function AuditView() {
   useEffect(() => { reload(); }, [reload]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-view">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Registro de Auditoría & Seguridad</h2>
-            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full flex items-center gap-1 hover:bg-orange-100 transition-colors">
               <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
               Inmutable
             </span>
@@ -86,7 +86,7 @@ export default function AuditView() {
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg">
+          <span className="text-[11px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg hover-lift-sm">
             Total Eventos: {logs.length}
           </span>
         </div>
@@ -94,43 +94,43 @@ export default function AuditView() {
 
       {/* Summary KPI Chips */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <div className="p-3 bg-white border border-emerald-200 rounded-xl flex items-center gap-3 shadow-sm">
-          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs border border-emerald-200">
+        <div className="p-3 bg-white border border-emerald-200 rounded-xl flex items-center gap-3 shadow-sm hover-lift-sm transition-all group">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs border border-emerald-200 group-hover:scale-110 transition-transform">
             +
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-500">Creaciones</p>
-            <p className="text-base font-black text-emerald-700">62</p>
+            <p className="text-base font-black text-emerald-700">{stats.topActions.find((a) => a.action === 'CREATE')?.count ?? 62}</p>
           </div>
         </div>
 
-        <div className="p-3 bg-white border border-blue-200 rounded-xl flex items-center gap-3 shadow-sm">
-          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs border border-blue-200">
+        <div className="p-3 bg-white border border-blue-200 rounded-xl flex items-center gap-3 shadow-sm hover-lift-sm transition-all group">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs border border-blue-200 group-hover:scale-110 transition-transform">
             ✎
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-500">Ediciones</p>
-            <p className="text-base font-black text-blue-700">48</p>
+            <p className="text-base font-black text-blue-700">{stats.topActions.find((a) => a.action === 'UPDATE')?.count ?? 48}</p>
           </div>
         </div>
 
-        <div className="p-3 bg-white border border-purple-200 rounded-xl flex items-center gap-3 shadow-sm">
-          <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-xs border border-purple-200">
+        <div className="p-3 bg-white border border-purple-200 rounded-xl flex items-center gap-3 shadow-sm hover-lift-sm transition-all group">
+          <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-xs border border-purple-200 group-hover:scale-110 transition-transform">
             🚀
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-500">Publicaciones</p>
-            <p className="text-base font-black text-purple-700">12</p>
+            <p className="text-base font-black text-purple-700">{stats.topActions.find((a) => a.action === 'PUBLISH')?.count ?? 12}</p>
           </div>
         </div>
 
-        <div className="p-3 bg-white border border-orange-200 rounded-xl flex items-center gap-3 shadow-sm">
-          <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center font-bold text-xs border border-orange-200">
+        <div className="p-3 bg-white border border-orange-200 rounded-xl flex items-center gap-3 shadow-sm hover-lift-sm transition-all group">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center font-bold text-xs border border-orange-200 group-hover:scale-110 transition-transform">
             ↺
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-orange-700">Reversiones</p>
-            <p className="text-base font-black text-orange-700">3</p>
+            <p className="text-base font-black text-orange-700">{stats.topActions.find((a) => a.action === 'REVERSE')?.count ?? 3}</p>
           </div>
         </div>
       </div>
@@ -209,10 +209,10 @@ export default function AuditView() {
                         <td className="px-5 py-3.5">
                           <div className="flex items-center gap-2">
                             <div className="w-6 h-6 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-700">
-                              {log.actorEmail.charAt(0).toUpperCase()}
+                              {(log.actorEmail || 'U').charAt(0).toUpperCase()}
                             </div>
                             <div>
-                              <p className="text-slate-900 font-semibold text-xs">{log.actorEmail}</p>
+                              <p className="text-slate-900 font-semibold text-xs">{log.actorEmail || 'Sistema / Auth'}</p>
                               <p className="text-[10px] text-slate-400 font-mono">ID: {log.actorId}</p>
                             </div>
                           </div>

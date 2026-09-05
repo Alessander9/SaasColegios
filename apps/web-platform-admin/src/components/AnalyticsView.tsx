@@ -2,9 +2,10 @@
 
 import React, { useEffect, useState, useCallback } from 'react';
 import {
-  getPlatformGrowth, getModuleUsage, getTenants,
-  type GrowthTimeline, type ModuleUsage, type PlatformTenant,
+  getPlatformGrowth, getModuleUsage,
+  type GrowthTimeline, type ModuleUsage,
 } from '../lib/api';
+import { useCurrency } from '../context/CurrencyContext';
 
 /* ── Fallback mock data ── */
 const MOCK_GROWTH: GrowthTimeline[] = [
@@ -28,12 +29,6 @@ const MOCK_MODULES: ModuleUsage[] = [
   { module: 'Planillas & Nóminas', tenantCount: 1, usagePercentage: 33 },
   { module: 'Gestor Documental', tenantCount: 1, usagePercentage: 33 },
   { module: 'Reportes Ejecutivos & BI', tenantCount: 1, usagePercentage: 33 },
-];
-
-const MOCK_TENANTS: PlatformTenant[] = [
-  { id: 't-1', slug: 'sancleo', name: 'Colegio San Cleo', subdomain: 'sancleo', status: 'ACTIVE', planId: 'p2', plan: { id: 'p2', code: 'PLAN_PRO', name: 'Profesional', maxStudents: 600, maxTeachers: 50, maxStorageGb: 50, features: [], monthlyPrice: 199, annualPrice: 1990, isActive: true, createdAt: '', updatedAt: '' }, createdAt: '2025-01-15T00:00:00Z', updatedAt: '2026-08-01T00:00:00Z' },
-  { id: 't-2', slug: 'inmaculada', name: 'Inmaculada Concepción', subdomain: 'inmaculada', status: 'ACTIVE', planId: 'p3', plan: { id: 'p3', code: 'PLAN_ENT', name: 'Enterprise', maxStudents: 1500, maxTeachers: 150, maxStorageGb: 200, features: [], monthlyPrice: 399, annualPrice: 3990, isActive: true, createdAt: '', updatedAt: '' }, createdAt: '2024-09-01T00:00:00Z', updatedAt: '2026-08-10T00:00:00Z' },
-  { id: 't-3', slug: 'montessori', name: 'Academia Montessori', subdomain: 'montessori', status: 'TRIAL', planId: 'p1', plan: { id: 'p1', code: 'PLAN_BASIC', name: 'Básico', maxStudents: 150, maxTeachers: 15, maxStorageGb: 10, features: [], monthlyPrice: 99, annualPrice: 990, isActive: true, createdAt: '', updatedAt: '' }, createdAt: '2026-07-20T00:00:00Z', updatedAt: '2026-08-15T00:00:00Z' },
 ];
 
 /* ── Minimalist Light SVG Area Chart ── */
@@ -74,8 +69,8 @@ function MinimalistAreaChart({ data }: { data: GrowthTimeline[] }) {
           const x = (i / (data.length - 1)) * 400;
           const y = 140 - (d.students / max) * 110;
           return (
-            <g key={i}>
-              <circle cx={x} cy={y} r="4" fill="#ffffff" stroke="#ea580c" strokeWidth="2.5" />
+            <g key={i} className="cursor-pointer group">
+              <circle cx={x} cy={y} r="4" fill="#ffffff" stroke="#ea580c" strokeWidth="2.5" className="group-hover:r-6 transition-all" />
               <text x={x} y={160} textAnchor="middle" className="fill-slate-500 text-[9px] font-semibold">
                 {d.month.slice(5)}
               </text>
@@ -88,22 +83,20 @@ function MinimalistAreaChart({ data }: { data: GrowthTimeline[] }) {
 }
 
 export default function AnalyticsView() {
+  const { config } = useCurrency();
   const [growth, setGrowth] = useState<GrowthTimeline[]>(MOCK_GROWTH);
   const [modules, setModules] = useState<ModuleUsage[]>(MOCK_MODULES);
-  const [tenants, setTenants] = useState<PlatformTenant[]>(MOCK_TENANTS);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [g, m, t] = await Promise.all([
+      const [g, m] = await Promise.all([
         getPlatformGrowth(),
         getModuleUsage(),
-        getTenants(),
       ]);
       setGrowth(g);
       setModules(m);
-      setTenants(t);
     } catch { /* fallback */ }
     setLoading(false);
   }, []);
@@ -117,21 +110,21 @@ export default function AnalyticsView() {
   const colors = ['bg-blue-600', 'bg-emerald-500', 'bg-orange-500', 'bg-purple-600'];
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 animate-view">
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
           <div className="flex items-center gap-2">
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Analíticas de Crecimiento</h2>
-            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
-              MRR & Alumnos
+            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full hover:bg-orange-100 transition-colors">
+              MRR ({config.symbol}) & Alumnos
             </span>
           </div>
-          <p className="text-xs text-slate-500 mt-0.5">Evolución de alumnos activos y adopción de módulos</p>
+          <p className="text-xs text-slate-500 mt-0.5">Evolución de alumnos activos y adopción de módulos ({config.name})</p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-bold text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-lg flex items-center gap-1.5">
+          <span className="text-xs font-bold text-orange-700 bg-orange-50 border border-orange-200 px-3 py-1 rounded-lg flex items-center gap-1.5 hover-lift-sm">
             <svg className="w-3.5 h-3.5 text-orange-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 18L9 11.25l4.306 4.307a11.95 11.95 0 015.814-5.519l2.74-1.22m0 0l-5.94-2.28m5.94 2.28l-2.28 5.941" />
             </svg>
@@ -141,7 +134,7 @@ export default function AnalyticsView() {
       </div>
 
       {/* Main Chart Card */}
-      <div className="rounded-xl bg-white border border-slate-200/90 p-5 space-y-4 shadow-sm">
+      <div className="rounded-xl bg-white border border-slate-200/90 p-5 space-y-4 shadow-sm hover-lift">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-2.5">
             <span className="p-2 rounded-lg bg-orange-50 border border-orange-200 text-orange-600">
@@ -161,7 +154,11 @@ export default function AnalyticsView() {
         </div>
 
         <div className="pt-2">
-          <MinimalistAreaChart data={growth} />
+          {loading ? (
+            <div className="text-center py-12 text-xs text-slate-400 animate-pulse">Cargando datos analíticos...</div>
+          ) : (
+            <MinimalistAreaChart data={growth} />
+          )}
         </div>
       </div>
 
