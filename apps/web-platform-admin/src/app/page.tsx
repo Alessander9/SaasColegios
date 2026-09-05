@@ -168,7 +168,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
   const [notificationsOpen, setNotificationsOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-[#090d16] text-slate-100 flex font-sans selection:bg-indigo-600 selection:text-white">
+    <div className="min-h-screen bg-[#f8fafc] text-slate-900 flex font-sans selection:bg-blue-600 selection:text-white">
       {/* Sidebar Navigation */}
       <Sidebar
         activeView={activeView}
@@ -179,17 +179,17 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
       />
 
       {/* Main Content Area */}
-      <div className="flex-1 ml-64 min-h-screen flex flex-col bg-[#090d16]">
+      <div className="flex-1 ml-64 min-h-screen flex flex-col bg-[#f8fafc]">
         {/* Top Executive Header & System Pulse */}
-        <header className="sticky top-0 z-30 bg-[#090d16]/90 backdrop-blur-md border-b border-slate-800/80 px-8 py-3.5 flex items-center justify-between gap-4">
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-8 py-3.5 flex items-center justify-between gap-4 shadow-sm">
           <div className="flex items-center gap-4">
             <div>
               <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-indigo-400 bg-indigo-500/10 px-2 py-0.5 rounded border border-indigo-500/20 uppercase tracking-wider">
+                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 uppercase tracking-wider">
                   Super Admin Control Center
                 </span>
-                <span className="text-[10px] text-slate-500 font-medium">/</span>
-                <span className="text-xs font-semibold text-slate-300">
+                <span className="text-[10px] text-slate-400 font-medium">/</span>
+                <span className="text-xs font-semibold text-slate-800">
                   {activeView === 'overview' && 'Panel General & Métricas Globales'}
                   {activeView === 'tenants' && 'Colegios y Suscripciones SaaS'}
                   {activeView === 'plans' && 'Planes Comerciales'}
@@ -202,20 +202,20 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
 
           <div className="flex items-center gap-3">
             {/* Live System Health Pulse */}
-            <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-900 border border-slate-800 text-xs">
+            <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                <span className="text-[11px] font-medium text-slate-300">API Core :4000</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                <span className="text-[11px] font-semibold text-slate-700">API Core :4000</span>
               </div>
-              <span className="text-slate-700">|</span>
+              <span className="text-slate-300">|</span>
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                <span className="text-[11px] text-slate-400">PostgreSQL :5433</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                <span className="text-[11px] font-medium text-slate-600">PostgreSQL :5433</span>
               </div>
-              <span className="text-slate-700">|</span>
+              <span className="text-slate-300">|</span>
               <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-cyan-400" />
-                <span className="text-[11px] text-slate-400">Redis :6379</span>
+                <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
+                <span className="text-[11px] font-medium text-slate-600">Redis :6379</span>
               </div>
             </div>
 
@@ -223,7 +223,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             {activeView !== 'tenants' && (
               <button
                 onClick={() => setActiveView('tenants')}
-                className="px-3 py-1.5 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow-sm transition-all flex items-center gap-1.5"
+                className="px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-all flex items-center gap-1.5"
               >
                 <span>+</span>
                 <span>Registrar Colegio</span>
@@ -234,7 +234,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="p-1.5 rounded-lg bg-slate-900 hover:bg-slate-800 border border-slate-800 text-slate-400 hover:text-slate-200 transition-colors"
+                className="p-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 transition-colors shadow-sm"
                 title="Alertas del Sistema"
               >
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -243,21 +243,21 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
               </button>
 
               {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-[#0b0f19] border border-slate-800 rounded-xl shadow-2xl p-4 space-y-3 z-50">
-                  <div className="flex items-center justify-between border-b border-slate-800 pb-2">
-                    <span className="text-xs font-bold text-white">Eventos de Plataforma</span>
-                    <span className="text-[10px] text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded">Operativo</span>
+                <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 space-y-3 z-50">
+                  <div className="flex items-center justify-between border-b border-slate-100 pb-2">
+                    <span className="text-xs font-bold text-slate-900">Eventos de Plataforma</span>
+                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">Operativo</span>
                   </div>
                   <div className="space-y-2 text-xs">
-                    <div className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-900">
-                      <p className="font-semibold text-white">Suscripción Renovada</p>
-                      <p className="text-slate-400 text-[11px] mt-0.5">Colegio San Cleo ha renovado Plan Profesional automáticamente.</p>
-                      <span className="text-[9px] text-slate-500">Hace 15 min</span>
+                    <div className="p-2.5 rounded-lg bg-blue-50/40 border border-blue-100">
+                      <p className="font-semibold text-slate-900">Suscripción Renovada</p>
+                      <p className="text-slate-600 text-[11px] mt-0.5">Colegio San Cleo ha renovado Plan Profesional automáticamente.</p>
+                      <span className="text-[9px] text-blue-600 font-medium">Hace 15 min</span>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-slate-950/80 border border-slate-900">
-                      <p className="font-semibold text-white">Prueba Iniciada</p>
-                      <p className="text-slate-400 text-[11px] mt-0.5">Academia Montessori inició prueba de 14 días.</p>
-                      <span className="text-[9px] text-slate-500">Hace 2 horas</span>
+                    <div className="p-2.5 rounded-lg bg-purple-50/40 border border-purple-100">
+                      <p className="font-semibold text-slate-900">Prueba Iniciada</p>
+                      <p className="text-slate-600 text-[11px] mt-0.5">Academia Montessori inició prueba de 14 días.</p>
+                      <span className="text-[9px] text-purple-600 font-medium">Hace 2 horas</span>
                     </div>
                   </div>
                 </div>
@@ -265,7 +265,7 @@ function Dashboard({ onLogout }: { onLogout: () => void }) {
             </div>
 
             {/* Logout button */}
-            <Button variant="outline" onClick={onLogout} className="text-xs py-1 px-2.5">
+            <Button variant="outline" onClick={onLogout} className="text-xs py-1 px-2.5 border-slate-200 text-slate-700 hover:bg-slate-50">
               Cerrar Sesión
             </Button>
           </div>

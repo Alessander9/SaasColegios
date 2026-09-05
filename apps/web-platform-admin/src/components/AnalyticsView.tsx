@@ -36,7 +36,7 @@ const MOCK_TENANTS: PlatformTenant[] = [
   { id: 't-3', slug: 'montessori', name: 'Academia Montessori', subdomain: 'montessori', status: 'TRIAL', planId: 'p1', plan: { id: 'p1', code: 'PLAN_BASIC', name: 'Básico', maxStudents: 150, maxTeachers: 15, maxStorageGb: 10, features: [], monthlyPrice: 99, annualPrice: 990, isActive: true, createdAt: '', updatedAt: '' }, createdAt: '2026-07-20T00:00:00Z', updatedAt: '2026-08-15T00:00:00Z' },
 ];
 
-/* ── Minimalist SVG Line & Bar Chart ── */
+/* ── Minimalist Light SVG Area Chart ── */
 function MinimalistAreaChart({ data }: { data: GrowthTimeline[] }) {
   const max = Math.max(...data.map((d) => d.students), 2000);
   const points = data.map((d, i) => {
@@ -51,22 +51,22 @@ function MinimalistAreaChart({ data }: { data: GrowthTimeline[] }) {
     <div className="w-full">
       <svg viewBox="0 0 400 170" className="w-full h-auto">
         <defs>
-          <linearGradient id="areaGradient" x1="0" y1="0" x2="0" y2="1">
-            <stop offset="0%" stopColor="#6366f1" stopOpacity="0.3" />
-            <stop offset="100%" stopColor="#6366f1" stopOpacity="0.0" />
+          <linearGradient id="lightAreaGradient" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stopColor="#3b82f6" stopOpacity="0.25" />
+            <stop offset="100%" stopColor="#8b5cf6" stopOpacity="0.0" />
           </linearGradient>
         </defs>
 
         {/* Horizontal Grid */}
         {[0, 0.33, 0.66, 1].map((p) => (
-          <line key={p} x1="0" y1={140 - p * 110} x2="400" y2={140 - p * 110} stroke="#1e293b" strokeWidth="0.5" strokeDasharray="4 4" />
+          <line key={p} x1="0" y1={140 - p * 110} x2="400" y2={140 - p * 110} stroke="#e2e8f0" strokeWidth="1" strokeDasharray="3 3" />
         ))}
 
         {/* Area fill */}
-        <polygon points={areaPoints} fill="url(#areaGradient)" />
+        <polygon points={areaPoints} fill="url(#lightAreaGradient)" />
 
         {/* Line */}
-        <polyline points={points} fill="none" stroke="#818cf8" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+        <polyline points={points} fill="none" stroke="#4f46e5" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
 
         {/* Data points */}
         {data.map((d, i) => {
@@ -74,8 +74,8 @@ function MinimalistAreaChart({ data }: { data: GrowthTimeline[] }) {
           const y = 140 - (d.students / max) * 110;
           return (
             <g key={i}>
-              <circle cx={x} cy={y} r="3.5" fill="#0b0f19" stroke="#818cf8" strokeWidth="2" />
-              <text x={x} y={160} textAnchor="middle" className="fill-slate-400 text-[9px] font-medium">
+              <circle cx={x} cy={y} r="4" fill="#ffffff" stroke="#4f46e5" strokeWidth="2.5" />
+              <text x={x} y={160} textAnchor="middle" className="fill-slate-500 text-[9px] font-semibold">
                 {d.month.slice(5)}
               </text>
             </g>
@@ -103,7 +103,7 @@ export default function AnalyticsView() {
       setGrowth(g);
       setModules(m);
       setTenants(t);
-    } catch { /* use mocks */ }
+    } catch { /* fallback */ }
     setLoading(false);
   }, []);
 
@@ -116,29 +116,29 @@ export default function AnalyticsView() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-800/60">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Analíticas de Crecimiento</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Evolución de alumnos activos y adopción de módulos</p>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Analíticas de Crecimiento</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Evolución de alumnos activos y adopción de módulos</p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-xs font-medium text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-lg">
+          <span className="text-xs font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-3 py-1 rounded-lg">
             +{growthRate}% Crecimiento Total
           </span>
         </div>
       </div>
 
       {/* Main Chart Card */}
-      <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 space-y-4 shadow-sm">
+      <div className="rounded-xl bg-white border border-slate-200/90 p-5 space-y-4 shadow-sm">
         <div className="flex items-center justify-between">
           <div>
-            <h3 className="text-sm font-bold text-white">Curva de Alumnos Activos</h3>
-            <p className="text-[11px] text-slate-400">Total de estudiantes en la plataforma por mes</p>
+            <h3 className="text-sm font-bold text-slate-900">Curva de Alumnos Activos</h3>
+            <p className="text-[11px] text-slate-500">Total de estudiantes en la plataforma por mes</p>
           </div>
           <div className="text-right">
-            <span className="text-xl font-bold text-white">{latest.students.toLocaleString()}</span>
-            <p className="text-[10px] text-slate-400">Estudiantes Activos</p>
+            <span className="text-xl font-black text-blue-700">{latest.students.toLocaleString()}</span>
+            <p className="text-[10px] font-semibold text-slate-500">Estudiantes Activos</p>
           </div>
         </div>
 
@@ -150,23 +150,23 @@ export default function AnalyticsView() {
       {/* Grid: Module Adoption & Tenant Capacity */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
         {/* Module Adoption */}
-        <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl bg-white border border-slate-200/90 p-5 space-y-3 shadow-sm">
           <div>
-            <h3 className="text-sm font-bold text-white">Adopción por Módulo</h3>
-            <p className="text-[11px] text-slate-400">% de colegios con el módulo activo</p>
+            <h3 className="text-sm font-bold text-slate-900">Adopción por Módulo</h3>
+            <p className="text-[11px] text-slate-500">% de colegios con el módulo activo</p>
           </div>
 
           <div className="space-y-2.5 pt-1">
-            {modules.map((m) => (
+            {modules.map((m, idx) => (
               <div key={m.module} className="space-y-1">
                 <div className="flex items-center justify-between text-xs">
-                  <span className="font-medium text-slate-300">{m.module}</span>
-                  <span className="text-slate-400">{m.usagePercentage}% ({m.tenantCount} inst.)</span>
+                  <span className="font-semibold text-slate-800">{m.module}</span>
+                  <span className="text-slate-500 font-medium">{m.usagePercentage}% ({m.tenantCount} inst.)</span>
                 </div>
-                <div className="w-full bg-slate-800 rounded-full h-1.5 overflow-hidden">
+                <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
                   <div
                     className={`h-full rounded-full transition-all duration-300 ${
-                      m.usagePercentage >= 80 ? 'bg-indigo-500' : m.usagePercentage >= 50 ? 'bg-cyan-500' : 'bg-slate-600'
+                      idx % 3 === 0 ? 'bg-blue-600' : idx % 3 === 1 ? 'bg-emerald-500' : 'bg-purple-600'
                     }`}
                     style={{ width: `${m.usagePercentage}%` }}
                   />
@@ -177,19 +177,19 @@ export default function AnalyticsView() {
         </div>
 
         {/* Growth by Month Table */}
-        <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 p-5 space-y-3 shadow-sm">
+        <div className="rounded-xl bg-white border border-slate-200/90 p-5 space-y-3 shadow-sm">
           <div>
-            <h3 className="text-sm font-bold text-white">Historial Mensual</h3>
-            <p className="text-[11px] text-slate-400">Desglose mensual de instituciones y alumnos</p>
+            <h3 className="text-sm font-bold text-slate-900">Historial Mensual</h3>
+            <p className="text-[11px] text-slate-500">Desglose mensual de instituciones y alumnos</p>
           </div>
 
-          <div className="divide-y divide-slate-800/60">
+          <div className="divide-y divide-slate-100">
             {growth.map((g) => (
               <div key={g.month} className="py-2.5 flex items-center justify-between text-xs first:pt-1 last:pb-1">
-                <span className="font-mono text-slate-300">{g.month}</span>
+                <span className="font-mono font-medium text-slate-700">{g.month}</span>
                 <div className="flex items-center gap-4">
-                  <span className="text-slate-400">{g.tenants} colegios</span>
-                  <span className="font-semibold text-white">{g.students.toLocaleString()} alumnos</span>
+                  <span className="text-purple-700 font-semibold bg-purple-50 px-2 py-0.5 rounded border border-purple-100">{g.tenants} colegios</span>
+                  <span className="font-bold text-blue-700">{g.students.toLocaleString()} alumnos</span>
                 </div>
               </div>
             ))}

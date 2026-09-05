@@ -40,11 +40,11 @@ const MOCK_STATS: AuditStats = {
 };
 
 const ACTION_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  CREATE: { bg: 'bg-emerald-500/10', text: 'text-emerald-400', border: 'border-emerald-500/20' },
-  UPDATE: { bg: 'bg-indigo-500/10', text: 'text-indigo-400', border: 'border-indigo-500/20' },
-  PUBLISH: { bg: 'bg-violet-500/10', text: 'text-violet-400', border: 'border-violet-500/20' },
-  REVERSE: { bg: 'bg-amber-500/10', text: 'text-amber-400', border: 'border-amber-500/20' },
-  DELETE: { bg: 'bg-rose-500/10', text: 'text-rose-400', border: 'border-rose-500/20' },
+  CREATE: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
+  UPDATE: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
+  PUBLISH: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
+  REVERSE: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
+  DELETE: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
 };
 
 export default function AuditView() {
@@ -64,7 +64,7 @@ export default function AuditView() {
       ]);
       setLogs(l.data);
       setStats(s);
-    } catch { /* use mocks */ }
+    } catch { /* fallback */ }
     setLoading(false);
   }, [filterAction, filterResource]);
 
@@ -73,14 +73,14 @@ export default function AuditView() {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-800/60">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Registro de Auditoría & Seguridad</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Trazabilidad inmutable de eventos de dominio multi-tenant</p>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Registro de Auditoría & Seguridad</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Trazabilidad inmutable de eventos de dominio multi-tenant</p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-[11px] font-mono text-slate-400 bg-slate-900 border border-slate-800 px-2.5 py-1 rounded-lg">
+          <span className="text-[11px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg">
             Total Eventos: {logs.length}
           </span>
         </div>
@@ -91,7 +91,7 @@ export default function AuditView() {
         <select
           value={filterAction}
           onChange={(e) => setFilterAction(e.target.value)}
-          className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+          className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-500 shadow-sm"
         >
           <option value="">Todas las Acciones</option>
           <option value="CREATE">CREATE</option>
@@ -104,7 +104,7 @@ export default function AuditView() {
         <select
           value={filterResource}
           onChange={(e) => setFilterResource(e.target.value)}
-          className="px-3 py-1.5 bg-slate-900 border border-slate-800 rounded-lg text-xs text-slate-300 focus:outline-none focus:border-indigo-500"
+          className="px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs text-slate-700 font-medium focus:outline-none focus:border-blue-500 shadow-sm"
         >
           <option value="">Todos los Recursos</option>
           <option value="student">student</option>
@@ -118,10 +118,10 @@ export default function AuditView() {
       </div>
 
       {/* Audit Log Table */}
-      <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 overflow-hidden shadow-sm">
+      <div className="rounded-xl bg-white border border-slate-200/90 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-950 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-600">
+            <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200">
               <tr>
                 <th className="px-5 py-3">Acción</th>
                 <th className="px-5 py-3">Recurso</th>
@@ -131,11 +131,11 @@ export default function AuditView() {
                 <th className="px-5 py-3 text-right">Payload</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {loading ? (
-                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Cargando logs de seguridad...</td></tr>
+                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-400">Cargando logs de seguridad...</td></tr>
               ) : logs.length === 0 ? (
-                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">No se encontraron eventos registrados.</td></tr>
+                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-400">No se encontraron eventos registrados.</td></tr>
               ) : (
                 logs.map((log) => {
                   const sty = ACTION_STYLES[log.action] ?? ACTION_STYLES.CREATE;
@@ -143,7 +143,7 @@ export default function AuditView() {
 
                   return (
                     <React.Fragment key={log.id}>
-                      <tr className="hover:bg-slate-800/40 transition-colors">
+                      <tr className="hover:bg-slate-50/80 transition-colors">
                         <td className="px-5 py-3.5">
                           <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${sty.bg} ${sty.text} ${sty.border}`}>
                             {log.action}
@@ -151,28 +151,28 @@ export default function AuditView() {
                         </td>
 
                         <td className="px-5 py-3.5">
-                          <span className="font-mono text-white text-[11px] bg-slate-800 px-2 py-0.5 rounded">
+                          <span className="font-mono text-purple-700 text-[11px] font-semibold bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
                             {log.resource}:{log.resourceId}
                           </span>
                         </td>
 
                         <td className="px-5 py-3.5">
-                          <p className="text-white text-xs">{log.actorEmail}</p>
-                          <p className="text-[10px] text-slate-500 font-mono">ID: {log.actorId}</p>
+                          <p className="text-slate-900 font-semibold text-xs">{log.actorEmail}</p>
+                          <p className="text-[10px] text-slate-400 font-mono">ID: {log.actorId}</p>
                         </td>
 
-                        <td className="px-5 py-3.5 font-mono text-[10px] text-slate-400">
+                        <td className="px-5 py-3.5 font-mono text-[11px] text-blue-600 font-medium">
                           {log.tenantId}
                         </td>
 
-                        <td className="px-5 py-3.5 text-slate-400 text-[11px]">
+                        <td className="px-5 py-3.5 text-slate-500 text-[11px]">
                           {new Date(log.timestamp).toLocaleString('es-PE', { dateStyle: 'short', timeStyle: 'short' })}
                         </td>
 
                         <td className="px-5 py-3.5 text-right">
                           <button
                             onClick={() => setExpandedLog(isExpanded ? null : log.id)}
-                            className="px-2.5 py-1 text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-all"
+                            className="px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 rounded border border-slate-200 transition-all shadow-sm"
                           >
                             {isExpanded ? 'Ocultar' : 'Ver JSON'}
                           </button>
@@ -180,19 +180,19 @@ export default function AuditView() {
                       </tr>
 
                       {isExpanded && (
-                        <tr className="bg-slate-950">
+                        <tr className="bg-slate-50">
                           <td colSpan={6} className="px-5 py-4">
-                            <div className="p-3 bg-[#080b12] border border-slate-800 rounded-lg text-xs font-mono text-slate-300 space-y-2">
+                            <div className="p-3.5 bg-white border border-slate-200 rounded-lg text-xs font-mono text-slate-800 space-y-2 shadow-sm">
                               {log.before && (
                                 <div>
-                                  <p className="text-[10px] font-bold text-slate-500 uppercase">Estado Anterior (Before):</p>
-                                  <pre className="text-rose-300 mt-1">{JSON.stringify(log.before, null, 2)}</pre>
+                                  <p className="text-[10px] font-bold text-rose-600 uppercase">Estado Anterior (Before):</p>
+                                  <pre className="text-rose-700 mt-1 bg-rose-50/50 p-2 rounded border border-rose-100">{JSON.stringify(log.before, null, 2)}</pre>
                                 </div>
                               )}
                               {log.after && (
                                 <div>
-                                  <p className="text-[10px] font-bold text-slate-500 uppercase">Estado Resultante (After):</p>
-                                  <pre className="text-emerald-300 mt-1">{JSON.stringify(log.after, null, 2)}</pre>
+                                  <p className="text-[10px] font-bold text-emerald-600 uppercase">Estado Resultante (After):</p>
+                                  <pre className="text-emerald-700 mt-1 bg-emerald-50/50 p-2 rounded border border-emerald-100">{JSON.stringify(log.after, null, 2)}</pre>
                                 </div>
                               )}
                             </div>

@@ -38,7 +38,7 @@ const FEATURE_LABELS: Record<string, string> = {
   custom_domain: 'Dominio Personalizado',
 };
 
-/* ── Tenant Detail Modal / Slide-over ── */
+/* ── Tenant Detail Modal ── */
 function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
   tenant: PlatformTenant;
   plans: PlatformPlan[];
@@ -90,20 +90,20 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
   const pct = plan ? Math.round((sc / plan.maxStudents) * 100) : 0;
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="bg-[#0b0f19] border border-slate-800 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto text-slate-100 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto text-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
-        <div className="p-6 border-b border-slate-800/80 flex items-start justify-between">
+        <div className="p-6 border-b border-slate-100 flex items-start justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-slate-800 border border-slate-700/60 flex items-center justify-center text-white text-base font-bold">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-base font-bold shadow-md shadow-indigo-500/20">
               {detail.name.charAt(0)}
             </div>
             <div>
-              <h2 className="text-base font-bold text-white leading-tight">{detail.name}</h2>
-              <p className="text-xs font-mono text-indigo-400 mt-0.5">{detail.subdomain}.cole.pe</p>
+              <h2 className="text-base font-bold text-slate-900 leading-tight">{detail.name}</h2>
+              <p className="text-xs font-mono text-blue-600 mt-0.5">{detail.subdomain}.cole.pe</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors">
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
@@ -111,46 +111,46 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
         </div>
 
         {loading ? (
-          <div className="p-12 text-center text-slate-500 text-xs">Cargando telemetría...</div>
+          <div className="p-12 text-center text-slate-400 text-xs">Cargando telemetría...</div>
         ) : (
           <div className="p-6 space-y-6">
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase">Capacidad Alumnos</span>
-                <p className="text-xl font-bold text-white mt-1">{sc} <span className="text-xs font-normal text-slate-500">/ {plan?.maxStudents ?? '—'}</span></p>
-                <div className="w-full h-1 bg-slate-800 rounded-full mt-2 overflow-hidden">
-                  <div className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : 'bg-emerald-500'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+              <div className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-100">
+                <span className="text-[10px] font-bold text-blue-700 uppercase">Capacidad Alumnos</span>
+                <p className="text-xl font-bold text-slate-900 mt-1">{sc} <span className="text-xs font-normal text-slate-500">/ {plan?.maxStudents ?? '—'}</span></p>
+                <div className="w-full h-1 bg-blue-200 rounded-full mt-2 overflow-hidden">
+                  <div className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : 'bg-blue-600'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase">Facturación MRR</span>
-                <p className="text-xl font-bold text-emerald-400 mt-1">${plan?.monthlyPrice ?? 0} <span className="text-xs font-normal text-slate-500">/mes</span></p>
+              <div className="p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
+                <span className="text-[10px] font-bold text-emerald-700 uppercase">Facturación MRR</span>
+                <p className="text-xl font-bold text-emerald-700 mt-1">${plan?.monthlyPrice ?? 0} <span className="text-xs font-normal text-slate-500">/mes</span></p>
                 <p className="text-[10px] text-slate-500 mt-1">Plan {plan?.name}</p>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800/80">
-                <span className="text-[10px] font-semibold text-slate-400 uppercase">Módulos Activos</span>
-                <p className="text-xl font-bold text-indigo-400 mt-1">{plan?.features.length ?? 0} <span className="text-xs font-normal text-slate-500">habilitados</span></p>
+              <div className="p-3.5 rounded-xl bg-purple-50/50 border border-purple-100">
+                <span className="text-[10px] font-bold text-purple-700 uppercase">Módulos Activos</span>
+                <p className="text-xl font-bold text-purple-700 mt-1">{plan?.features.length ?? 0} <span className="text-xs font-normal text-slate-500">activos</span></p>
                 <p className="text-[10px] text-slate-500 mt-1">Entitlements OK</p>
               </div>
             </div>
 
             {/* Feature Entitlements Checklist */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-slate-400 uppercase tracking-wider">Entitlements del Plan</h3>
+              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Entitlements del Plan</h3>
               <div className="grid grid-cols-2 gap-2">
                 {(plan?.features ?? []).map((f) => {
                   const ent = entitlements[f];
                   const allowed = ent?.allowed !== false;
                   return (
-                    <div key={f} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-900/50 border border-slate-800/60 text-xs">
+                    <div key={f} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-xs">
                       <div className="flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${allowed ? 'bg-emerald-400' : 'bg-rose-400'}`} />
-                        <span className="font-medium text-slate-200">{FEATURE_LABELS[f] ?? f}</span>
+                        <span className={`w-1.5 h-1.5 rounded-full ${allowed ? 'bg-emerald-500' : 'bg-rose-500'}`} />
+                        <span className="font-medium text-slate-800">{FEATURE_LABELS[f] ?? f}</span>
                       </div>
-                      <span className={`text-[10px] font-semibold ${allowed ? 'text-emerald-400' : 'text-rose-400'}`}>
+                      <span className={`text-[10px] font-bold ${allowed ? 'text-emerald-700' : 'text-rose-600'}`}>
                         {allowed ? 'Habilitado' : 'Bloqueado'}
                       </span>
                     </div>
@@ -160,15 +160,15 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
             </div>
 
             {/* Edit Controls */}
-            <div className="p-4 rounded-xl bg-slate-900/60 border border-slate-800 space-y-3">
-              <h3 className="text-xs font-bold text-slate-300 uppercase tracking-wider">Configuración de Suscripción</h3>
+            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Configuración de Suscripción</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Estado Operativo</label>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Estado Operativo</label>
                   <select
                     value={editStatus}
                     onChange={(e) => setEditStatus(e.target.value as PlatformTenant['status'])}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
                   >
                     <option value="ACTIVE">ACTIVE (Operativo)</option>
                     <option value="TRIAL">TRIAL (Período de prueba)</option>
@@ -178,11 +178,11 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
                 </div>
 
                 <div>
-                  <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Tier / Plan Comercial</label>
+                  <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Tier / Plan Comercial</label>
                   <select
                     value={editPlanId}
                     onChange={(e) => setEditPlanId(e.target.value)}
-                    className="w-full px-3 py-2 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
                   >
                     {plans.map((p) => (
                       <option key={p.id} value={p.id}>{p.name} — ${p.monthlyPrice}/mes ({p.maxStudents} alumnos)</option>
@@ -193,17 +193,17 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
             </div>
 
             {/* Footer Actions */}
-            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-800/80">
+            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
               <button
                 onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-slate-800 text-slate-400 hover:text-white text-xs font-semibold transition-all"
+                className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-all hover:bg-slate-50"
               >
                 Cancelar
               </button>
               <button
                 onClick={handleSave}
                 disabled={saving}
-                className="px-5 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+                className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
               >
                 {saving ? 'Guardando...' : 'Guardar Cambios'}
               </button>
@@ -254,31 +254,31 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
   };
 
   return (
-    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
-      <div className="bg-[#0b0f19] border border-slate-800 rounded-2xl p-6 max-w-md w-full text-slate-100 shadow-2xl" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between pb-4 border-b border-slate-800">
+    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
+      <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full text-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
+        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
           <div>
-            <h3 className="text-base font-bold text-white">Registrar Nuevo Colegio</h3>
-            <p className="text-xs text-slate-400">Provisión de tenant multi-tenant</p>
+            <h3 className="text-base font-bold text-slate-900">Registrar Nuevo Colegio</h3>
+            <p className="text-xs text-slate-500">Provisión de tenant multi-tenant</p>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white">✕</button>
+          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Nombre de la Institución</label>
+            <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Nombre de la Institución</label>
             <input
               type="text"
               required
               placeholder="Ej: Colegio San Agustín"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
             />
           </div>
 
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Subdominio</label>
+            <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Subdominio</label>
             <div className="flex items-center">
               <input
                 type="text"
@@ -286,20 +286,20 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
                 placeholder="sanagustin"
                 value={subdomain}
                 onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                className="flex-1 px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-l-lg text-white text-xs font-mono focus:outline-none focus:border-indigo-500"
+                className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-l-lg text-slate-900 text-xs font-mono focus:outline-none focus:border-blue-500 shadow-sm"
               />
-              <span className="px-3 py-2.5 bg-slate-900 border border-l-0 border-slate-800 rounded-r-lg text-xs font-medium text-slate-400">
+              <span className="px-3 py-2.5 bg-slate-100 border border-l-0 border-slate-200 rounded-r-lg text-xs font-semibold text-slate-600">
                 .cole.pe
               </span>
             </div>
           </div>
 
           <div>
-            <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Plan Comercial</label>
+            <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Plan Comercial</label>
             <select
               value={planId}
               onChange={(e) => setPlanId(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-slate-950 border border-slate-800 rounded-lg text-white text-xs focus:outline-none focus:border-indigo-500"
+              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
             >
               {plans.map((p) => (
                 <option key={p.id} value={p.id}>{p.name} — ${p.monthlyPrice}/mes ({p.maxStudents} alumnos)</option>
@@ -308,23 +308,23 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
           </div>
 
           {error && (
-            <div className="text-xs text-rose-400 bg-rose-500/10 border border-rose-500/20 rounded-lg p-2.5">
+            <div className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-2.5">
               {error}
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-800">
+          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-slate-800 text-slate-400 hover:text-white text-xs font-semibold transition-all"
+              className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-all hover:bg-slate-50"
             >
               Cancelar
             </button>
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
             >
               {saving ? 'Creando...' : 'Crear Colegio'}
             </button>
@@ -351,7 +351,7 @@ export default function TenantsView() {
       const [t, p] = await Promise.all([getTenants(), getPlans()]);
       setTenants(t);
       setPlans(p);
-    } catch { /* use mock data */ }
+    } catch { /* fallback */ }
     setLoading(false);
   }, []);
 
@@ -366,15 +366,15 @@ export default function TenantsView() {
   return (
     <div className="space-y-5">
       {/* Header & Controls */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-800/60">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <h2 className="text-xl font-bold text-white tracking-tight">Directorio de Colegios</h2>
-          <p className="text-xs text-slate-400 mt-0.5">Gestión de instituciones, cuotas y suscripciones</p>
+          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Directorio de Colegios</h2>
+          <p className="text-xs text-slate-500 mt-0.5">Gestión de instituciones, cuotas y suscripciones</p>
         </div>
 
         <button
           onClick={() => setShowCreate(true)}
-          className="flex items-center gap-1.5 px-3.5 py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+          className="flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
         >
           <span>+</span>
           <span>Registrar Colegio</span>
@@ -384,7 +384,7 @@ export default function TenantsView() {
       {/* Filter Tabs & Search Bar */}
       <div className="flex flex-col sm:flex-row gap-3">
         <div className="flex-1 relative">
-          <svg className="w-4 h-4 text-slate-500 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+          <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
           </svg>
           <input
@@ -392,11 +392,11 @@ export default function TenantsView() {
             placeholder="Buscar por institución o subdominio..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-slate-900/90 border border-slate-800 rounded-lg text-xs text-white placeholder:text-slate-500 focus:outline-none focus:border-indigo-500"
+            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 shadow-sm"
           />
         </div>
 
-        <div className="flex bg-slate-900 border border-slate-800 rounded-lg p-0.5 text-[11px] font-medium text-slate-400">
+        <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-[11px] font-medium text-slate-600">
           {[
             { id: 'ALL', label: 'Todos' },
             { id: 'ACTIVE', label: 'Activos' },
@@ -407,7 +407,7 @@ export default function TenantsView() {
               key={s.id}
               onClick={() => setFilterStatus(s.id)}
               className={`px-3 py-1 rounded-md transition-all ${
-                filterStatus === s.id ? 'bg-slate-800 text-white font-semibold shadow-sm' : 'hover:text-slate-200'
+                filterStatus === s.id ? 'bg-white text-slate-900 font-semibold shadow-sm' : 'hover:text-slate-900'
               }`}
             >
               {s.label}
@@ -417,10 +417,10 @@ export default function TenantsView() {
       </div>
 
       {/* Enterprise Data Table */}
-      <div className="rounded-xl bg-slate-900/80 border border-slate-800/80 overflow-hidden shadow-sm">
+      <div className="rounded-xl bg-white border border-slate-200/90 overflow-hidden shadow-sm">
         <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-300">
-            <thead className="bg-slate-950 text-[10px] uppercase font-bold text-slate-400 border-b border-slate-800">
+          <table className="w-full text-left text-xs text-slate-600">
+            <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200">
               <tr>
                 <th className="px-5 py-3">Institución</th>
                 <th className="px-5 py-3">Subdominio</th>
@@ -430,11 +430,11 @@ export default function TenantsView() {
                 <th className="px-5 py-3 text-right">Acción</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-slate-800/60 font-medium">
+            <tbody className="divide-y divide-slate-100 font-medium">
               {loading ? (
-                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">Cargando directorio...</td></tr>
+                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-400">Cargando directorio...</td></tr>
               ) : filtered.length === 0 ? (
-                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-500">No se encontraron instituciones.</td></tr>
+                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-400">No se encontraron instituciones.</td></tr>
               ) : (
                 filtered.map((t) => {
                   const sc = getStudentCount(t);
@@ -445,26 +445,26 @@ export default function TenantsView() {
                     <tr
                       key={t.id}
                       onClick={() => setDetailTenant(t)}
-                      className="hover:bg-slate-800/40 transition-colors cursor-pointer"
+                      className="hover:bg-slate-50/80 transition-colors cursor-pointer"
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-slate-800 border border-slate-700/60 flex items-center justify-center text-xs font-bold text-slate-200">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-50 to-indigo-50 border border-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700">
                             {t.name.charAt(0)}
                           </div>
                           <div>
-                            <p className="font-semibold text-white">{t.name}</p>
+                            <p className="font-semibold text-slate-900">{t.name}</p>
                             <p className="text-[10px] text-slate-400">ID: {t.id.slice(0, 8)}</p>
                           </div>
                         </div>
                       </td>
 
-                      <td className="px-5 py-3.5 font-mono text-[11px] text-indigo-400">
+                      <td className="px-5 py-3.5 font-mono text-[11px] text-blue-600 font-medium">
                         {t.subdomain}.cole.pe
                       </td>
 
                       <td className="px-5 py-3.5">
-                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-medium bg-slate-800 text-slate-300 border border-slate-700/60">
+                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
                           {t.plan?.name ?? '—'}
                         </span>
                       </td>
@@ -472,10 +472,10 @@ export default function TenantsView() {
                       <td className="px-5 py-3.5">
                         <div className="w-28">
                           <div className="flex justify-between text-[10px] mb-1 font-medium">
-                            <span className="text-slate-400">{sc}/{max}</span>
-                            <span className={pct > 90 ? 'text-rose-400' : 'text-slate-300'}>{pct}%</span>
+                            <span className="text-slate-500">{sc}/{max}</span>
+                            <span className={pct > 90 ? 'text-rose-600 font-bold' : 'text-slate-700 font-semibold'}>{pct}%</span>
                           </div>
-                          <div className="w-full bg-slate-800 rounded-full h-1 overflow-hidden">
+                          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
                             <div
                               className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : 'bg-emerald-500'}`}
                               style={{ width: `${Math.min(pct, 100)}%` }}
@@ -485,12 +485,12 @@ export default function TenantsView() {
                       </td>
 
                       <td className="px-5 py-3.5">
-                        <span className={`text-[10px] font-semibold px-2 py-0.5 rounded border ${
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
                           t.status === 'ACTIVE'
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : t.status === 'TRIAL'
-                            ? 'bg-amber-500/10 text-amber-400 border-amber-500/20'
-                            : 'bg-rose-500/10 text-rose-400 border-rose-500/20'
+                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            : 'bg-rose-50 text-rose-700 border-rose-200'
                         }`}>
                           {t.status}
                         </span>
@@ -499,7 +499,7 @@ export default function TenantsView() {
                       <td className="px-5 py-3.5 text-right">
                         <button
                           onClick={(e) => { e.stopPropagation(); setDetailTenant(t); }}
-                          className="px-2.5 py-1 text-[11px] font-semibold text-slate-300 hover:text-white bg-slate-800 hover:bg-slate-700 rounded border border-slate-700 transition-all"
+                          className="px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 rounded border border-slate-200 transition-all shadow-sm"
                         >
                           Configurar →
                         </button>
