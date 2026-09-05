@@ -69,7 +69,7 @@ jobs:
           DATABASE_URL: postgresql://user:pass@localhost:5432/placeholder
 
       - name: Run Tests
-        run: pnpm --filter @cole/core-api test -- --no-coverage
+        run: pnpm --filter @cole/core-api test
         env:
           DATABASE_URL: postgresql://user:pass@localhost:5432/placeholder
 
