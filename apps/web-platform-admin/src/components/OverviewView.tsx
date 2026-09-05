@@ -52,13 +52,13 @@ export default function OverviewView() {
     async function load() {
       try {
         const [m, t, p] = await Promise.all([
-          getPlatformMetrics(),
-          getTenants(),
-          getPlans(),
+          getPlatformMetrics().catch(() => MOCK_METRICS),
+          getTenants().catch(() => MOCK_TENANTS),
+          getPlans().catch(() => MOCK_PLANS),
         ]);
-        setMetrics(m);
-        setTenants(t);
-        setPlans(p);
+        if (m) setMetrics(m);
+        setTenants(Array.isArray(t) ? t : MOCK_TENANTS);
+        setPlans(Array.isArray(p) ? p : MOCK_PLANS);
       } catch {
         /* fallback */
       } finally {

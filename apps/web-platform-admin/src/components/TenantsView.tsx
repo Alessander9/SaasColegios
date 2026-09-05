@@ -385,11 +385,18 @@ export default function TenantsView() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [t, p] = await Promise.all([getTenants(), getPlans()]);
-      setTenants(t);
-      setPlans(p);
-    } catch { /* fallback */ }
-    setLoading(false);
+      const [t, p] = await Promise.all([
+        getTenants().catch(() => MOCK_TENANTS),
+        getPlans().catch(() => MOCK_PLANS),
+      ]);
+      setTenants(Array.isArray(t) ? t : MOCK_TENANTS);
+      setPlans(Array.isArray(p) ? p : MOCK_PLANS);
+    } catch {
+      setTenants(MOCK_TENANTS);
+      setPlans(MOCK_PLANS);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { reload(); }, [reload]);

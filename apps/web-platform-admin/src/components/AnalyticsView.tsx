@@ -92,13 +92,17 @@ export default function AnalyticsView() {
     setLoading(true);
     try {
       const [g, m] = await Promise.all([
-        getPlatformGrowth(),
-        getModuleUsage(),
+        getPlatformGrowth().catch(() => MOCK_GROWTH),
+        getModuleUsage().catch(() => MOCK_MODULES),
       ]);
-      setGrowth(g);
-      setModules(m);
-    } catch { /* fallback */ }
-    setLoading(false);
+      setGrowth(Array.isArray(g) ? g : MOCK_GROWTH);
+      setModules(Array.isArray(m) ? m : MOCK_MODULES);
+    } catch {
+      setGrowth(MOCK_GROWTH);
+      setModules(MOCK_MODULES);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { reload(); }, [reload]);

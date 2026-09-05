@@ -12,7 +12,7 @@ export class AuditService {
   // --------------------------------------------------
 
   async getAuditLogs(
-    tenantId: string,
+    tenantId?: string,
     filters?: AuditLogFilterDto,
     options?: { page?: number; limit?: number },
   ): Promise<any> {
@@ -20,7 +20,8 @@ export class AuditService {
     const limit = Math.min(options?.limit || 50, 200);
     const skip = (page - 1) * limit;
 
-    const where: any = { tenantId };
+    const where: any = {};
+    if (tenantId) where.tenantId = tenantId;
     if (filters?.resource) where.resource = filters.resource;
     if (filters?.actorId) where.actorId = filters.actorId;
     if (filters?.action) where.action = { contains: filters.action, mode: 'insensitive' };
@@ -51,35 +52,36 @@ export class AuditService {
     };
   }
 
-  async getAuditLogById(tenantId: string, id: string): Promise<any> {
+  async getAuditLogById(tenantId: string | undefined, id: string): Promise<any> {
+    const where: any = { id };
+    if (tenantId) where.tenantId = tenantId;
     const log = await db.auditLog.findFirst({
-      where: { id, tenantId },
+      where,
     });
     if (!log) throw new NotFoundException('Audit log entry not found');
     return log;
   }
 
   async getResourceHistory(
-    tenantId: string,
+    tenantId: string | undefined,
     resource: string,
     resourceId: string,
   ): Promise<any[]> {
+    const where: any = { resource, resourceId };
+    if (tenantId) where.tenantId = tenantId;
     return db.auditLog.findMany({
-      where: {
-        tenantId,
-        resource,
-        resourceId,
-      },
+      where,
       orderBy: { createdAt: 'desc' },
     });
   }
 
   async getActorActivity(
-    tenantId: string,
+    tenantId: string | undefined,
     actorId: string,
     options?: { startDate?: string; endDate?: string },
   ): Promise<any[]> {
-    const where: any = { tenantId, actorId };
+    const where: any = { actorId };
+    if (tenantId) where.tenantId = tenantId;
     if (options?.startDate || options?.endDate) {
       where.createdAt = {};
       if (options.startDate) where.createdAt.gte = new Date(options.startDate);
@@ -93,8 +95,9 @@ export class AuditService {
     });
   }
 
-  async getAuditStats(tenantId: string, startDate?: string, endDate?: string): Promise<any> {
-    const where: any = { tenantId };
+  async getAuditStats(tenantId?: string, startDate?: string, endDate?: string): Promise<any> {
+    const where: any = {};
+    if (tenantId) where.tenantId = tenantId;
     if (startDate || endDate) {
       where.createdAt = {};
       if (startDate) where.createdAt.gte = new Date(startDate);

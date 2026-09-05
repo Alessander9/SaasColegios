@@ -62,13 +62,21 @@ export default function AuditView() {
         getAuditLogs({ action: filterAction || undefined, resource: filterResource || undefined, limit: 50 }).catch(() => ({ data: MOCK_LOGS, total: MOCK_LOGS.length, page: 1, limit: 50 })),
         getAuditStats().catch(() => MOCK_STATS),
       ]);
-      setLogs(l.data);
-      setStats(s);
-    } catch { /* fallback */ }
-    setLoading(false);
+      const logList = Array.isArray(l?.data) ? l.data : Array.isArray(l) ? l : MOCK_LOGS;
+      const statsObj = s && Array.isArray(s.topActions) ? s : MOCK_STATS;
+      setLogs(logList);
+      setStats(statsObj);
+    } catch {
+      setLogs(MOCK_LOGS);
+      setStats(MOCK_STATS);
+    } finally {
+      setLoading(false);
+    }
   }, [filterAction, filterResource]);
 
   useEffect(() => { reload(); }, [reload]);
+
+  const topActions = Array.isArray(stats?.topActions) ? stats.topActions : MOCK_STATS.topActions;
 
   return (
     <div className="space-y-6 animate-view">
@@ -87,7 +95,7 @@ export default function AuditView() {
 
         <div className="flex items-center gap-2">
           <span className="text-[11px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg hover-lift-sm">
-            Total Eventos: {logs.length}
+            Total Eventos: {(logs || []).length}
           </span>
         </div>
       </div>
@@ -100,7 +108,7 @@ export default function AuditView() {
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-500">Creaciones</p>
-            <p className="text-base font-black text-emerald-700">{stats.topActions.find((a) => a.action === 'CREATE')?.count ?? 62}</p>
+            <p className="text-base font-black text-emerald-700">{topActions.find((a) => a.action === 'CREATE')?.count ?? 62}</p>
           </div>
         </div>
 
@@ -110,7 +118,7 @@ export default function AuditView() {
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-500">Ediciones</p>
-            <p className="text-base font-black text-blue-700">{stats.topActions.find((a) => a.action === 'UPDATE')?.count ?? 48}</p>
+            <p className="text-base font-black text-blue-700">{topActions.find((a) => a.action === 'UPDATE')?.count ?? 48}</p>
           </div>
         </div>
 
@@ -120,7 +128,7 @@ export default function AuditView() {
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-slate-500">Publicaciones</p>
-            <p className="text-base font-black text-purple-700">{stats.topActions.find((a) => a.action === 'PUBLISH')?.count ?? 12}</p>
+            <p className="text-base font-black text-purple-700">{topActions.find((a) => a.action === 'PUBLISH')?.count ?? 12}</p>
           </div>
         </div>
 
@@ -130,7 +138,7 @@ export default function AuditView() {
           </div>
           <div>
             <p className="text-[10px] uppercase font-bold text-orange-700">Reversiones</p>
-            <p className="text-base font-black text-orange-700">{stats.topActions.find((a) => a.action === 'REVERSE')?.count ?? 3}</p>
+            <p className="text-base font-black text-orange-700">{topActions.find((a) => a.action === 'REVERSE')?.count ?? 3}</p>
           </div>
         </div>
       </div>
@@ -183,10 +191,10 @@ export default function AuditView() {
             <tbody className="divide-y divide-slate-100 font-medium">
               {loading ? (
                 <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-400">Cargando logs de seguridad...</td></tr>
-              ) : logs.length === 0 ? (
+              ) : !logs || logs.length === 0 ? (
                 <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-400">No se encontraron eventos registrados.</td></tr>
               ) : (
-                logs.map((log) => {
+                (logs || []).map((log) => {
                   const sty = ACTION_STYLES[log.action] ?? ACTION_STYLES.CREATE;
                   const isExpanded = expandedLog === log.id;
 

@@ -20,7 +20,10 @@ import { Permissions, AuthenticatedUser } from '@cole/domain-types';
 export class AuditController {
   constructor(private readonly auditService: AuditService) {}
 
-  private extractTenantId(user: AuthenticatedUser): string {
+  private extractTenantId(user: AuthenticatedUser, queryTenantId?: string): string | undefined {
+    if (user.isSuperAdmin) {
+      return queryTenantId || user.tenantId || undefined;
+    }
     if (!user.tenantId) {
       throw new ForbiddenException('Tenant context is required for audit operations');
     }
@@ -30,6 +33,7 @@ export class AuditController {
   @Get('logs')
   @RequirePermission(Permissions.AUDIT_VIEW)
   @ApiOperation({ summary: 'Query audit logs with filters, pagination and date range' })
+  @ApiQuery({ name: 'tenantId', required: false })
   @ApiQuery({ name: 'resource', required: false })
   @ApiQuery({ name: 'actorId', required: false })
   @ApiQuery({ name: 'action', required: false })
@@ -39,6 +43,7 @@ export class AuditController {
   @ApiQuery({ name: 'limit', required: false })
   getAuditLogs(
     @CurrentUser() user: AuthenticatedUser,
+    @Query('tenantId') tenantId?: string,
     @Query('resource') resource?: string,
     @Query('actorId') actorId?: string,
     @Query('action') action?: string,
@@ -48,7 +53,7 @@ export class AuditController {
     @Query('limit') limit?: string,
   ) {
     return this.auditService.getAuditLogs(
-      this.extractTenantId(user),
+      this.extractTenantId(user, tenantId),
       { resource, actorId, action, startDate, endDate },
       { page: page ? parseInt(page, 10) : 1, limit: limit ? parseInt(limit, 10) : 50 },
     );
@@ -60,8 +65,9 @@ export class AuditController {
   getAuditLogById(
     @CurrentUser() user: AuthenticatedUser,
     @Param('id') id: string,
+    @Query('tenantId') tenantId?: string,
   ) {
-    return this.auditService.getAuditLogById(this.extractTenantId(user), id);
+    return this.auditService.getAuditLogById(this.extractTenantId(user, tenantId), id);
   }
 
   @Get('resource/:resource/:resourceId')
@@ -71,9 +77,10 @@ export class AuditController {
     @CurrentUser() user: AuthenticatedUser,
     @Param('resource') resource: string,
     @Param('resourceId') resourceId: string,
+    @Query('tenantId') tenantId?: string,
   ) {
     return this.auditService.getResourceHistory(
-      this.extractTenantId(user),
+      this.extractTenantId(user, tenantId),
       resource,
       resourceId,
     );
@@ -84,14 +91,16 @@ export class AuditController {
   @ApiOperation({ summary: 'Get activity history for a specific user/actor' })
   @ApiQuery({ name: 'startDate', required: false })
   @ApiQuery({ name: 'endDate', required: false })
+  @ApiQuery({ name: 'tenantId', required: false })
   getActorActivity(
     @CurrentUser() user: AuthenticatedUser,
     @Param('actorId') actorId: string,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('tenantId') tenantId?: string,
   ) {
     return this.auditService.getActorActivity(
-      this.extractTenantId(user),
+      this.extractTenantId(user, tenantId),
       actorId,
       { startDate, endDate },
     );
@@ -102,11 +111,13 @@ export class AuditController {
   @ApiOperation({ summary: 'Get audit log statistics: by resource, top actions, top actors' })
   @ApiQuery({ name: 'startDate', required: false })
   @ApiQuery({ name: 'endDate', required: false })
+  @ApiQuery({ name: 'tenantId', required: false })
   getAuditStats(
     @CurrentUser() user: AuthenticatedUser,
     @Query('startDate') startDate?: string,
     @Query('endDate') endDate?: string,
+    @Query('tenantId') tenantId?: string,
   ) {
-    return this.auditService.getAuditStats(this.extractTenantId(user), startDate, endDate);
+    return this.auditService.getAuditStats(this.extractTenantId(user, tenantId), startDate, endDate);
   }
 }

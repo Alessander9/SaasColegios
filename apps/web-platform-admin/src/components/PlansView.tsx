@@ -253,10 +253,13 @@ export default function PlansView() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const p = await getPlans();
-      setPlans(p);
-    } catch { /* fallback */ }
-    setLoading(false);
+      const p = await getPlans().catch(() => MOCK_PLANS);
+      setPlans(Array.isArray(p) ? p : MOCK_PLANS);
+    } catch {
+      setPlans(MOCK_PLANS);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { reload(); }, [reload]);
