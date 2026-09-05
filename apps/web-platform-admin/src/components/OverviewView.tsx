@@ -47,6 +47,7 @@ export default function OverviewView() {
   const [plans, setPlans] = useState<PlatformPlan[]>(MOCK_PLANS);
   const [loading, setLoading] = useState(true);
   const [selectedPeriod, setSelectedPeriod] = useState<'30D' | '90D' | 'YTD'>('30D');
+  const [institutionSearch, setInstitutionSearch] = useState('');
 
   useEffect(() => {
     async function load() {
@@ -68,8 +69,8 @@ export default function OverviewView() {
     load();
   }, []);
 
-  const totalStudents = metrics.usage.totalStudentsActive || tenants.reduce((a, t) => a + getStudentCount(t), 0);
-  const mrr = getMRR(tenants);
+  const totalStudents = metrics.usage.totalStudentsActive || (tenants || []).reduce((a, t) => a + getStudentCount(t), 0);
+  const mrr = getMRR(tenants || []);
   const arr = mrr * 12;
 
   const kpiCards = [
@@ -131,14 +132,22 @@ export default function OverviewView() {
     },
   ];
 
+  const filteredTenants = (tenants || []).filter((t) => {
+    if (!institutionSearch) return true;
+    return (
+      t.name.toLowerCase().includes(institutionSearch.toLowerCase()) ||
+      t.subdomain.toLowerCase().includes(institutionSearch.toLowerCase())
+    );
+  });
+
   return (
-    <div className="space-y-6 animate-view">
+    <div className="space-y-6 animate-in fade-in">
       {/* Top Controls Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2.5">
             <h2 className="text-xl font-bold text-slate-900 tracking-tight">Métricas Ejecutivas</h2>
-            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full flex items-center gap-1 hover:bg-orange-100 transition-colors">
+            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2.5 py-0.5 rounded-full flex items-center gap-1.5 hover:bg-orange-100 transition-colors">
               <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
               SaaS Live
             </span>
@@ -148,13 +157,13 @@ export default function OverviewView() {
 
         <div className="flex items-center gap-2.5">
           {/* Period selector */}
-          <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-[11px] font-medium text-slate-600">
+          <div className="flex bg-slate-100 border border-slate-200 rounded-xl p-0.5 text-[11px] font-bold text-slate-600">
             {(['30D', '90D', 'YTD'] as const).map((period) => (
               <button
                 key={period}
                 onClick={() => setSelectedPeriod(period)}
-                className={`px-3 py-1 rounded-md transition-all duration-150 ${
-                  selectedPeriod === period ? 'bg-white text-slate-900 font-bold shadow-sm scale-105' : 'hover:text-slate-900 hover:bg-white/50'
+                className={`px-3 py-1 rounded-lg transition-all duration-150 cursor-pointer ${
+                  selectedPeriod === period ? 'bg-white text-slate-900 font-black shadow-xs' : 'hover:text-slate-900 hover:bg-white/50'
                 }`}
               >
                 {period}
@@ -164,8 +173,8 @@ export default function OverviewView() {
 
           {/* Export button */}
           <button
-            onClick={() => alert('Informe exportado en formato CSV')}
-            className="btn-interactive flex items-center gap-1.5 px-3 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-lg text-xs font-semibold text-slate-700 hover:text-slate-900 transition-all shadow-sm"
+            onClick={() => alert('Informe ejecutivo exportado en formato CSV')}
+            className="btn-interactive flex items-center gap-1.5 px-3.5 py-1.5 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl text-xs font-bold text-slate-700 hover:text-slate-900 transition-all shadow-xs cursor-pointer"
           >
             <svg className="w-3.5 h-3.5 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
@@ -208,7 +217,7 @@ export default function OverviewView() {
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Recent Institutions (2 cols) */}
         <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200/80 p-6 space-y-4 shadow-xs">
-          <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-2 border-b border-slate-100">
             <div className="flex items-center gap-2.5">
               <span className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
@@ -217,68 +226,85 @@ export default function OverviewView() {
               </span>
               <div>
                 <h3 className="text-sm font-bold text-slate-900">Instituciones y Utilización de Cuota</h3>
-                <p className="text-[11px] text-slate-500">Capacidad de alumnos y estado de colegios</p>
+                <p className="text-[11px] text-slate-500">Capacidad de alumnos y estado en vivo</p>
               </div>
             </div>
-            <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
-              {tenants.length} Colegios
-            </span>
+
+            {/* In-card Quick Search */}
+            <div className="relative">
+              <input
+                type="text"
+                placeholder="Filtrar colegio..."
+                value={institutionSearch}
+                onChange={(e) => setInstitutionSearch(e.target.value)}
+                className="w-44 pl-7 pr-3 py-1 bg-slate-50 border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:bg-white focus:border-blue-500 transition-all"
+              />
+              <svg className="w-3.5 h-3.5 text-slate-400 absolute left-2 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
+              </svg>
+            </div>
           </div>
 
           <div className="divide-y divide-slate-100">
-            {tenants.map((t) => {
-              const sc = getStudentCount(t);
-              const max = t.plan?.maxStudents ?? 100;
-              const pct = Math.round((sc / max) * 100);
+            {filteredTenants.length === 0 ? (
+              <div className="py-8 text-center text-slate-400 text-xs font-medium">
+                No se encontraron colegios con "{institutionSearch}"
+              </div>
+            ) : (
+              filteredTenants.map((t) => {
+                const sc = getStudentCount(t);
+                const max = t.plan?.maxStudents ?? 100;
+                const pct = Math.round((sc / max) * 100);
 
-              return (
-                <div key={t.id} className="py-3.5 px-3 flex items-center justify-between gap-4 first:pt-2 last:pb-2 rounded-xl hover:bg-slate-50/90 transition-all duration-150 group">
-                  <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-50 via-indigo-50 to-orange-50 border border-indigo-100 flex items-center justify-center text-xs font-black text-indigo-700 shadow-xs group-hover:scale-105 transition-transform">
-                      {t.name.charAt(0)}
-                    </div>
-                    <div className="min-w-0">
-                      <p className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{t.name}</p>
-                      <p className="text-[10px] font-mono font-medium text-blue-600 truncate">{t.subdomain}.cole.pe</p>
-                    </div>
-                  </div>
-
-                  <div className="flex items-center gap-4">
-                    {/* Plan Badge */}
-                    <span className="hidden sm:inline-block text-[10px] font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
-                      {t.plan?.name ?? '—'}
-                    </span>
-
-                    {/* Progress Bar */}
-                    <div className="w-28 text-right">
-                      <div className="flex justify-between text-[10px] font-semibold mb-1">
-                        <span className="text-slate-500">{sc} / {max}</span>
-                        <span className={pct > 90 ? 'text-rose-600 font-bold' : pct > 70 ? 'text-orange-600 font-bold' : 'text-emerald-700 font-bold'}>{pct}%</span>
+                return (
+                  <div key={t.id} className="py-3.5 px-3 flex items-center justify-between gap-4 first:pt-2 last:pb-2 rounded-xl hover:bg-slate-50/90 transition-all duration-150 group">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-50 via-indigo-50 to-orange-50 border border-indigo-100 flex items-center justify-center text-xs font-black text-indigo-700 shadow-xs group-hover:scale-105 transition-transform">
+                        {t.name.charAt(0)}
                       </div>
-                      <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
-                        <div
-                          className={`h-full rounded-full transition-all duration-300 ${
-                            pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-orange-500' : 'bg-emerald-500'
-                          }`}
-                          style={{ width: `${Math.min(pct, 100)}%` }}
-                        />
+                      <div className="min-w-0">
+                        <p className="text-xs font-bold text-slate-900 truncate group-hover:text-blue-600 transition-colors">{t.name}</p>
+                        <p className="text-[10px] font-mono font-medium text-blue-600 truncate">{t.subdomain}.cole.pe</p>
                       </div>
                     </div>
 
-                    {/* Status Dot */}
-                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-transform ${
-                      t.status === 'ACTIVE'
-                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                        : t.status === 'TRIAL'
-                        ? 'bg-orange-50 text-orange-700 border-orange-200'
-                        : 'bg-rose-50 text-rose-700 border-rose-200'
-                    }`}>
-                      {t.status}
-                    </span>
+                    <div className="flex items-center gap-4">
+                      {/* Plan Badge */}
+                      <span className="hidden sm:inline-block text-[10px] font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
+                        {t.plan?.name ?? '—'}
+                      </span>
+
+                      {/* Progress Bar */}
+                      <div className="w-28 text-right">
+                        <div className="flex justify-between text-[10px] font-semibold mb-1">
+                          <span className="text-slate-500">{sc} / {max}</span>
+                          <span className={pct > 90 ? 'text-rose-600 font-bold' : pct > 70 ? 'text-orange-600 font-bold' : 'text-emerald-700 font-bold'}>{pct}%</span>
+                        </div>
+                        <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
+                          <div
+                            className={`h-full rounded-full transition-all duration-300 ${
+                              pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-orange-500' : 'bg-emerald-500'
+                            }`}
+                            style={{ width: `${Math.min(pct, 100)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Status Dot */}
+                      <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-transform ${
+                        t.status === 'ACTIVE'
+                          ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                          : t.status === 'TRIAL'
+                          ? 'bg-orange-50 text-orange-700 border-orange-200'
+                          : 'bg-rose-50 text-rose-700 border-rose-200'
+                      }`}>
+                        {t.status}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -298,8 +324,8 @@ export default function OverviewView() {
 
             <div className="space-y-3">
               {plans.map((plan) => {
-                const count = tenants.filter((t) => t.planId === plan.id).length;
-                const pct = tenants.length > 0 ? Math.round((count / tenants.length) * 100) : 0;
+                const count = (tenants || []).filter((t) => t.planId === plan.id).length;
+                const pct = (tenants || []).length > 0 ? Math.round((count / tenants.length) * 100) : 0;
 
                 return (
                   <div key={plan.id} className="space-y-1.5 p-2 rounded-xl hover:bg-slate-50 transition-colors">
@@ -367,4 +393,3 @@ export default function OverviewView() {
     </div>
   );
 }
-

@@ -9,9 +9,9 @@ import { useCurrency } from '../context/CurrencyContext';
 
 /* ── Fallback mock data ── */
 const MOCK_PLANS: PlatformPlan[] = [
-  { id: 'p1', code: 'PLAN_BASIC', name: 'Básico', description: 'Plan de inicio', maxStudents: 150, maxTeachers: 15, maxStorageGb: 10, features: ['academic', 'enrollment', 'notifications'], monthlyPrice: 99, annualPrice: 990, isActive: true, createdAt: '', updatedAt: '' },
-  { id: 'p2', code: 'PLAN_PRO', name: 'Profesional', description: 'Para colegios en crecimiento', maxStudents: 500, maxTeachers: 50, maxStorageGb: 50, features: ['academic', 'enrollment', 'finance', 'commerce', 'notifications'], monthlyPrice: 199, annualPrice: 1990, isActive: true, createdAt: '', updatedAt: '' },
-  { id: 'p3', code: 'PLAN_ENT', name: 'Enterprise', description: 'Solución integral', maxStudents: 1500, maxTeachers: 150, maxStorageGb: 200, features: ['academic', 'enrollment', 'finance', 'commerce', 'activities', 'hr', 'payroll', 'notifications', 'documents', 'reporting'], monthlyPrice: 399, annualPrice: 3990, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 'p1', code: 'PLAN_BASIC', name: 'Básico', description: 'Plan de inicio para instituciones en crecimiento inicial', maxStudents: 150, maxTeachers: 15, maxStorageGb: 10, features: ['academic', 'enrollment', 'notifications'], monthlyPrice: 99, annualPrice: 990, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 'p2', code: 'PLAN_PRO', name: 'Profesional', description: 'Solución integral con cobranzas y tienda virtual', maxStudents: 500, maxTeachers: 50, maxStorageGb: 50, features: ['academic', 'enrollment', 'finance', 'commerce', 'notifications'], monthlyPrice: 199, annualPrice: 1990, isActive: true, createdAt: '', updatedAt: '' },
+  { id: 'p3', code: 'PLAN_ENT', name: 'Enterprise', description: 'Suite completa con nóminas, RRHH y analítica avanzada', maxStudents: 1500, maxTeachers: 150, maxStorageGb: 200, features: ['academic', 'enrollment', 'finance', 'commerce', 'activities', 'hr', 'payroll', 'notifications', 'documents', 'reporting'], monthlyPrice: 399, annualPrice: 3990, isActive: true, createdAt: '', updatedAt: '' },
 ];
 
 const MOCK_TENANTS: PlatformTenant[] = [
@@ -24,22 +24,22 @@ function getStudentCount(t: PlatformTenant): number {
   return t.usageMetrics?.find((u) => u.metricKey === 'students' && u.periodKey === 'current')?.value ?? 0;
 }
 
-const FEATURE_LABELS: Record<string, { label: string; icon: string }> = {
-  academic: { label: 'Gestión Académica & Notas', icon: '📝' },
-  enrollment: { label: 'Matrícula & Registro', icon: '📋' },
-  finance: { label: 'Tesorería & Cobranzas', icon: '💳' },
-  commerce: { label: 'Tienda Escolar Online', icon: '🛍️' },
-  activities: { label: 'Talleres Extracurriculares', icon: '⚽' },
-  hr: { label: 'Recursos Humanos & Docentes', icon: '👥' },
-  payroll: { label: 'Cálculo de Planillas', icon: '💼' },
-  notifications: { label: 'Notificaciones Push & Email', icon: '🔔' },
-  documents: { label: 'Gestor Documental', icon: '📄' },
-  reporting: { label: 'Reportes Ejecutivos & BI', icon: '📊' },
-  advanced_analytics: { label: 'Analítica Predictiva', icon: '🔬' },
-  custom_domain: { label: 'Dominio Personalizado', icon: '🌐' },
+const FEATURE_LABELS: Record<string, { label: string; icon: string; category: string }> = {
+  academic: { label: 'Gestión Académica & Notas', icon: '📝', category: 'Académico' },
+  enrollment: { label: 'Matrícula & Fichas de Ingreso', icon: '📋', category: 'Académico' },
+  finance: { label: 'Tesorería, Pensiones & Pagos', icon: '💳', category: 'Finanzas' },
+  commerce: { label: 'Tienda Escolar & Uniformes', icon: '🛍️', category: 'Comercio' },
+  activities: { label: 'Talleres Extracurriculares', icon: '⚽', category: 'Académico' },
+  hr: { label: 'Recursos Humanos & Docentes', icon: '👥', category: 'Gestión' },
+  payroll: { label: 'Cálculo de Planillas & Nóminas', icon: '💼', category: 'Finanzas' },
+  notifications: { label: 'Notificaciones Push & Alertas', icon: '🔔', category: 'Comunicación' },
+  documents: { label: 'Gestor Documental Digital', icon: '📄', category: 'Gestión' },
+  reporting: { label: 'Reportes Ejecutivos & BI', icon: '📊', category: 'Dirección' },
+  advanced_analytics: { label: 'Analítica Predictiva de Deserción', icon: '🔬', category: 'Dirección' },
+  custom_domain: { label: 'Dominio Propio (DNS SSL)', icon: '🌐', category: 'Infraestructura' },
 };
 
-/* ── Tenant Detail Modal ── */
+/* ── Tenant Detail Modal (3 Modern Tabs) ── */
 function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
   tenant: PlatformTenant;
   plans: PlatformPlan[];
@@ -47,12 +47,15 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
   onUpdated: () => void;
 }) {
   const { formatMoney } = useCurrency();
+  const [activeTab, setActiveTab] = useState<'overview' | 'features' | 'settings'>('overview');
   const [detail, setDetail] = useState<PlatformTenant>(tenant);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
-  const [editStatus, setEditStatus] = useState(tenant.status);
+  const [editStatus, setEditStatus] = useState<PlatformTenant['status']>(tenant.status);
   const [editPlanId, setEditPlanId] = useState(tenant.planId);
+  const [editCustomDomain, setEditCustomDomain] = useState(tenant.customDomain || '');
   const [entitlements, setEntitlements] = useState<Record<string, { allowed: boolean; current?: number; limit?: number }>>({});
+  const [saveSuccess, setSaveSuccess] = useState(false);
 
   useEffect(() => {
     async function load() {
@@ -62,6 +65,7 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
         setDetail(d);
         setEditStatus(d.status);
         setEditPlanId(d.planId);
+        setEditCustomDomain(d.customDomain || '');
         const entResults: Record<string, { allowed: boolean; current?: number; limit?: number }> = {};
         for (const f of (d.plan?.features ?? [])) {
           try {
@@ -69,7 +73,7 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
           } catch { /* skip */ }
         }
         setEntitlements(entResults);
-      } catch { /* use passed tenant */ }
+      } catch { /* use fallback */ }
       setLoading(false);
     }
     load();
@@ -77,177 +81,329 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
 
   const handleSave = async () => {
     setSaving(true);
+    setSaveSuccess(false);
     try {
-      await updateTenant(tenant.id, { status: editStatus, planId: editPlanId });
+      await updateTenant(tenant.id, {
+        status: editStatus,
+        planId: editPlanId,
+        customDomain: editCustomDomain.trim() || undefined,
+      });
+      setSaveSuccess(true);
       onUpdated();
-      onClose();
+      setTimeout(() => {
+        onClose();
+      }, 700);
     } catch (e) {
-      alert('Error al actualizar: ' + (e as Error).message);
+      alert('Error al actualizar configuración: ' + (e as Error).message);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   const sc = getStudentCount(detail);
   const plan = plans.find((p) => p.id === editPlanId) ?? detail.plan;
-  const pct = plan ? Math.round((sc / plan.maxStudents) * 100) : 0;
+  const maxStudents = plan?.maxStudents ?? 100;
+  const pct = Math.round((sc / maxStudents) * 100);
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-view" onClick={onClose}>
-      <div className="bg-white border border-slate-200 rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto text-slate-800 shadow-2xl hover-lift-sm" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="p-6 border-b border-slate-100 flex items-start justify-between">
-          <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-orange-500 flex items-center justify-center text-white text-base font-black shadow-md shadow-indigo-500/20 transition-transform duration-300 hover:scale-105">
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in" onClick={onClose}>
+      <div className="bg-white border border-slate-200/90 rounded-3xl max-w-2xl w-full max-h-[90vh] flex flex-col shadow-2xl overflow-hidden" onClick={(e) => e.stopPropagation()}>
+        
+        {/* Modal Header */}
+        <div className="p-6 bg-slate-50/60 border-b border-slate-100 flex items-start justify-between">
+          <div className="flex items-center gap-4">
+            <div className="w-12 h-12 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-orange-500 flex items-center justify-center text-white text-lg font-black shadow-md shadow-indigo-500/20">
               {detail.name.charAt(0)}
             </div>
             <div>
-              <div className="flex items-center gap-2">
-                <h2 className="text-base font-bold text-slate-900 leading-tight">{detail.name}</h2>
-                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border transition-all ${
-                  detail.status === 'ACTIVE'
+              <div className="flex items-center gap-2.5">
+                <h2 className="text-lg font-bold text-slate-900 leading-none">{detail.name}</h2>
+                <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                  editStatus === 'ACTIVE'
                     ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                    : detail.status === 'TRIAL'
+                    : editStatus === 'TRIAL'
                     ? 'bg-orange-50 text-orange-700 border-orange-200'
                     : 'bg-rose-50 text-rose-700 border-rose-200'
                 }`}>
-                  {detail.status}
+                  {editStatus}
                 </span>
               </div>
-              <p className="text-xs font-mono font-medium text-blue-600 mt-0.5">{detail.subdomain}.cole.pe</p>
+              <div className="flex items-center gap-2 mt-1.5">
+                <span className="text-xs font-mono font-bold text-blue-600">https://{detail.subdomain}.cole.pe</span>
+                <span className="text-slate-300">•</span>
+                <span className="text-[11px] font-semibold text-slate-500">Plan {plan?.name}</span>
+              </div>
             </div>
           </div>
-          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-all btn-interactive">
+
+          <button
+            onClick={onClose}
+            className="p-2 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-200/60 transition-colors cursor-pointer"
+          >
             <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
               <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
         </div>
 
-        {loading ? (
-          <div className="p-12 text-center text-slate-400 text-xs animate-pulse">Cargando telemetría...</div>
-        ) : (
-          <div className="p-6 space-y-6">
-            {/* Stats Row */}
-            <div className="grid grid-cols-3 gap-3">
-              <div className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-100 hover-lift-sm transition-all duration-300 group">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-blue-700 uppercase">Capacidad Alumnos</span>
-                  <span className="text-blue-600 group-hover:scale-110 transition-transform">👥</span>
+        {/* Tab Navigation */}
+        <div className="flex border-b border-slate-100 px-6 bg-white gap-2">
+          {[
+            { id: 'overview', label: 'Métricas & Cuotas', icon: '📊' },
+            { id: 'features', label: 'Módulos & Entitlements', icon: '⚡' },
+            { id: 'settings', label: 'Suscripción & Dominio', icon: '⚙️' },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-2 py-3 px-3.5 text-xs font-bold border-b-2 transition-all cursor-pointer ${
+                activeTab === tab.id
+                  ? 'border-blue-600 text-blue-600'
+                  : 'border-transparent text-slate-500 hover:text-slate-900'
+              }`}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Tab Content */}
+        <div className="p-6 overflow-y-auto flex-1 space-y-6">
+          {loading ? (
+            <div className="py-16 text-center text-slate-400 text-xs animate-pulse">
+              Cargando telemetría del colegio...
+            </div>
+          ) : activeTab === 'overview' ? (
+            <div className="space-y-6 animate-in fade-in">
+              {/* Top Stat Cards */}
+              <div className="grid grid-cols-3 gap-4">
+                <div className="p-4 rounded-2xl bg-blue-50/60 border border-blue-100">
+                  <div className="flex items-center justify-between text-xs text-blue-700 font-bold uppercase tracking-wider">
+                    <span>Capacidad Alumnos</span>
+                    <span>👥</span>
+                  </div>
+                  <p className="text-2xl font-black text-slate-900 mt-2">
+                    {sc} <span className="text-xs font-normal text-slate-500">/ {maxStudents}</span>
+                  </p>
+                  <div className="w-full h-2 bg-blue-200/60 rounded-full mt-3 overflow-hidden">
+                    <div
+                      className={`h-full rounded-full transition-all duration-500 ${pct > 90 ? 'bg-rose-500' : 'bg-blue-600'}`}
+                      style={{ width: `${Math.min(pct, 100)}%` }}
+                    />
+                  </div>
+                  <p className="text-[10px] font-bold text-slate-500 mt-1.5 text-right">{pct}% utilizado</p>
                 </div>
-                <p className="text-xl font-bold text-slate-900 mt-1">{sc} <span className="text-xs font-normal text-slate-500">/ {plan?.maxStudents ?? '—'}</span></p>
-                <div className="w-full h-1 bg-blue-200 rounded-full mt-2 overflow-hidden">
-                  <div className={`h-full rounded-full transition-all duration-500 ${pct > 90 ? 'bg-rose-500' : 'bg-blue-600'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
+
+                <div className="p-4 rounded-2xl bg-orange-50/60 border border-orange-100">
+                  <div className="flex items-center justify-between text-xs text-orange-700 font-bold uppercase tracking-wider">
+                    <span>Facturación MRR</span>
+                    <span>💵</span>
+                  </div>
+                  <p className="text-2xl font-black text-orange-600 mt-2">
+                    {formatMoney(plan?.monthlyPrice ?? 0)}
+                  </p>
+                  <p className="text-[11px] text-slate-500 font-medium mt-1">
+                    {formatMoney((plan?.monthlyPrice ?? 0) * 12)} ARR proyectado
+                  </p>
+                  <span className="inline-block mt-2 text-[10px] font-bold text-orange-700 bg-orange-100/80 px-2 py-0.5 rounded-md">
+                    Tier {plan?.name}
+                  </span>
+                </div>
+
+                <div className="p-4 rounded-2xl bg-purple-50/60 border border-purple-100">
+                  <div className="flex items-center justify-between text-xs text-purple-700 font-bold uppercase tracking-wider">
+                    <span>Límites de Docentes</span>
+                    <span>👨‍🏫</span>
+                  </div>
+                  <p className="text-2xl font-black text-purple-700 mt-2">
+                    {plan?.maxTeachers ?? 15} <span className="text-xs font-normal text-slate-500">profesores</span>
+                  </p>
+                  <p className="text-[11px] text-slate-500 font-medium mt-1">
+                    {plan?.maxStorageGb ?? 10} GB Almacenamiento
+                  </p>
+                  <span className="inline-block mt-2 text-[10px] font-bold text-purple-700 bg-purple-100/80 px-2 py-0.5 rounded-md">
+                    {plan?.features.length ?? 0} Módulos Activos
+                  </span>
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-orange-50/50 border border-orange-100 hover-lift-sm transition-all duration-300 group">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-orange-700 uppercase">Facturación MRR</span>
-                  <span className="text-orange-600 group-hover:scale-110 transition-transform">💵</span>
+              {/* Institution Metadata */}
+              <div className="rounded-2xl border border-slate-200/80 p-4 space-y-3 bg-slate-50/50">
+                <h4 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Información del Sistema</h4>
+                <div className="grid grid-cols-2 gap-3 text-xs">
+                  <div>
+                    <span className="text-slate-400 font-medium">Identificador Slug:</span>
+                    <p className="font-mono font-bold text-slate-800">{detail.slug}</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-medium">Subdominio Cole:</span>
+                    <p className="font-mono font-bold text-blue-600">{detail.subdomain}.cole.pe</p>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-medium">Fecha de Creación:</span>
+                    <p className="font-semibold text-slate-700">
+                      {detail.createdAt ? new Date(detail.createdAt).toLocaleDateString('es-PE', { dateStyle: 'long' }) : '15 de Enero de 2025'}
+                    </p>
+                  </div>
+                  <div>
+                    <span className="text-slate-400 font-medium">Dominio Personalizado:</span>
+                    <p className="font-semibold text-slate-700">
+                      {detail.customDomain || 'No configurado'}
+                    </p>
+                  </div>
                 </div>
-                <p className="text-xl font-bold text-orange-700 mt-1">{formatMoney(plan?.monthlyPrice ?? 0)} <span className="text-xs font-normal text-slate-500">/mes</span></p>
-                <p className="text-[10px] text-slate-500 mt-1 font-semibold">Plan {plan?.name}</p>
-              </div>
-
-              <div className="p-3.5 rounded-xl bg-purple-50/50 border border-purple-100 hover-lift-sm transition-all duration-300 group">
-                <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold text-purple-700 uppercase">Módulos Activos</span>
-                  <span className="text-purple-600 group-hover:scale-110 transition-transform">⚡</span>
-                </div>
-                <p className="text-xl font-bold text-purple-700 mt-1">{plan?.features.length ?? 0} <span className="text-xs font-normal text-slate-500">activos</span></p>
-                <p className="text-[10px] text-slate-500 mt-1 font-semibold">Entitlements OK</p>
               </div>
             </div>
-
-            {/* Feature Entitlements Checklist */}
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Entitlements del Plan</h3>
-                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                  {plan?.features.length} Habilitados
+          ) : activeTab === 'features' ? (
+            <div className="space-y-4 animate-in fade-in">
+              <div className="flex items-center justify-between pb-2 border-b border-slate-100">
+                <div>
+                  <h4 className="text-xs font-bold text-slate-900 uppercase tracking-wider">Entitlements Habilitados</h4>
+                  <p className="text-[11px] text-slate-500">Módulos permitidos según la suscripción del Plan {plan?.name}</p>
+                </div>
+                <span className="text-xs font-bold text-emerald-700 bg-emerald-50 px-2.5 py-1 rounded-full border border-emerald-200">
+                  {plan?.features.length} / {Object.keys(FEATURE_LABELS).length} Activos
                 </span>
               </div>
-              <div className="grid grid-cols-2 gap-2">
-                {(plan?.features ?? []).map((f) => {
-                  const ent = entitlements[f];
-                  const allowed = ent?.allowed !== false;
-                  const featMeta = FEATURE_LABELS[f] ?? { label: f, icon: '📦' };
+
+              <div className="grid grid-cols-2 gap-2.5">
+                {Object.entries(FEATURE_LABELS).map(([featKey, meta]) => {
+                  const isIncluded = (plan?.features ?? []).includes(featKey);
+                  const ent = entitlements[featKey];
+                  const isExplicitlyAllowed = isIncluded && (ent?.allowed !== false);
 
                   return (
-                    <div key={f} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 hover:border-slate-300 hover:bg-slate-100/60 transition-all duration-200 text-xs group">
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs group-hover:scale-110 transition-transform">{featMeta.icon}</span>
-                        <span className="font-semibold text-slate-800">{featMeta.label}</span>
+                    <div
+                      key={featKey}
+                      className={`p-3 rounded-2xl border transition-all flex items-center justify-between gap-2 ${
+                        isIncluded
+                          ? 'bg-emerald-50/40 border-emerald-200/80'
+                          : 'bg-slate-50/50 border-slate-200/60 opacity-60'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <span className="text-base">{meta.icon}</span>
+                        <div className="min-w-0">
+                          <p className="text-xs font-bold text-slate-900 truncate">{meta.label}</p>
+                          <span className="text-[10px] font-semibold text-slate-400">{meta.category}</span>
+                        </div>
                       </div>
-                      <span className={`text-[10px] font-bold transition-all ${allowed ? 'text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200' : 'text-rose-600'}`}>
-                        {allowed ? '✓ Activo' : '✗ Bloqueado'}
+                      <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border shrink-0 ${
+                        isExplicitlyAllowed
+                          ? 'bg-emerald-100/70 text-emerald-800 border-emerald-200'
+                          : 'bg-slate-200/50 text-slate-500 border-slate-200'
+                      }`}>
+                        {isExplicitlyAllowed ? '✓ Activo' : '✗ Inactivo'}
                       </span>
                     </div>
                   );
                 })}
               </div>
             </div>
-
-            {/* Edit Controls */}
-            <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-blue-600">⚙️</span>
-                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Configuración de Suscripción</h3>
-              </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Estado Operativo</label>
-                  <select
-                    value={editStatus}
-                    onChange={(e) => setEditStatus(e.target.value as PlatformTenant['status'])}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm transition-all"
-                  >
-                    <option value="ACTIVE">ACTIVE (Operativo - Verde)</option>
-                    <option value="TRIAL">TRIAL (Período de prueba - Naranja)</option>
-                    <option value="SUSPENDED">SUSPENDED (Suspendido - Rojo)</option>
-                    <option value="ARCHIVED">ARCHIVED (Archivado)</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Tier / Plan Comercial</label>
-                  <select
-                    value={editPlanId}
-                    onChange={(e) => setEditPlanId(e.target.value)}
-                    className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500 shadow-sm transition-all"
-                  >
-                    {plans.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name} — {formatMoney(p.monthlyPrice)}/mes ({p.maxStudents} alumnos)</option>
-                    ))}
-                  </select>
+          ) : (
+            <div className="space-y-5 animate-in fade-in">
+              {/* Operational Status Selector */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Estado Operativo de la Institución
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {[
+                    { id: 'ACTIVE', label: 'Activo', desc: 'Acceso total habilitado', color: 'border-emerald-500 bg-emerald-50/50 text-emerald-800' },
+                    { id: 'TRIAL', label: 'En Prueba', desc: '14 días de evaluación', color: 'border-orange-500 bg-orange-50/50 text-orange-800' },
+                    { id: 'SUSPENDED', label: 'Suspendido', desc: 'Acceso bloqueado', color: 'border-rose-500 bg-rose-50/50 text-rose-800' },
+                  ].map((s) => (
+                    <button
+                      key={s.id}
+                      type="button"
+                      onClick={() => setEditStatus(s.id as any)}
+                      className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                        editStatus === s.id ? s.color : 'border-slate-200 hover:border-slate-300 bg-white'
+                      }`}
+                    >
+                      <p className="text-xs font-bold">{s.label}</p>
+                      <p className="text-[10px] text-slate-500 mt-0.5">{s.desc}</p>
+                    </button>
+                  ))}
                 </div>
               </div>
-            </div>
 
-            {/* Footer Actions */}
-            <div className="flex justify-end gap-2.5 pt-2 border-t border-slate-100">
-              <button
-                onClick={onClose}
-                className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-all hover:bg-slate-50 btn-interactive"
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                disabled={saving}
-                className="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm hover:shadow-blue-500/25 transition-all disabled:opacity-50 btn-interactive"
-              >
-                {saving ? 'Guardando...' : 'Guardar Cambios'}
-              </button>
+              {/* Plan Tier Selector */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-2">
+                  Plan Comercial Asignado
+                </label>
+                <div className="grid grid-cols-3 gap-3">
+                  {plans.map((p) => (
+                    <button
+                      key={p.id}
+                      type="button"
+                      onClick={() => setEditPlanId(p.id)}
+                      className={`p-3.5 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                        editPlanId === p.id
+                          ? 'border-blue-600 bg-blue-50/50 text-blue-900 shadow-xs'
+                          : 'border-slate-200 hover:border-slate-300 bg-white'
+                      }`}
+                    >
+                      <p className="text-xs font-bold text-slate-900">{p.name}</p>
+                      <p className="text-sm font-black text-blue-600 mt-1">{formatMoney(p.monthlyPrice)}<span className="text-[10px] font-normal text-slate-500">/mes</span></p>
+                      <p className="text-[10px] text-slate-500 mt-1 font-semibold">{p.maxStudents} alumnos máx.</p>
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Custom Domain */}
+              <div>
+                <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1">
+                  Dominio Personalizado (Opcional)
+                </label>
+                <input
+                  type="text"
+                  placeholder="ej: colegio.sanagustin.edu.pe"
+                  value={editCustomDomain}
+                  onChange={(e) => setEditCustomDomain(e.target.value)}
+                  className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs font-mono text-slate-900 focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 transition-all"
+                />
+                <p className="text-[11px] text-slate-400 mt-1">Configuración de DNS con certificado SSL automático.</p>
+              </div>
             </div>
+          )}
+        </div>
+
+        {/* Modal Footer Actions */}
+        <div className="p-4 bg-slate-50/80 border-t border-slate-100 flex items-center justify-between">
+          <div className="text-xs">
+            {saveSuccess && (
+              <span className="text-emerald-600 font-bold flex items-center gap-1.5 animate-in fade-in">
+                <span>✓</span> Cambios guardados correctamente
+              </span>
+            )}
           </div>
-        )}
+
+          <div className="flex items-center gap-2.5">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-100 text-xs font-bold transition-all cursor-pointer"
+            >
+              Cerrar
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving}
+              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-50"
+            >
+              {saving ? 'Guardando...' : 'Guardar Configuración'}
+            </button>
+          </div>
+        </div>
       </div>
     </div>
   );
 }
 
-/* ── Create Tenant Modal ── */
+/* ── Create Tenant Modal (Smart Auto-Slug & Live Preview) ── */
 function CreateTenantModal({ plans, onClose, onCreated }: {
   plans: PlatformPlan[];
   onClose: () => void;
@@ -258,12 +414,25 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
   const [subdomain, setSubdomain] = useState('');
   const [slug, setSlug] = useState('');
   const [planId, setPlanId] = useState(plans[0]?.id ?? '');
+  const [status, setStatus] = useState<'ACTIVE' | 'TRIAL'>('ACTIVE');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  const handleNameChange = (v: string) => {
-    setName(v);
-    if (!slug) setSlug(v.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''));
+  const handleNameChange = (val: string) => {
+    setName(val);
+    const cleanSub = val
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]/g, '');
+    const cleanSlug = val
+      .toLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-|-$/g, '');
+    setSubdomain(cleanSub);
+    setSlug(cleanSlug);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -272,49 +441,63 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
     setError(null);
     try {
       const dto: CreateTenantDto = {
-        name,
-        slug: slug || name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, ''),
-        subdomain: subdomain.toLowerCase().replace(/[^a-z0-9-]/g, ''),
+        name: name.trim(),
+        slug: slug.trim() || name.toLowerCase().replace(/[^a-z0-9]+/g, '-'),
+        subdomain: subdomain.trim().toLowerCase().replace(/[^a-z0-9-]/g, ''),
         planId,
+        status,
       };
       await createTenant(dto);
       onCreated();
       onClose();
     } catch (err) {
       setError((err as Error).message);
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
   };
 
   return (
-    <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-view" onClick={onClose}>
-      <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full text-slate-800 shadow-2xl hover-lift-sm" onClick={(e) => e.stopPropagation()}>
-        <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-          <div className="flex items-center gap-2">
-            <span className="p-1 rounded bg-blue-100 text-blue-700">🏫</span>
+    <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm flex items-center justify-center p-4 z-50 animate-in fade-in" onClick={onClose}>
+      <div className="bg-white border border-slate-200/90 rounded-3xl p-6 max-w-lg w-full shadow-2xl space-y-5" onClick={(e) => e.stopPropagation()}>
+        
+        {/* Header */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-blue-50 text-blue-600 border border-blue-100 flex items-center justify-center text-lg font-black">
+              🏫
+            </div>
             <div>
               <h3 className="text-base font-bold text-slate-900">Registrar Nuevo Colegio</h3>
-              <p className="text-xs text-slate-500">Provisión de tenant multi-tenant</p>
+              <p className="text-xs text-slate-500">Provisión instantánea de institución SaaS</p>
             </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 btn-interactive">✕</button>
+          <button onClick={onClose} className="p-1.5 rounded-xl text-slate-400 hover:text-slate-600 hover:bg-slate-100 transition-colors cursor-pointer">
+            ✕
+          </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-4">
+        <form onSubmit={handleSubmit} className="space-y-4">
+          {/* Name */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Nombre de la Institución</label>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Nombre de la Institución
+            </label>
             <input
               type="text"
               required
               placeholder="Ej: Colegio San Agustín"
               value={name}
               onChange={(e) => handleNameChange(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
+              className="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 font-semibold focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-500 shadow-xs"
             />
           </div>
 
+          {/* Subdomain & Live URL Preview */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Subdominio</label>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Subdominio de Plataforma
+            </label>
             <div className="flex items-center">
               <input
                 type="text"
@@ -322,45 +505,102 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
                 placeholder="sanagustin"
                 value={subdomain}
                 onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
-                className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-l-lg text-slate-900 text-xs font-mono focus:outline-none focus:border-blue-500 shadow-sm"
+                className="flex-1 px-4 py-2.5 bg-white border border-slate-200 rounded-l-xl text-xs font-mono font-bold text-slate-900 focus:outline-none focus:border-blue-500 shadow-xs"
               />
-              <span className="px-3 py-2.5 bg-blue-50 border border-l-0 border-blue-200 rounded-r-lg text-xs font-bold text-blue-700">
+              <span className="px-3.5 py-2.5 bg-blue-50 border border-l-0 border-blue-200 rounded-r-xl text-xs font-bold text-blue-700">
                 .cole.pe
               </span>
             </div>
+            {subdomain && (
+              <div className="mt-1.5 flex items-center gap-1.5 text-[11px] text-slate-500">
+                <span>URL de acceso:</span>
+                <span className="font-mono font-bold text-blue-600 bg-blue-50 px-2 py-0.5 rounded-md border border-blue-100">
+                  https://{subdomain}.cole.pe
+                </span>
+              </div>
+            )}
           </div>
 
+          {/* Plan Selection Cards */}
           <div>
-            <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Plan Comercial</label>
-            <select
-              value={planId}
-              onChange={(e) => setPlanId(e.target.value)}
-              className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
-            >
-              {plans.map((p) => (
-                <option key={p.id} value={p.id}>{p.name} — {formatMoney(p.monthlyPrice)}/mes ({p.maxStudents} alumnos)</option>
-              ))}
-            </select>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Seleccionar Plan Comercial
+            </label>
+            <div className="grid grid-cols-3 gap-2.5">
+              {plans.map((p) => {
+                const isSel = planId === p.id;
+                return (
+                  <button
+                    key={p.id}
+                    type="button"
+                    onClick={() => setPlanId(p.id)}
+                    className={`p-3 rounded-2xl border-2 text-left transition-all cursor-pointer ${
+                      isSel
+                        ? 'border-blue-600 bg-blue-50/50 shadow-xs'
+                        : 'border-slate-200 hover:border-slate-300 bg-white'
+                    }`}
+                  >
+                    <p className="text-xs font-bold text-slate-900">{p.name}</p>
+                    <p className="text-sm font-black text-blue-600 mt-1">
+                      {formatMoney(p.monthlyPrice)}
+                    </p>
+                    <p className="text-[10px] text-slate-500 mt-0.5 font-medium">{p.maxStudents} alumnos</p>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Initial State */}
+          <div>
+            <label className="block text-xs font-bold text-slate-700 uppercase tracking-wider mb-1.5">
+              Modalidad de Inicio
+            </label>
+            <div className="grid grid-cols-2 gap-2.5">
+              <button
+                type="button"
+                onClick={() => setStatus('ACTIVE')}
+                className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer ${
+                  status === 'ACTIVE'
+                    ? 'border-emerald-500 bg-emerald-50 text-emerald-800'
+                    : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                <span>🟢 Activo Inmediato</span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setStatus('TRIAL')}
+                className={`p-2.5 rounded-xl border text-xs font-bold text-left transition-all cursor-pointer ${
+                  status === 'TRIAL'
+                    ? 'border-orange-500 bg-orange-50 text-orange-800'
+                    : 'border-slate-200 bg-white text-slate-600'
+                }`}
+              >
+                <span>🟠 Prueba 14 Días</span>
+              </button>
+            </div>
           </div>
 
           {error && (
-            <div className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-lg p-2.5">
+            <div className="text-xs text-rose-600 bg-rose-50 border border-rose-200 rounded-xl p-3">
               {error}
             </div>
           )}
 
-          <div className="flex justify-end gap-2 pt-3 border-t border-slate-100">
+          {/* Actions */}
+          <div className="flex justify-end gap-2.5 pt-3 border-t border-slate-100">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-slate-200 text-slate-600 hover:text-slate-900 text-xs font-semibold transition-all hover:bg-slate-50 btn-interactive"
+              className="px-4 py-2 rounded-xl border border-slate-200 text-slate-700 hover:bg-slate-50 text-xs font-bold transition-all cursor-pointer"
             >
               Cancelar
             </button>
             <button
               type="submit"
-              disabled={saving}
-              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50 btn-interactive"
+              disabled={saving || !name.trim() || !subdomain.trim()}
+              className="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-md shadow-blue-500/20 transition-all cursor-pointer disabled:opacity-50"
             >
               {saving ? 'Creando...' : 'Crear Colegio'}
             </button>
@@ -371,14 +611,15 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
   );
 }
 
-/* ── Main Tenants View ── */
+/* ── Main Tenants View (Dual View: Table & Cards Grid) ── */
 export default function TenantsView() {
-  const { config } = useCurrency();
+  const { formatMoney } = useCurrency();
   const [tenants, setTenants] = useState<PlatformTenant[]>(MOCK_TENANTS);
   const [plans, setPlans] = useState<PlatformPlan[]>(MOCK_PLANS);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('ALL');
+  const [viewMode, setViewMode] = useState<'table' | 'grid'>('table');
   const [showCreate, setShowCreate] = useState(false);
   const [detailTenant, setDetailTenant] = useState<PlatformTenant | null>(null);
 
@@ -401,165 +642,304 @@ export default function TenantsView() {
 
   useEffect(() => { reload(); }, [reload]);
 
-  const filtered = tenants.filter((t) => {
-    const matchSearch = !search || t.name.toLowerCase().includes(search.toLowerCase()) || t.subdomain.toLowerCase().includes(search.toLowerCase());
+  const filtered = (tenants || []).filter((t) => {
+    const matchSearch = !search ||
+      t.name.toLowerCase().includes(search.toLowerCase()) ||
+      t.subdomain.toLowerCase().includes(search.toLowerCase()) ||
+      t.slug.toLowerCase().includes(search.toLowerCase());
     const matchStatus = filterStatus === 'ALL' || t.status === filterStatus;
     return matchSearch && matchStatus;
   });
 
+  const activeCount = (tenants || []).filter((t) => t.status === 'ACTIVE').length;
+  const trialCount = (tenants || []).filter((t) => t.status === 'TRIAL').length;
+  const suspendedCount = (tenants || []).filter((t) => t.status === 'SUSPENDED').length;
+
   return (
-    <div className="space-y-5 animate-view">
+    <div className="space-y-6 animate-in fade-in">
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Directorio de Colegios</h2>
-          <p className="text-xs text-slate-500 mt-0.5">Gestión de instituciones, cuotas y suscripciones ({config.name} • {config.symbol})</p>
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Directorio de Colegios</h2>
+            <span className="text-xs font-bold text-blue-700 bg-blue-50 border border-blue-200 px-2.5 py-0.5 rounded-full">
+              {tenants.length} Registrados
+            </span>
+          </div>
+          <p className="text-xs text-slate-500 mt-0.5">Gestión de instituciones, cuotas de alumnos y suscripciones SaaS</p>
         </div>
 
         <button
           onClick={() => setShowCreate(true)}
-          className="btn-interactive flex items-center gap-1.5 px-3.5 py-2 bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+          className="btn-interactive flex items-center gap-2 px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold rounded-xl shadow-md shadow-blue-500/20 transition-all cursor-pointer hover:scale-[1.02]"
         >
-          <span>+</span>
+          <span className="text-sm font-black">+</span>
           <span>Registrar Colegio</span>
         </button>
       </div>
 
-      {/* Filter Tabs & Search Bar */}
-      <div className="flex flex-col sm:flex-row gap-3">
-        <div className="flex-1 relative">
-          <svg className="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+      {/* Filter Tabs, Search Bar & Dual View Toggle */}
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Search */}
+        <div className="relative flex-1 max-w-md">
+          <svg className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
             <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-5.197-5.197m0 0A7.5 7.5 0 105.196 5.196a7.5 7.5 0 0010.607 10.607z" />
           </svg>
           <input
             type="text"
-            placeholder="Buscar por institución o subdominio..."
+            placeholder="Buscar por nombre, subdominio o slug..."
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2 bg-white border border-slate-200 rounded-lg text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:border-blue-500 shadow-sm"
+            className="w-full pl-10 pr-4 py-2 bg-white border border-slate-200 rounded-xl text-xs text-slate-900 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 shadow-xs"
           />
         </div>
 
-        <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-[11px] font-medium text-slate-600">
+        {/* Status Filter Chips */}
+        <div className="flex items-center gap-1.5 bg-slate-100/80 border border-slate-200 rounded-xl p-1 text-xs font-bold">
           {[
-            { id: 'ALL', label: 'Todos', color: 'hover:text-slate-900' },
-            { id: 'ACTIVE', label: 'Activos', color: 'hover:text-emerald-700' },
-            { id: 'TRIAL', label: 'En Prueba', color: 'hover:text-orange-700' },
-            { id: 'SUSPENDED', label: 'Suspendidos', color: 'hover:text-rose-700' },
+            { id: 'ALL', label: `Todos (${tenants.length})` },
+            { id: 'ACTIVE', label: `Activos (${activeCount})`, dot: 'bg-emerald-500' },
+            { id: 'TRIAL', label: `En Prueba (${trialCount})`, dot: 'bg-orange-500' },
+            { id: 'SUSPENDED', label: `Suspendidos (${suspendedCount})`, dot: 'bg-rose-500' },
           ].map((s) => (
             <button
               key={s.id}
               onClick={() => setFilterStatus(s.id)}
-              className={`px-3 py-1 rounded-md transition-all ${
-                filterStatus === s.id ? 'bg-white text-slate-900 font-bold shadow-sm' : s.color
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg transition-all cursor-pointer ${
+                filterStatus === s.id
+                  ? 'bg-white text-slate-900 shadow-xs font-black'
+                  : 'text-slate-600 hover:text-slate-900 hover:bg-white/50'
               }`}
             >
-              {s.label}
+              {s.dot && <span className={`w-1.5 h-1.5 rounded-full ${s.dot}`} />}
+              <span>{s.label}</span>
             </button>
           ))}
         </div>
-      </div>
 
-      {/* Enterprise Data Table */}
-      <div className="rounded-xl bg-white border border-slate-200/90 overflow-hidden shadow-sm">
-        <div className="overflow-x-auto">
-          <table className="w-full text-left text-xs text-slate-600">
-            <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200">
-              <tr>
-                <th className="px-5 py-3">Institución</th>
-                <th className="px-5 py-3">Subdominio</th>
-                <th className="px-5 py-3">Plan Comercial</th>
-                <th className="px-5 py-3">Cuota Alumnos</th>
-                <th className="px-5 py-3">Estado</th>
-                <th className="px-5 py-3 text-right">Acción</th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-slate-100 font-medium">
-              {loading ? (
-                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-400">Cargando directorio...</td></tr>
-              ) : filtered.length === 0 ? (
-                <tr><td colSpan={6} className="px-5 py-8 text-center text-slate-400">No se encontraron instituciones.</td></tr>
-              ) : (
-                filtered.map((t) => {
-                  const sc = getStudentCount(t);
-                  const max = t.plan?.maxStudents ?? 100;
-                  const pct = Math.round((sc / max) * 100);
-
-                  return (
-                    <tr
-                      key={t.id}
-                      onClick={() => setDetailTenant(t)}
-                      className="hover:bg-slate-50/80 transition-colors cursor-pointer"
-                    >
-                      <td className="px-5 py-3.5">
-                        <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-50 via-indigo-50 to-orange-50 border border-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700">
-                            {t.name.charAt(0)}
-                          </div>
-                          <div>
-                            <p className="font-semibold text-slate-900">{t.name}</p>
-                            <p className="text-[10px] text-slate-400">ID: {t.id.slice(0, 8)}</p>
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-5 py-3.5 font-mono text-[11px] text-blue-600 font-medium">
-                        {t.subdomain}.cole.pe
-                      </td>
-
-                      <td className="px-5 py-3.5">
-                        <span className="inline-block px-2 py-0.5 rounded text-[10px] font-semibold bg-purple-50 text-purple-700 border border-purple-200">
-                          {t.plan?.name ?? '—'}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-3.5">
-                        <div className="w-28">
-                          <div className="flex justify-between text-[10px] mb-1 font-medium">
-                            <span className="text-slate-500">{sc}/{max}</span>
-                            <span className={pct > 90 ? 'text-rose-600 font-bold' : pct > 70 ? 'text-orange-600 font-bold' : 'text-emerald-700 font-bold'}>{pct}%</span>
-                          </div>
-                          <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
-                            <div
-                              className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-orange-500' : 'bg-emerald-500'}`}
-                              style={{ width: `${Math.min(pct, 100)}%` }}
-                            />
-                          </div>
-                        </div>
-                      </td>
-
-                      <td className="px-5 py-3.5">
-                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
-                          t.status === 'ACTIVE'
-                            ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
-                            : t.status === 'TRIAL'
-                            ? 'bg-orange-50 text-orange-700 border-orange-200'
-                            : 'bg-rose-50 text-rose-700 border-rose-200'
-                        }`}>
-                          {t.status}
-                        </span>
-                      </td>
-
-                      <td className="px-5 py-3.5 text-right">
-                        <button
-                          onClick={(e) => { e.stopPropagation(); setDetailTenant(t); }}
-                          className="px-2.5 py-1 text-[11px] font-semibold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 rounded border border-slate-200 transition-all shadow-sm"
-                        >
-                          Configurar →
-                        </button>
-                      </td>
-                    </tr>
-                  );
-                })
-              )}
-            </tbody>
-          </table>
+        {/* View Toggle */}
+        <div className="flex bg-slate-100/80 border border-slate-200 rounded-xl p-1 text-xs font-bold">
+          <button
+            onClick={() => setViewMode('table')}
+            title="Vista Tabla"
+            className={`p-1.5 px-2.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+              viewMode === 'table' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+            </svg>
+            <span>Tabla</span>
+          </button>
+          <button
+            onClick={() => setViewMode('grid')}
+            title="Vista Tarjetas"
+            className={`p-1.5 px-2.5 rounded-lg transition-all cursor-pointer flex items-center gap-1 ${
+              viewMode === 'grid' ? 'bg-white text-blue-600 shadow-xs' : 'text-slate-500 hover:text-slate-900'
+            }`}
+          >
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 6A2.25 2.25 0 016 3.75h2.25A2.25 2.25 0 0110.5 6v2.25a2.25 2.25 0 01-2.25 2.25H6a2.25 2.25 0 01-2.25-2.25V6zM3.75 15.75A2.25 2.25 0 016 13.5h2.25a2.25 2.25 0 012.25 2.25V18a2.25 2.25 0 01-2.25 2.25H6A2.25 2.25 0 013.75 18v-2.25zM13.5 6a2.25 2.25 0 012.25-2.25H18A2.25 2.25 0 0120.25 6v2.25A2.25 2.25 0 0118 10.5h-2.25a2.25 2.25 0 01-2.25-2.25V6zM13.5 15.75a2.25 2.25 0 012.25-2.25H18a2.25 2.25 0 012.25 2.25V18A2.25 2.25 0 0118 20.25h-2.25A2.25 2.25 0 0113.5 18v-2.25z" />
+            </svg>
+            <span>Tarjetas</span>
+          </button>
         </div>
       </div>
 
+      {/* Main Content: Table or Grid */}
+      {viewMode === 'table' ? (
+        <div className="rounded-2xl bg-white border border-slate-200/80 overflow-hidden shadow-xs">
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs text-slate-600">
+              <thead className="bg-slate-50 text-[10px] uppercase font-bold text-slate-500 border-b border-slate-200/80">
+                <tr>
+                  <th className="px-6 py-3.5">Institución</th>
+                  <th className="px-6 py-3.5">Subdominio SaaS</th>
+                  <th className="px-6 py-3.5">Plan Asignado</th>
+                  <th className="px-6 py-3.5">Cuota de Alumnos</th>
+                  <th className="px-6 py-3.5">Estado</th>
+                  <th className="px-6 py-3.5 text-right">Acciones</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100 font-medium">
+                {loading ? (
+                  <tr><td colSpan={6} className="px-6 py-12 text-center text-slate-400">Cargando instituciones...</td></tr>
+                ) : filtered.length === 0 ? (
+                  <tr>
+                    <td colSpan={6} className="px-6 py-12 text-center text-slate-400">
+                      <p className="text-sm font-bold text-slate-700">No se encontraron colegios</p>
+                      <p className="text-xs text-slate-400 mt-1">Prueba con otro término de búsqueda o registra una nueva institución.</p>
+                    </td>
+                  </tr>
+                ) : (
+                  filtered.map((t) => {
+                    const sc = getStudentCount(t);
+                    const max = t.plan?.maxStudents ?? 100;
+                    const pct = Math.round((sc / max) * 100);
+
+                    return (
+                      <tr
+                        key={t.id}
+                        onClick={() => setDetailTenant(t)}
+                        className="hover:bg-slate-50/90 transition-colors cursor-pointer group"
+                      >
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3.5">
+                            <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-50 via-indigo-50 to-orange-50 border border-indigo-100 flex items-center justify-center text-xs font-black text-indigo-700 shadow-xs group-hover:scale-105 transition-transform">
+                              {t.name.charAt(0)}
+                            </div>
+                            <div>
+                              <p className="font-bold text-slate-900 group-hover:text-blue-600 transition-colors">{t.name}</p>
+                              <p className="text-[10px] text-slate-400 font-mono">ID: {t.id.slice(0, 8)}</p>
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4 font-mono text-xs font-bold text-blue-600">
+                          {t.subdomain}.cole.pe
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className="inline-block px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-200">
+                            {t.plan?.name ?? '—'}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <div className="w-32">
+                            <div className="flex justify-between text-[10px] mb-1 font-semibold">
+                              <span className="text-slate-500">{sc} / {max}</span>
+                              <span className={pct > 90 ? 'text-rose-600 font-bold' : pct > 70 ? 'text-orange-600 font-bold' : 'text-emerald-700 font-bold'}>{pct}%</span>
+                            </div>
+                            <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
+                              <div
+                                className={`h-full rounded-full transition-all duration-300 ${pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-orange-500' : 'bg-emerald-500'}`}
+                                style={{ width: `${Math.min(pct, 100)}%` }}
+                              />
+                            </div>
+                          </div>
+                        </td>
+
+                        <td className="px-6 py-4">
+                          <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border ${
+                            t.status === 'ACTIVE'
+                              ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                              : t.status === 'TRIAL'
+                              ? 'bg-orange-50 text-orange-700 border-orange-200'
+                              : 'bg-rose-50 text-rose-700 border-rose-200'
+                          }`}>
+                            {t.status}
+                          </span>
+                        </td>
+
+                        <td className="px-6 py-4 text-right">
+                          <button
+                            onClick={(e) => { e.stopPropagation(); setDetailTenant(t); }}
+                            className="px-3 py-1.5 text-xs font-bold text-slate-700 hover:text-blue-700 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 transition-all shadow-xs cursor-pointer group-hover:border-blue-300"
+                          >
+                            Configurar ⚙️
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  })
+                )}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      ) : (
+        /* Cards Grid View */
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+          {filtered.map((t) => {
+            const sc = getStudentCount(t);
+            const max = t.plan?.maxStudents ?? 100;
+            const pct = Math.round((sc / max) * 100);
+
+            return (
+              <div
+                key={t.id}
+                onClick={() => setDetailTenant(t)}
+                className="p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-200 cursor-pointer space-y-4 group flex flex-col justify-between"
+              >
+                <div>
+                  <div className="flex items-start justify-between gap-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <div className="w-11 h-11 rounded-2xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-orange-500 flex items-center justify-center text-white text-base font-black shadow-sm group-hover:scale-105 transition-transform">
+                        {t.name.charAt(0)}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-sm text-slate-900 truncate group-hover:text-blue-600 transition-colors">{t.name}</h3>
+                        <p className="text-xs font-mono font-bold text-blue-600 truncate">{t.subdomain}.cole.pe</p>
+                      </div>
+                    </div>
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full border ${
+                      t.status === 'ACTIVE'
+                        ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                        : t.status === 'TRIAL'
+                        ? 'bg-orange-50 text-orange-700 border-orange-200'
+                        : 'bg-rose-50 text-rose-700 border-rose-200'
+                    }`}>
+                      {t.status}
+                    </span>
+                  </div>
+
+                  <div className="mt-4 p-3 rounded-xl bg-slate-50/80 border border-slate-200/60 space-y-2">
+                    <div className="flex items-center justify-between text-xs">
+                      <span className="text-slate-500 font-medium">Plan:</span>
+                      <span className="font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded-md border border-purple-100">
+                        {t.plan?.name ?? '—'} ({formatMoney(t.plan?.monthlyPrice ?? 0)}/m)
+                      </span>
+                    </div>
+                    <div>
+                      <div className="flex items-center justify-between text-[11px] font-semibold mb-1">
+                        <span className="text-slate-500">Capacidad:</span>
+                        <span className={pct > 90 ? 'text-rose-600 font-bold' : pct > 70 ? 'text-orange-600 font-bold' : 'text-emerald-700 font-bold'}>
+                          {sc} / {max} ({pct}%)
+                        </span>
+                      </div>
+                      <div className="w-full bg-slate-200/60 rounded-full h-1.5 overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all duration-300 ${pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-orange-500' : 'bg-emerald-500'}`}
+                          style={{ width: `${Math.min(pct, 100)}%` }}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                  <span className="text-[10px] font-mono text-slate-400">ID: {t.id.slice(0, 8)}</span>
+                  <button
+                    onClick={(e) => { e.stopPropagation(); setDetailTenant(t); }}
+                    className="text-xs font-bold text-blue-600 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
+                  >
+                    <span>Configurar</span>
+                    <span>→</span>
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       {/* Modals */}
-      {showCreate && <CreateTenantModal plans={plans} onClose={() => setShowCreate(false)} onCreated={reload} />}
-      {detailTenant && <TenantDetailModal tenant={detailTenant} plans={plans} onClose={() => setDetailTenant(null)} onUpdated={reload} />}
+      {showCreate && (
+        <CreateTenantModal
+          plans={plans}
+          onClose={() => setShowCreate(false)}
+          onCreated={reload}
+        />
+      )}
+      {detailTenant && (
+        <TenantDetailModal
+          tenant={detailTenant}
+          plans={plans}
+          onClose={() => setDetailTenant(null)}
+          onUpdated={reload}
+        />
+      )}
     </div>
   );
 }
