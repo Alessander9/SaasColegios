@@ -4,6 +4,7 @@ import React, { useState, useMemo, useCallback, useRef, useEffect } from 'react'
 import dynamic from 'next/dynamic';
 import { Card } from '@cole/ui-components';
 import { useAuth, AuthProvider } from '../lib/auth-context';
+import { PrimaryBoyDashboard } from '../components/primary-boy/PrimaryBoyDashboard';
 
 /* ────────────────────────────────────────────────────────────
    TOAST SYSTEM (same pattern as parent portal)
@@ -718,6 +719,14 @@ function StudentPortalContent() {
   const isStudentAuthenticated = Boolean(user || authenticated);
 
   // Tab State
+  const [dashboardViewMode, setDashboardViewMode] = useState<'primary_boy' | 'classic'>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('cole_student_view_mode');
+      if (saved === 'classic') return 'classic';
+    }
+    return 'primary_boy';
+  });
+
   const [activeTab, setActiveTab] = useState<'overview' | 'schedule' | 'grades' | 'tasks' | 'attendance' | 'badges' | 'workshops' | 'notices' | 'store'>(() => {
     if (typeof window !== 'undefined') {
       const savedTab = localStorage.getItem('cole_student_activeTab') as any;
@@ -2262,8 +2271,61 @@ function StudentPortalContent() {
   /* ────────────────────────────────────────────────────────────
      AUTHENTICATED STUDENT DASHBOARD
      ──────────────────────────────────────────────────────────── */
+  if (dashboardViewMode === 'primary_boy') {
+    return (
+      <div className="relative min-h-screen bg-[#EAF5FF]">
+        {/* Level / Gender View Switcher Floating Badge */}
+        <div className="fixed bottom-4 right-4 z-[99] flex items-center gap-2 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full border border-blue-200 shadow-xl">
+          <div className="flex items-center gap-1.5 text-xs font-black text-[#1677F2]">
+            <span>🚀</span>
+            <span className="hidden sm:inline">EsCool: Primaria Varones</span>
+          </div>
+          <div className="h-4 w-[1px] bg-slate-200" />
+          <button
+            type="button"
+            onClick={() => {
+              setDashboardViewMode('classic');
+              if (typeof window !== 'undefined') {
+                localStorage.setItem('cole_student_view_mode', 'classic');
+              }
+              addToast('Cambiando a Vista Clásica / Secundaria / Pre-U', 'info', '🔄');
+            }}
+            className="text-[11px] font-bold px-2.5 py-1 rounded-full bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors cursor-pointer"
+          >
+            Vista Clásica / Sec. →
+          </button>
+        </div>
+
+        <PrimaryBoyDashboard
+          onNotify={(msg, icon) => addToast(msg, 'info', icon || '🚀')}
+        />
+
+        {/* Global Toast Container */}
+        <ToastContainer toasts={toasts} onRemove={removeToast} />
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-slate-100 flex flex-col lg:flex-row text-slate-900 font-sans">
+    <div className="min-h-screen bg-slate-100 flex flex-col lg:flex-row text-slate-900 font-sans relative">
+      {/* Switcher back to Primary Boy */}
+      <div className="fixed bottom-4 right-4 z-[99] flex items-center gap-2 bg-white/95 backdrop-blur-md px-4 py-2 rounded-full border border-indigo-200 shadow-xl">
+        <button
+          type="button"
+          onClick={() => {
+            setDashboardViewMode('primary_boy');
+            if (typeof window !== 'undefined') {
+              localStorage.setItem('cole_student_view_mode', 'primary_boy');
+            }
+            addToast('Cambiando a EsCool: Primaria Varones (Mateo)', 'success', '🚀');
+          }}
+          className="text-xs font-black text-indigo-700 hover:text-indigo-900 flex items-center gap-1.5 cursor-pointer"
+        >
+          <span>🚀</span>
+          <span>Ver Dashboard Primaria (EsCool Niños)</span>
+        </button>
+      </div>
+
       {/* Mobile Drawer Backdrop */}
       {sidebarOpen && (
         <div
