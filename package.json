@@ -1,0 +1,28 @@
+{
+  "name": "cole-platform",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Plataforma Integral de Gestion Educativa SaaS Multi-Tenant",
+  "packageManager": "pnpm@9.15.4",
+  "scripts": {
+    "build": "turbo run build",
+    "dev": "turbo run dev --parallel",
+    "lint": "turbo run lint",
+    "test": "turbo run test",
+    "e2e:commerce": "powershell -ExecutionPolicy Bypass -File scripts/commerce-e2e.ps1",
+    "e2e:academic-payroll": "powershell -ExecutionPolicy Bypass -File scripts/academic-payroll-e2e.ps1",
+    "e2e:browser": "playwright test",
+    "e2e:browser:local": "powershell -ExecutionPolicy Bypass -File scripts/browser-e2e-local.ps1",
+    "test:selenium": "node scripts/selenium-smoke.cjs",
+    "e2e:commerce-concurrency": "powershell -ExecutionPolicy Bypass -File scripts/commerce-concurrency.ps1",
+    "typecheck": "turbo run typecheck",
+    "clean": "turbo run clean"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.52.0",
+    "prettier": "^3.5.3",
+    "selenium-webdriver": "^4.47.0",
+    "turbo": "^2.4.4",
+    "typescript": "^5.8.2"
+  }
+}

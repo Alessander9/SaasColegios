@@ -1,0 +1,28 @@
+{
+  "name": "@cole/database",
+  "version": "0.1.0",
+  "private": true,
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "scripts": {
+    "build": "prisma generate && tsc -p tsconfig.json",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "prisma:generate": "prisma generate",
+    "prisma:migrate": "prisma migrate dev",
+    "clean": "rm -rf dist"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
+  },
+  "dependencies": {
+    "@cole/domain-types": "workspace:*",
+    "@prisma/client": "^6.4.1"
+  },
+  "devDependencies": {
+    "bcryptjs": "^3.0.3",
+    "@types/node": "^22.20.1",
+    "prisma": "^6.4.1",
+    "tsx": "^4.19.3",
+    "typescript": "^5.8.2"
+  }
+}
