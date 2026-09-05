@@ -1,7 +1,6 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Button } from '@cole/ui-components';
 import { login } from '../lib/api';
 import ParticleField from '../components/ParticleField';
 import MeshGradient from '../components/MeshGradient';
@@ -166,114 +165,102 @@ function DashboardContent({ onLogout }: { onLogout: () => void }) {
 
       {/* Main Content Area */}
       <div className="flex-1 ml-64 min-h-screen flex flex-col bg-[#f8fafc]">
-        {/* Top Executive Header & System Pulse */}
-        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-8 py-3.5 flex items-center justify-between gap-4 shadow-sm">
-          <div className="flex items-center gap-4">
-            <div>
-              <div className="flex items-center gap-2">
-                <span className="text-[10px] font-bold text-blue-700 bg-blue-50 px-2 py-0.5 rounded border border-blue-200 uppercase tracking-wider">
-                  Super Admin Control Center
-                </span>
-                <span className="text-[10px] text-slate-400 font-medium">/</span>
-                <span className="text-xs font-semibold text-slate-800">
-                  {activeView === 'overview' && 'Panel General & Métricas Globales'}
-                  {activeView === 'tenants' && 'Colegios y Suscripciones SaaS'}
-                  {activeView === 'plans' && 'Planes Comerciales'}
-                  {activeView === 'analytics' && 'Analíticas de Crecimiento'}
-                  {activeView === 'audit' && 'Auditoría & Seguridad'}
-                </span>
-              </div>
+        {/* Top Executive Header - Clean & Streamlined */}
+        <header className="sticky top-0 z-30 bg-white/95 backdrop-blur-md border-b border-slate-200/80 px-8 py-3.5 flex items-center justify-between gap-4 shadow-xs">
+          {/* Left: Clean Minimalist Breadcrumb & Status */}
+          <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2">
+              <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" title="Sistema SaaS en Línea" />
+              <span className="text-xs font-bold text-slate-400">Plataforma</span>
+              <span className="text-slate-300 font-bold">/</span>
+              <h1 className="text-sm font-black text-slate-900 tracking-tight">
+                {activeView === 'overview' && 'Panel General & Métricas'}
+                {activeView === 'tenants' && 'Colegios y Suscripciones'}
+                {activeView === 'plans' && 'Planes Comerciales'}
+                {activeView === 'analytics' && 'Analíticas & MRR'}
+                {activeView === 'audit' && 'Auditoría & Seguridad'}
+              </h1>
             </div>
           </div>
 
-          <div className="flex items-center gap-3">
-            {/* Live Session Countdown & Config Pill */}
+          {/* Right: Consolidated Tools & Action Controls */}
+          <div className="flex items-center gap-2.5">
+            {/* Currency Selector Dropdown */}
+            <CurrencySelector />
+
+            {/* Live Session Timer Pill */}
             <button
               onClick={() => setConfigModalOpen(true)}
-              title="Configurar tiempo de expiración y persistencia de sesión por cookies"
-              className="btn-interactive flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-slate-50 hover:bg-blue-50/70 border border-slate-200 hover:border-blue-300 text-xs text-slate-700 transition-all cursor-pointer group shadow-sm"
+              title="Configurar persistencia y tiempo de sesión"
+              className="btn-interactive flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 text-xs font-bold text-slate-700 transition-all shadow-xs cursor-pointer group"
             >
-              <span className={`w-2 h-2 rounded-full ${remainingSeconds <= warningSeconds ? 'bg-amber-500 animate-ping' : 'bg-emerald-500 animate-pulse'}`} />
-              <svg className="w-3.5 h-3.5 text-slate-400 group-hover:text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 11-18 0 9 9 0 0118 0z" />
-              </svg>
-              <span className="font-mono font-bold text-slate-800 text-[11px]">{formattedRemaining}</span>
-              <svg className="w-3 h-3 text-slate-400 group-hover:text-blue-600 ml-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                <path strokeLinecap="round" strokeLinejoin="round" d="M9.594 3.94c.09-.542.56-.94 1.11-.94h2.593c.55 0 1.02.398 1.11.94l.213 1.281c.063.374.313.686.645.87.074.04.147.083.22.127.324.196.72.257 1.075.124l1.217-.456a1.125 1.125 0 011.37.49l1.296 2.247a1.125 1.125 0 01-.26 1.431l-1.003.827c-.293.24-.438.613-.431.992a6.759 6.759 0 010 .255c-.007.378.138.75.43.99l1.005.828c.424.35.534.954.26 1.43l-1.298 2.247a1.125 1.125 0 01-1.369.491l-1.217-.456c-.355-.133-.75-.072-1.076.124a6.57 6.57 0 01-.22.128c-.331.183-.581.495-.644.869l-.213 1.28c-.09.543-.56.941-1.11.941h-2.594c-.55 0-1.02-.398-1.11-.94l-.213-1.281c-.062-.374-.312-.686-.644-.87a6.52 6.52 0 01-.22-.127c-.325-.196-.72-.257-1.076-.124l-1.217.456a1.125 1.125 0 01-1.369-.49l-1.297-2.247a1.125 1.125 0 01.26-1.431l1.004-.827c.292-.24.437-.613.43-.992a6.932 6.932 0 010-.255c.007-.378-.138-.75-.43-.99l-1.004-.828a1.125 1.125 0 01-.26-1.43l1.297-2.247a1.125 1.125 0 011.37-.491l1.216.456c.356.133.751.072 1.076-.124.072-.044.146-.087.22-.128.332-.183.582-.495.644-.869l.214-1.281z" />
+              <span className={`w-1.5 h-1.5 rounded-full ${remainingSeconds <= warningSeconds ? 'bg-amber-500 animate-ping' : 'bg-emerald-500'}`} />
+              <span className="font-mono text-xs font-black text-slate-900">{formattedRemaining}</span>
+              <svg className="w-3 h-3 text-slate-400 group-hover:text-blue-600 transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
               </svg>
             </button>
 
-            {/* Currency Selector (Soles S/ • Dólares $ • Euros €) */}
-            <CurrencySelector />
-
-            {/* Live System Health Pulse */}
-            <div className="hidden lg:flex items-center gap-3 px-3 py-1.5 rounded-lg bg-slate-50 border border-slate-200 text-xs">
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-                <span className="text-[11px] font-semibold text-slate-700">API Core :4000</span>
-              </div>
-              <span className="text-slate-300">|</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-                <span className="text-[11px] font-medium text-slate-600">PostgreSQL :5433</span>
-              </div>
-              <span className="text-slate-300">|</span>
-              <div className="flex items-center gap-1.5">
-                <span className="w-1.5 h-1.5 rounded-full bg-purple-500" />
-                <span className="text-[11px] font-medium text-slate-600">Redis :6379</span>
-              </div>
-            </div>
-
-            {/* Quick action button */}
+            {/* Primary Action */}
             {activeView !== 'tenants' && (
               <button
                 onClick={() => setActiveView('tenants')}
-                className="btn-interactive px-3 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold text-xs shadow-sm transition-all flex items-center gap-1.5"
+                className="btn-interactive px-3.5 py-1.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-xs shadow-sm shadow-blue-500/20 transition-all flex items-center gap-1.5 cursor-pointer hover:scale-[1.02]"
               >
-                <span>+</span>
+                <span className="text-sm font-black">+</span>
                 <span>Registrar Colegio</span>
               </button>
             )}
 
-            {/* Notifications Toggle */}
+            {/* Notifications Bell */}
             <div className="relative">
               <button
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
-                className="btn-interactive p-1.5 rounded-lg bg-white hover:bg-slate-50 border border-slate-200 text-slate-500 hover:text-slate-800 transition-colors shadow-sm"
-                title="Alertas del Sistema"
+                className="btn-interactive relative p-2 rounded-xl bg-slate-100/90 hover:bg-slate-200/80 border border-slate-200 text-slate-600 hover:text-slate-900 transition-colors shadow-xs"
+                title="Notificaciones y Eventos"
               >
-                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 005.454-1.31A8.967 8.967 0 0118 9.75v-.7V9A6 6 0 006 9v.75a8.967 8.967 0 01-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 01-5.714 0m5.714 0a3 3 0 11-5.714 0" />
                 </svg>
+                <span className="absolute top-1 right-1 w-2 h-2 bg-blue-600 rounded-full ring-2 ring-white" />
               </button>
 
               {notificationsOpen && (
-                <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-xl shadow-2xl p-4 space-y-3 z-50 animate-view">
+                <div className="absolute right-0 mt-2 w-80 bg-white border border-slate-200 rounded-2xl shadow-2xl p-4 space-y-3 z-50 animate-in fade-in zoom-in-95">
                   <div className="flex items-center justify-between border-b border-slate-100 pb-2">
                     <span className="text-xs font-bold text-slate-900">Eventos de Plataforma</span>
-                    <span className="text-[10px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded">Operativo</span>
+                    <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">Operativo</span>
                   </div>
                   <div className="space-y-2 text-xs">
-                    <div className="p-2.5 rounded-lg bg-blue-50/40 border border-blue-100 hover-lift-sm transition-all">
-                      <p className="font-semibold text-slate-900">Suscripción Renovada</p>
+                    <div className="p-2.5 rounded-xl bg-blue-50/40 border border-blue-100 hover:bg-blue-50 transition-colors">
+                      <p className="font-bold text-slate-900">Suscripción Renovada</p>
                       <p className="text-slate-600 text-[11px] mt-0.5">Colegio San Cleo ha renovado Plan Profesional automáticamente.</p>
-                      <span className="text-[9px] text-blue-600 font-medium">Hace 15 min</span>
+                      <span className="text-[9px] text-blue-600 font-semibold">Hace 15 min</span>
                     </div>
-                    <div className="p-2.5 rounded-lg bg-purple-50/40 border border-purple-100 hover-lift-sm transition-all">
-                      <p className="font-semibold text-slate-900">Prueba Iniciada</p>
+                    <div className="p-2.5 rounded-xl bg-purple-50/40 border border-purple-100 hover:bg-purple-50 transition-colors">
+                      <p className="font-bold text-slate-900">Prueba Iniciada</p>
                       <p className="text-slate-600 text-[11px] mt-0.5">Academia Montessori inició prueba de 14 días.</p>
-                      <span className="text-[9px] text-purple-600 font-medium">Hace 2 horas</span>
+                      <span className="text-[9px] text-purple-600 font-semibold">Hace 2 horas</span>
                     </div>
                   </div>
                 </div>
               )}
             </div>
 
-            {/* Logout button */}
-            <Button variant="outline" onClick={handleLogout} className="btn-interactive text-xs py-1 px-2.5 border-slate-200 text-slate-700 hover:bg-slate-50">
-              Cerrar Sesión
-            </Button>
+            {/* Profile Avatar Pill */}
+            <div className="flex items-center gap-2 pl-1 border-l border-slate-200">
+              <button
+                onClick={handleLogout}
+                title="Cerrar sesión de Super Admin"
+                className="flex items-center gap-2 px-2.5 py-1 rounded-xl hover:bg-rose-50 text-slate-700 hover:text-rose-700 border border-transparent hover:border-rose-200 transition-colors group cursor-pointer"
+              >
+                <div className="w-7 h-7 rounded-lg bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-[11px] font-black shadow-xs">
+                  SA
+                </div>
+                <span className="hidden md:inline text-xs font-bold text-slate-700 group-hover:text-rose-700">Salir</span>
+              </button>
+            </div>
           </div>
         </header>
 

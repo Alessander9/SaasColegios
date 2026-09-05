@@ -175,16 +175,16 @@ export default function OverviewView() {
         </div>
       </div>
 
-      {/* KPI Cards Grid with Hover-Lift & Glow */}
+      {/* KPI Cards Grid with Modern Rounded-2xl and Hover Glow */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {kpiCards.map((card) => (
           <div
             key={card.title}
-            className={`p-5 rounded-xl bg-white border border-slate-200/90 shadow-sm group hover-lift ${card.glowClass} cursor-default`}
+            className={`p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all duration-200 group ${card.glowClass} cursor-default`}
           >
             <div className="flex items-center justify-between">
               <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{card.title}</span>
-              <div className={`p-2 rounded-lg transition-all duration-200 ${card.iconBg}`}>
+              <div className={`p-2.5 rounded-xl transition-all duration-200 ${card.iconBg}`}>
                 {card.icon}
               </div>
             </div>
@@ -194,7 +194,7 @@ export default function OverviewView() {
                 <span className="text-2xl font-black text-slate-900 tracking-tight group-hover:scale-[1.02] transition-transform">
                   {loading ? '—' : card.value}
                 </span>
-                <span className={`inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded border transition-transform group-hover:scale-105 ${card.badgeBg}`}>
+                <span className={`inline-flex items-center text-[10px] font-bold px-2 py-0.5 rounded-full border transition-transform group-hover:scale-105 ${card.badgeBg}`}>
                   {card.trend}
                 </span>
               </div>
@@ -204,13 +204,13 @@ export default function OverviewView() {
         ))}
       </div>
 
-      {/* Two Column Layout */}
+      {/* Two Column Layout: Main Institutions + Side Widgets */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* Left Column: Recent Institutions (2 cols) */}
-        <div className="lg:col-span-2 rounded-xl bg-white border border-slate-200/90 p-5 space-y-4 shadow-sm hover-lift-sm">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="p-1 rounded bg-blue-100 text-blue-700">
+        <div className="lg:col-span-2 rounded-2xl bg-white border border-slate-200/80 p-6 space-y-4 shadow-xs">
+          <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+            <div className="flex items-center gap-2.5">
+              <span className="p-2 rounded-xl bg-blue-50 text-blue-600 border border-blue-100">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.333A48.24 48.24 0 0012 9.75c-2.551 0-5.056.2-7.5.583V21" />
                 </svg>
@@ -220,7 +220,7 @@ export default function OverviewView() {
                 <p className="text-[11px] text-slate-500">Capacidad de alumnos y estado de colegios</p>
               </div>
             </div>
-            <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded border border-indigo-100 hover:bg-indigo-100 transition-colors">
+            <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded-full border border-indigo-100">
               {tenants.length} Colegios
             </span>
           </div>
@@ -232,9 +232,9 @@ export default function OverviewView() {
               const pct = Math.round((sc / max) * 100);
 
               return (
-                <div key={t.id} className="py-3.5 px-2 flex items-center justify-between gap-4 first:pt-2 last:pb-2 rounded-lg hover:bg-slate-50/90 hover:translate-x-1 transition-all duration-150 group">
+                <div key={t.id} className="py-3.5 px-3 flex items-center justify-between gap-4 first:pt-2 last:pb-2 rounded-xl hover:bg-slate-50/90 transition-all duration-150 group">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-blue-50 via-indigo-50 to-orange-50 border border-indigo-100 flex items-center justify-center text-xs font-black text-indigo-700 shadow-sm group-hover:scale-110 transition-transform">
+                    <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-blue-50 via-indigo-50 to-orange-50 border border-indigo-100 flex items-center justify-center text-xs font-black text-indigo-700 shadow-xs group-hover:scale-105 transition-transform">
                       {t.name.charAt(0)}
                     </div>
                     <div className="min-w-0">
@@ -243,9 +243,9 @@ export default function OverviewView() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-5">
+                  <div className="flex items-center gap-4">
                     {/* Plan Badge */}
-                    <span className="hidden sm:inline-block text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200 group-hover:bg-purple-100 transition-colors">
+                    <span className="hidden sm:inline-block text-[10px] font-bold text-purple-700 bg-purple-50 px-2.5 py-0.5 rounded-full border border-purple-200">
                       {t.plan?.name ?? '—'}
                     </span>
 
@@ -266,7 +266,7 @@ export default function OverviewView() {
                     </div>
 
                     {/* Status Dot */}
-                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded border transition-transform group-hover:scale-105 ${
+                    <span className={`text-[10px] font-bold px-2.5 py-0.5 rounded-full border transition-transform ${
                       t.status === 'ACTIVE'
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         : t.status === 'TRIAL'
@@ -283,11 +283,11 @@ export default function OverviewView() {
         </div>
 
         {/* Right Column: SaaS Tier Breakdown & Telemetry (1 col) */}
-        <div className="space-y-4">
+        <div className="space-y-5">
           {/* Tier breakdown */}
-          <div className="rounded-xl bg-white border border-slate-200/90 p-5 space-y-4 shadow-sm hover-lift-sm">
-            <div className="flex items-center gap-2">
-              <span className="p-1 rounded bg-purple-100 text-purple-700">
+          <div className="rounded-2xl bg-white border border-slate-200/80 p-6 space-y-4 shadow-xs">
+            <div className="flex items-center gap-2.5 pb-1 border-b border-slate-100">
+              <span className="p-2 rounded-xl bg-purple-50 text-purple-600 border border-purple-100">
                 <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                   <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
                   <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
@@ -302,7 +302,7 @@ export default function OverviewView() {
                 const pct = tenants.length > 0 ? Math.round((count / tenants.length) * 100) : 0;
 
                 return (
-                  <div key={plan.id} className="space-y-1.5 p-1.5 rounded-lg hover:bg-slate-50 transition-colors">
+                  <div key={plan.id} className="space-y-1.5 p-2 rounded-xl hover:bg-slate-50 transition-colors">
                     <div className="flex items-center justify-between text-xs">
                       <span className="font-bold text-slate-800">{plan.name}</span>
                       <span className="text-slate-500 font-semibold">{formatMoney(plan.monthlyPrice)}/mes • {count} col.</span>
@@ -323,37 +323,37 @@ export default function OverviewView() {
           </div>
 
           {/* Telemetry Summary */}
-          <div className="rounded-xl bg-white border border-slate-200/90 p-5 space-y-3 shadow-sm hover-lift-sm">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <span className="p-1 rounded bg-orange-100 text-orange-700">
+          <div className="rounded-2xl bg-white border border-slate-200/80 p-6 space-y-3 shadow-xs">
+            <div className="flex items-center justify-between pb-1 border-b border-slate-100">
+              <div className="flex items-center gap-2.5">
+                <span className="p-2 rounded-xl bg-orange-50 text-orange-600 border border-orange-100">
                   <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
                     <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
                   </svg>
                 </span>
                 <h3 className="text-sm font-bold text-slate-900">Salud del Cluster</h3>
               </div>
-              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200 hover:bg-emerald-100 transition-colors">
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2.5 py-0.5 rounded-full border border-emerald-200">
                 100% OK
               </span>
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50 border border-slate-200/70 hover:border-emerald-200 hover:bg-emerald-50/20 transition-all">
+            <div className="space-y-2 pt-1">
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-emerald-200 hover:bg-emerald-50/20 transition-all">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
                   <span className="text-slate-600 font-medium">Latencia API P95</span>
                 </div>
                 <span className="font-mono font-bold text-emerald-600">14 ms</span>
               </div>
-              <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50 border border-slate-200/70 hover:border-blue-200 hover:bg-blue-50/20 transition-all">
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-blue-200 hover:bg-blue-50/20 transition-all">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-blue-500" />
                   <span className="text-slate-600 font-medium">Disponibilidad SLA</span>
                 </div>
                 <span className="font-mono font-bold text-blue-600">99.98%</span>
               </div>
-              <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50 border border-slate-200/70 hover:border-purple-200 hover:bg-purple-50/20 transition-all">
+              <div className="flex items-center justify-between text-xs p-2.5 rounded-xl bg-slate-50 border border-slate-200/70 hover:border-purple-200 hover:bg-purple-50/20 transition-all">
                 <div className="flex items-center gap-2">
                   <span className="w-2 h-2 rounded-full bg-purple-500" />
                   <span className="text-slate-600 font-medium">Pool de Conexiones DB</span>
