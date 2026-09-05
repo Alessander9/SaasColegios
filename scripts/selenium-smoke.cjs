@@ -3,9 +3,9 @@ const chrome = require('selenium-webdriver/chrome');
 
 const portals = [
   { name: 'parent', url: 'http://localhost:3003', email: 'padre.garcia@email.com', title: 'Portal de Padres', button: /Tienda Escolar/ },
-  { name: 'teacher', url: 'http://localhost:3004', email: 'elena.torres@sanjose.edu.pe', title: 'Portal Docente', button: /Guardar Calificaciones/ },
-  { name: 'student', url: 'http://localhost:3005', email: 'padre.garcia@email.com', title: 'Asistencia', button: /Horario|Asistencia/ },
-  { name: 'school-admin', url: 'http://localhost:3006', email: 'director@sanjose.edu.pe', title: 'Directorio de Personal y Docentes', button: /Liquidar Planilla/ },
+  { name: 'teacher', url: 'http://localhost:3002', email: 'elena.torres@sanjose.edu.pe', title: 'Portal Docente', button: /Guardar Calificaciones/ },
+  { name: 'student', url: 'http://localhost:3004', email: 'padre.garcia@email.com', title: 'Asistencia', button: /Horario|Asistencia/ },
+  { name: 'school-admin', url: 'http://localhost:3001', email: 'director@sanjose.edu.pe', title: 'Directorio de Personal y Docentes', button: /Liquidar Planilla/ },
   { name: 'platform-admin', url: 'http://localhost:3000', email: null, title: 'SaaS Educational Platform', button: /Crear Nuevo Colegio|Tenant/i },
 ];
 
