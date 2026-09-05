@@ -70,11 +70,18 @@ function CreatePlanModal({ onClose, onCreated }: { onClose: () => void; onCreate
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
       <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-xl w-full max-h-[90vh] overflow-y-auto text-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-          <div>
-            <h3 className="text-base font-bold text-slate-900">Crear Nuevo Plan Comercial</h3>
-            <p className="text-xs text-slate-500">Definición de cuotas y entitlements</p>
+          <div className="flex items-center gap-2.5">
+            <span className="p-2 rounded-lg bg-orange-50 border border-orange-200 text-orange-600">
+              <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+              </svg>
+            </span>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Crear Nuevo Plan Comercial</h3>
+              <p className="text-xs text-slate-500">Definición de cuotas, precios y entitlements</p>
+            </div>
           </div>
-          <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">✕</button>
+          <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">✕</button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4 pt-4">
@@ -116,68 +123,74 @@ function CreatePlanModal({ onClose, onCreated }: { onClose: () => void; onCreate
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Precio Mensual ($)</label>
-              <input
-                type="number"
-                required
-                min={0}
-                value={monthlyPrice}
-                onChange={(e) => setMonthlyPrice(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
-              />
+              <label className="block text-[10px] font-bold text-orange-700 uppercase mb-1">Precio Mensual ($)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">$</span>
+                <input
+                  type="number"
+                  required
+                  min={0}
+                  value={monthlyPrice}
+                  onChange={(e) => setMonthlyPrice(Number(e.target.value))}
+                  className="w-full pl-7 pr-3.5 py-2.5 bg-white border border-orange-200 rounded-lg text-slate-900 text-xs font-bold focus:outline-none focus:border-orange-500 shadow-sm"
+                />
+              </div>
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Precio Anual ($)</label>
-              <input
-                type="number"
-                required
-                min={0}
-                value={annualPrice}
-                onChange={(e) => setAnnualPrice(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
-              />
+              <label className="block text-[10px] font-bold text-emerald-700 uppercase mb-1">Precio Anual ($)</label>
+              <div className="relative">
+                <span className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold text-xs">$</span>
+                <input
+                  type="number"
+                  required
+                  min={0}
+                  value={annualPrice}
+                  onChange={(e) => setAnnualPrice(Number(e.target.value))}
+                  className="w-full pl-7 pr-3.5 py-2.5 bg-white border border-emerald-200 rounded-lg text-slate-900 text-xs font-bold focus:outline-none focus:border-emerald-500 shadow-sm"
+                />
+              </div>
             </div>
           </div>
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Máx. Alumnos</label>
+              <label className="block text-[10px] font-bold text-blue-700 uppercase mb-1">Máx. Alumnos</label>
               <input
                 type="number"
                 required
                 min={1}
                 value={maxStudents}
                 onChange={(e) => setMaxStudents(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
+                className="w-full px-3.5 py-2.5 bg-white border border-blue-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Máx. Docentes</label>
+              <label className="block text-[10px] font-bold text-purple-700 uppercase mb-1">Máx. Docentes</label>
               <input
                 type="number"
                 required
                 min={1}
                 value={maxTeachers}
                 onChange={(e) => setMaxTeachers(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
+                className="w-full px-3.5 py-2.5 bg-white border border-purple-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-purple-500 shadow-sm"
               />
             </div>
             <div>
-              <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Storage (GB)</label>
+              <label className="block text-[10px] font-bold text-orange-700 uppercase mb-1">Storage (GB)</label>
               <input
                 type="number"
                 required
                 min={1}
                 value={maxStorageGb}
                 onChange={(e) => setMaxStorageGb(Number(e.target.value))}
-                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
+                className="w-full px-3.5 py-2.5 bg-white border border-orange-200 rounded-lg text-slate-900 text-xs focus:outline-none focus:border-orange-500 shadow-sm"
               />
             </div>
           </div>
 
           <div>
             <label className="block text-[10px] font-bold text-slate-600 uppercase mb-2">Entitlements / Módulos Habilitados</label>
-            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-1.5 bg-slate-50 border border-slate-200 rounded-lg">
+            <div className="grid grid-cols-2 gap-2 max-h-40 overflow-y-auto p-2 bg-slate-50 border border-slate-200 rounded-lg">
               {ALL_FEATURES.map((f) => {
                 const selected = selectedFeatures.includes(f.key);
                 return (
@@ -186,13 +199,13 @@ function CreatePlanModal({ onClose, onCreated }: { onClose: () => void; onCreate
                     key={f.key}
                     onClick={() => toggleFeature(f.key)}
                     className={`flex items-center gap-2 p-2 rounded text-left transition-all text-xs ${
-                      selected ? 'bg-blue-50 text-blue-900 border border-blue-200' : 'text-slate-600 hover:text-slate-900'
+                      selected ? 'bg-blue-50 text-blue-900 border border-blue-200 font-semibold' : 'text-slate-600 hover:text-slate-900'
                     }`}
                   >
-                    <span className={`w-3.5 h-3.5 rounded flex items-center justify-center text-[10px] border ${selected ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-300 bg-white'}`}>
+                    <span className={`w-4 h-4 rounded flex items-center justify-center text-[10px] font-bold border ${selected ? 'bg-blue-600 text-white border-blue-600' : 'border-slate-300 bg-white'}`}>
                       {selected && '✓'}
                     </span>
-                    <span className="truncate font-medium">{f.label}</span>
+                    <span className="truncate">{f.label}</span>
                   </button>
                 );
               })}
@@ -212,7 +225,7 @@ function CreatePlanModal({ onClose, onCreated }: { onClose: () => void; onCreate
             <button
               type="submit"
               disabled={saving}
-              className="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
+              className="px-5 py-2 rounded-lg bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold shadow-sm transition-all disabled:opacity-50"
             >
               {saving ? 'Guardando...' : 'Crear Plan'}
             </button>
@@ -246,30 +259,37 @@ export default function PlansView() {
       {/* Header & Controls */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Catálogo de Planes Comerciales</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Catálogo de Planes Comerciales</h2>
+            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full">
+              SaaS Tiers
+            </span>
+          </div>
           <p className="text-xs text-slate-500 mt-0.5">Suscripciones SaaS, cuotas y entitlements por nivel</p>
         </div>
 
         <div className="flex items-center gap-3">
-          {/* Annual Toggle */}
+          {/* Annual Toggle with Orange Highlight */}
           <div className="flex items-center gap-2 px-3 py-1.5 bg-white border border-slate-200 rounded-lg text-xs shadow-sm">
             <span className={`text-[11px] ${!annualBilling ? 'font-bold text-slate-900' : 'text-slate-500'}`}>Mensual</span>
             <button
               onClick={() => setAnnualBilling(!annualBilling)}
-              className={`w-8 h-4 rounded-full transition-colors relative ${annualBilling ? 'bg-blue-600' : 'bg-slate-300'}`}
+              className={`w-8 h-4 rounded-full transition-colors relative ${annualBilling ? 'bg-orange-500' : 'bg-slate-300'}`}
             >
               <span className={`absolute top-0.5 w-3 h-3 rounded-full bg-white transition-transform ${annualBilling ? 'left-4.5' : 'left-0.5'}`} />
             </button>
-            <span className={`text-[11px] ${annualBilling ? 'font-bold text-emerald-700' : 'text-slate-500'}`}>
-              Anual <span className="text-[9px] bg-emerald-50 text-emerald-700 border border-emerald-200 px-1 py-0.2 rounded font-bold">-16%</span>
+            <span className={`text-[11px] ${annualBilling ? 'font-bold text-orange-700' : 'text-slate-500'}`}>
+              Anual <span className="text-[9px] bg-orange-50 text-orange-700 border border-orange-200 px-1 py-0.2 rounded font-bold">-16% Ahorro</span>
             </span>
           </div>
 
           <button
             onClick={() => setShowCreate(true)}
-            className="flex items-center gap-1.5 px-3.5 py-2 bg-purple-600 hover:bg-purple-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-orange-600 hover:bg-orange-700 text-white text-xs font-semibold rounded-lg shadow-sm transition-all"
           >
-            <span>+</span>
+            <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+            </svg>
             <span>Nuevo Plan</span>
           </button>
         </div>
@@ -288,16 +308,30 @@ export default function PlansView() {
             return (
               <div
                 key={plan.id}
-                className={`rounded-xl bg-white border p-5 flex flex-col justify-between hover:shadow-md transition-all duration-200 ${
-                  isEnt ? 'border-purple-300 ring-1 ring-purple-100 shadow-sm' : isPro ? 'border-blue-300 ring-1 ring-blue-100 shadow-sm' : 'border-slate-200 shadow-sm'
+                className={`relative rounded-xl bg-white border p-5 flex flex-col justify-between hover:shadow-md transition-all duration-200 ${
+                  isPro
+                    ? 'border-orange-300 ring-2 ring-orange-100 shadow-sm'
+                    : isEnt
+                    ? 'border-purple-300 ring-1 ring-purple-100 shadow-sm'
+                    : 'border-blue-200 ring-1 ring-blue-50 shadow-sm'
                 }`}
               >
+                {/* Popular badge on Pro Plan */}
+                {isPro && (
+                  <div className="absolute -top-3 right-4 bg-gradient-to-r from-orange-500 to-amber-500 text-white text-[9px] font-black uppercase tracking-wider px-2.5 py-0.5 rounded-full shadow-sm">
+                    ★ Más Popular
+                  </div>
+                )}
+
                 <div className="space-y-4">
                   {/* Top Badge & Code */}
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-bold text-slate-900 tracking-tight">{plan.name}</span>
+                    <div className="flex items-center gap-2">
+                      <span className={`w-2.5 h-2.5 rounded-full ${isPro ? 'bg-orange-500' : isEnt ? 'bg-purple-600' : 'bg-blue-500'}`} />
+                      <span className="text-sm font-bold text-slate-900 tracking-tight">{plan.name}</span>
+                    </div>
                     <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${
-                      isEnt ? 'bg-purple-50 text-purple-700 border-purple-200' : isPro ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                      isPro ? 'bg-orange-50 text-orange-700 border-orange-200' : isEnt ? 'bg-purple-50 text-purple-700 border-purple-200' : 'bg-blue-50 text-blue-700 border-blue-200'
                     }`}>
                       {plan.code}
                     </span>
@@ -308,7 +342,7 @@ export default function PlansView() {
                   {/* Pricing */}
                   <div className="pt-2 border-t border-slate-100">
                     <div className="flex items-baseline gap-1">
-                      <span className={`text-3xl font-black tracking-tight ${isEnt ? 'text-purple-700' : isPro ? 'text-blue-700' : 'text-emerald-700'}`}>
+                      <span className={`text-3xl font-black tracking-tight ${isPro ? 'text-orange-600' : isEnt ? 'text-purple-700' : 'text-blue-700'}`}>
                         ${price}
                       </span>
                       <span className="text-xs text-slate-500 font-medium">/ mes</span>
@@ -318,23 +352,38 @@ export default function PlansView() {
                     )}
                   </div>
 
-                  {/* Quotas */}
+                  {/* Quotas with SVG Icons */}
                   <div className="grid grid-cols-3 gap-2 py-3 px-3 bg-slate-50 border border-slate-200/80 rounded-lg text-center">
                     <div>
+                      <div className="flex items-center justify-center text-blue-600 mb-0.5">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M15 19.128a9.38 9.38 0 002.625.372 9.337 9.337 0 004.121-.952 4.125 4.125 0 00-7.533-2.493M15 19.128v-.003c0-1.113-.285-2.16-.786-3.07M15 19.128v.106A12.318 12.318 0 018.624 21c-2.331 0-4.512-.645-6.374-1.766l-.001-.109a6.375 6.375 0 0111.964-3.07M12 6.375a3.375 3.375 0 11-6.75 0 3.375 3.375 0 016.75 0zm8.25 2.25a2.625 2.625 0 11-5.25 0 2.625 2.625 0 015.25 0z" />
+                        </svg>
+                      </div>
                       <p className="text-sm font-bold text-slate-900">{plan.maxStudents}</p>
                       <p className="text-[9px] font-semibold text-slate-500 uppercase">Alumnos</p>
                     </div>
                     <div>
+                      <div className="flex items-center justify-center text-purple-600 mb-0.5">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M4.26 10.147a60.436 60.436 0 00-.491 6.347A48.627 48.627 0 0112 20.904a48.627 48.627 0 018.232-4.41 60.46 60.46 0 00-.491-6.347m-15.482 0a50.57 50.57 0 00-2.658-.813A59.905 59.905 0 0112 3.493a59.902 59.902 0 0110.399 5.84c-.896.248-1.783.52-2.658.814m-15.482 0A50.697 50.697 0 0112 13.489a50.702 50.702 0 017.74-3.342M6.75 15a.75.75 0 100-1.5.75.75 0 000 1.5zm0 0v-3.675A55.378 55.378 0 0112 8.443m-7.007 11.55A5.981 5.981 0 006.75 15.75v-1.5" />
+                        </svg>
+                      </div>
                       <p className="text-sm font-bold text-slate-900">{plan.maxTeachers}</p>
                       <p className="text-[9px] font-semibold text-slate-500 uppercase">Docentes</p>
                     </div>
                     <div>
+                      <div className="flex items-center justify-center text-orange-600 mb-0.5">
+                        <svg className="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 15a4.5 4.5 0 004.5 4.5H18a3.75 3.75 0 001.332-7.257 3 3 0 00-3.758-3.848 5.25 5.25 0 00-10.233 2.33A4.502 4.502 0 002.25 15z" />
+                        </svg>
+                      </div>
                       <p className="text-sm font-bold text-slate-900">{plan.maxStorageGb} GB</p>
                       <p className="text-[9px] font-semibold text-slate-500 uppercase">Storage</p>
                     </div>
                   </div>
 
-                  {/* Feature Checklist */}
+                  {/* Feature Checklist with SVG icons */}
                   <div className="space-y-2 pt-1">
                     <p className="text-[10px] font-bold text-slate-700 uppercase tracking-wider">Entitlements Incluidos</p>
                     <div className="space-y-1.5">
@@ -345,7 +394,7 @@ export default function PlansView() {
                             key={feat.key}
                             className={`flex items-center gap-2 text-xs ${included ? 'text-slate-800' : 'text-slate-400 line-through'}`}
                           >
-                            <span className={`w-3.5 h-3.5 rounded-full flex items-center justify-center text-[9px] font-bold ${
+                            <span className={`w-4 h-4 rounded-full flex items-center justify-center text-[10px] font-bold ${
                               included ? 'bg-emerald-50 text-emerald-600 border border-emerald-200' : 'bg-slate-100 text-slate-400'
                             }`}>
                               {included ? '✓' : '×'}
@@ -367,3 +416,4 @@ export default function PlansView() {
     </div>
   );
 }
+

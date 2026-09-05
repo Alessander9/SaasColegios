@@ -76,7 +76,7 @@ export default function OverviewView() {
       value: metrics.tenants.active,
       subValue: `${metrics.tenants.trial} en período de prueba`,
       trend: '+25.0%',
-      iconBg: 'bg-blue-50 text-blue-600 border border-blue-100',
+      iconBg: 'bg-blue-50 text-blue-600 border border-blue-200/60',
       badgeBg: 'bg-blue-50 text-blue-700 border-blue-200',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -89,7 +89,7 @@ export default function OverviewView() {
       value: totalStudents.toLocaleString(),
       subValue: 'Estudiantes activos en el sistema',
       trend: '+14.8%',
-      iconBg: 'bg-emerald-50 text-emerald-600 border border-emerald-100',
+      iconBg: 'bg-emerald-50 text-emerald-600 border border-emerald-200/60',
       badgeBg: 'bg-emerald-50 text-emerald-700 border-emerald-200',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
@@ -102,8 +102,8 @@ export default function OverviewView() {
       value: `$${mrr.toLocaleString()}`,
       subValue: `$${arr.toLocaleString()} ARR Proyectado`,
       trend: '+18.2%',
-      iconBg: 'bg-purple-50 text-purple-600 border border-purple-100',
-      badgeBg: 'bg-purple-50 text-purple-700 border-purple-200',
+      iconBg: 'bg-orange-50 text-orange-600 border border-orange-200/60',
+      badgeBg: 'bg-orange-50 text-orange-700 border-orange-200',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v12m-3-2.818l.879.659c1.171.879 3.07.879 4.242 0 1.172-.879 1.172-2.303 0-3.182C13.536 12.219 12.768 12 12 12c-.725 0-1.45-.22-2.003-.659-1.106-.879-1.106-2.303 0-3.182s2.9-.879 4.006 0l.415.33M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
@@ -115,8 +115,8 @@ export default function OverviewView() {
       value: metrics.catalog.activePlans,
       subValue: 'Tiers activos en catálogo',
       trend: 'Estable',
-      iconBg: 'bg-indigo-50 text-indigo-600 border border-indigo-100',
-      badgeBg: 'bg-indigo-50 text-indigo-700 border-indigo-200',
+      iconBg: 'bg-purple-50 text-purple-600 border border-purple-200/60',
+      badgeBg: 'bg-purple-50 text-purple-700 border-purple-200',
       icon: (
         <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={1.75}>
           <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 3v11.25A2.25 2.25 0 006 16.5h2.25M3.75 3h-1.5m1.5 0h16.5m0 0h1.5m-1.5 0v11.25A2.25 2.25 0 0118 16.5h-2.25m-7.5 0h7.5m-7.5 0l-1 3m8.5-3l1 3m0 0l.5 1.5m-.5-1.5h-9.5m0 0l-.5 1.5M9 11.25v1.5M12 9v3.75m3-6v6" />
@@ -130,7 +130,13 @@ export default function OverviewView() {
       {/* Top Controls Bar */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Métricas Ejecutivas</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Métricas Ejecutivas</h2>
+            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+              SaaS Live
+            </span>
+          </div>
           <p className="text-xs text-slate-500 mt-0.5">Rendimiento consolidado del ecosistema escolar SaaS</p>
         </div>
 
@@ -142,7 +148,7 @@ export default function OverviewView() {
                 key={period}
                 onClick={() => setSelectedPeriod(period)}
                 className={`px-3 py-1 rounded-md transition-all ${
-                  selectedPeriod === period ? 'bg-white text-slate-900 font-semibold shadow-sm' : 'hover:text-slate-900'
+                  selectedPeriod === period ? 'bg-white text-slate-900 font-bold shadow-sm' : 'hover:text-slate-900'
                 }`}
               >
                 {period}
@@ -171,7 +177,7 @@ export default function OverviewView() {
             className="p-5 rounded-xl bg-white border border-slate-200/90 hover:border-slate-300 hover:shadow-md transition-all duration-200 shadow-sm"
           >
             <div className="flex items-center justify-between">
-              <span className="text-[11px] font-semibold text-slate-500 uppercase tracking-wider">{card.title}</span>
+              <span className="text-[11px] font-bold text-slate-500 uppercase tracking-wider">{card.title}</span>
               <div className={`p-2 rounded-lg ${card.iconBg}`}>
                 {card.icon}
               </div>
@@ -179,14 +185,14 @@ export default function OverviewView() {
 
             <div className="mt-3">
               <div className="flex items-baseline gap-2">
-                <span className="text-2xl font-bold text-slate-900 tracking-tight">
+                <span className="text-2xl font-black text-slate-900 tracking-tight">
                   {loading ? '—' : card.value}
                 </span>
                 <span className={`inline-flex items-center text-[10px] font-bold px-1.5 py-0.5 rounded border ${card.badgeBg}`}>
                   {card.trend}
                 </span>
               </div>
-              <p className="text-[11px] text-slate-500 mt-1">{card.subValue}</p>
+              <p className="text-[11px] text-slate-500 mt-1 font-medium">{card.subValue}</p>
             </div>
           </div>
         ))}
@@ -197,11 +203,18 @@ export default function OverviewView() {
         {/* Left Column: Recent Institutions (2 cols) */}
         <div className="lg:col-span-2 rounded-xl bg-white border border-slate-200/90 p-5 space-y-4 shadow-sm">
           <div className="flex items-center justify-between">
-            <div>
-              <h3 className="text-sm font-bold text-slate-900">Instituciones y Utilización de Cuota</h3>
-              <p className="text-[11px] text-slate-500">Capacidad de alumnos y estado de colegios</p>
+            <div className="flex items-center gap-2">
+              <span className="p-1 rounded bg-blue-100 text-blue-700">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 21v-8.25M15.75 21v-8.25M8.25 21v-8.25M3 9l9-6 9 6m-1.5 12V10.333A48.24 48.24 0 0012 9.75c-2.551 0-5.056.2-7.5.583V21" />
+                </svg>
+              </span>
+              <div>
+                <h3 className="text-sm font-bold text-slate-900">Instituciones y Utilización de Cuota</h3>
+                <p className="text-[11px] text-slate-500">Capacidad de alumnos y estado de colegios</p>
+              </div>
             </div>
-            <span className="text-[11px] font-semibold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded border border-indigo-100">
+            <span className="text-[11px] font-bold text-indigo-700 bg-indigo-50 px-2.5 py-1 rounded border border-indigo-100">
               {tenants.length} Colegios
             </span>
           </div>
@@ -215,31 +228,31 @@ export default function OverviewView() {
               return (
                 <div key={t.id} className="py-3.5 flex items-center justify-between gap-4 first:pt-1 last:pb-1">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-blue-50 to-indigo-50 border border-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700">
+                    <div className="w-9 h-9 rounded-lg bg-gradient-to-tr from-blue-50 via-indigo-50 to-orange-50 border border-indigo-100 flex items-center justify-center text-xs font-black text-indigo-700 shadow-sm">
                       {t.name.charAt(0)}
                     </div>
                     <div className="min-w-0">
-                      <p className="text-xs font-semibold text-slate-900 truncate">{t.name}</p>
-                      <p className="text-[10px] font-mono text-blue-600 truncate">{t.subdomain}.cole.pe</p>
+                      <p className="text-xs font-bold text-slate-900 truncate">{t.name}</p>
+                      <p className="text-[10px] font-mono font-medium text-blue-600 truncate">{t.subdomain}.cole.pe</p>
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-6">
+                  <div className="flex items-center gap-5">
                     {/* Plan Badge */}
-                    <span className="hidden sm:inline-block text-[10px] font-semibold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
+                    <span className="hidden sm:inline-block text-[10px] font-bold text-purple-700 bg-purple-50 px-2 py-0.5 rounded border border-purple-200">
                       {t.plan?.name ?? '—'}
                     </span>
 
                     {/* Progress Bar */}
                     <div className="w-28 text-right">
-                      <div className="flex justify-between text-[10px] font-medium mb-1">
+                      <div className="flex justify-between text-[10px] font-semibold mb-1">
                         <span className="text-slate-500">{sc} / {max}</span>
-                        <span className={pct > 90 ? 'text-rose-600 font-bold' : 'text-slate-700 font-semibold'}>{pct}%</span>
+                        <span className={pct > 90 ? 'text-rose-600 font-bold' : pct > 70 ? 'text-orange-600 font-bold' : 'text-emerald-700 font-bold'}>{pct}%</span>
                       </div>
                       <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
                         <div
                           className={`h-full rounded-full transition-all duration-300 ${
-                            pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-blue-500' : 'bg-emerald-500'
+                            pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-orange-500' : 'bg-emerald-500'
                           }`}
                           style={{ width: `${Math.min(pct, 100)}%` }}
                         />
@@ -251,7 +264,7 @@ export default function OverviewView() {
                       t.status === 'ACTIVE'
                         ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                         : t.status === 'TRIAL'
-                        ? 'bg-blue-50 text-blue-700 border-blue-200'
+                        ? 'bg-orange-50 text-orange-700 border-orange-200'
                         : 'bg-rose-50 text-rose-700 border-rose-200'
                     }`}>
                       {t.status}
@@ -267,7 +280,15 @@ export default function OverviewView() {
         <div className="space-y-4">
           {/* Tier breakdown */}
           <div className="rounded-xl bg-white border border-slate-200/90 p-5 space-y-4 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900">Distribución por Tier</h3>
+            <div className="flex items-center gap-2">
+              <span className="p-1 rounded bg-purple-100 text-purple-700">
+                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M10.5 6a7.5 7.5 0 107.5 7.5h-7.5V6z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 10.5H21A7.5 7.5 0 0013.5 3v7.5z" />
+                </svg>
+              </span>
+              <h3 className="text-sm font-bold text-slate-900">Distribución por Tier</h3>
+            </div>
 
             <div className="space-y-3">
               {plans.map((plan) => {
@@ -277,8 +298,8 @@ export default function OverviewView() {
                 return (
                   <div key={plan.id} className="space-y-1.5">
                     <div className="flex items-center justify-between text-xs">
-                      <span className="font-semibold text-slate-800">{plan.name}</span>
-                      <span className="text-slate-500">${plan.monthlyPrice}/mes • {count} col.</span>
+                      <span className="font-bold text-slate-800">{plan.name}</span>
+                      <span className="text-slate-500 font-semibold">${plan.monthlyPrice}/mes • {count} col.</span>
                     </div>
                     <div className="w-full bg-slate-100 rounded-full h-2 overflow-hidden border border-slate-200/50">
                       <div
@@ -297,20 +318,41 @@ export default function OverviewView() {
 
           {/* Telemetry Summary */}
           <div className="rounded-xl bg-white border border-slate-200/90 p-5 space-y-3 shadow-sm">
-            <h3 className="text-sm font-bold text-slate-900">Salud del Cluster</h3>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <span className="p-1 rounded bg-orange-100 text-orange-700">
+                  <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M3.75 13.5l10.5-11.25L12 10.5h8.25L9.75 21.75 12 13.5H3.75z" />
+                  </svg>
+                </span>
+                <h3 className="text-sm font-bold text-slate-900">Salud del Cluster</h3>
+              </div>
+              <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                100% OK
+              </span>
+            </div>
 
             <div className="space-y-2">
               <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50 border border-slate-200/70">
-                <span className="text-slate-600">Latencia API P95</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-emerald-500" />
+                  <span className="text-slate-600 font-medium">Latencia API P95</span>
+                </div>
                 <span className="font-mono font-bold text-emerald-600">14 ms</span>
               </div>
               <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50 border border-slate-200/70">
-                <span className="text-slate-600">Disponibilidad SLA</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-blue-500" />
+                  <span className="text-slate-600 font-medium">Disponibilidad SLA</span>
+                </div>
                 <span className="font-mono font-bold text-blue-600">99.98%</span>
               </div>
               <div className="flex items-center justify-between text-xs p-2 rounded-lg bg-slate-50 border border-slate-200/70">
-                <span className="text-slate-600">Pool de Conexiones DB</span>
-                <span className="font-mono font-semibold text-purple-700">12 / 50</span>
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-purple-500" />
+                  <span className="text-slate-600 font-medium">Pool de Conexiones DB</span>
+                </div>
+                <span className="font-mono font-bold text-purple-700">12 / 50</span>
               </div>
             </div>
           </div>

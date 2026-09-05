@@ -23,19 +23,19 @@ function getStudentCount(t: PlatformTenant): number {
   return t.usageMetrics?.find((u) => u.metricKey === 'students' && u.periodKey === 'current')?.value ?? 0;
 }
 
-const FEATURE_LABELS: Record<string, string> = {
-  academic: 'Gestión Académica & Notas',
-  enrollment: 'Matrícula & Registro',
-  finance: 'Tesorería & Cobranzas',
-  commerce: 'Tienda Escolar Online',
-  activities: 'Talleres Extracurriculares',
-  hr: 'Recursos Humanos & Docentes',
-  payroll: 'Cálculo de Planillas',
-  notifications: 'Notificaciones Push & Email',
-  documents: 'Gestor Documental',
-  reporting: 'Reportes Ejecutivos & BI',
-  advanced_analytics: 'Analítica Predictiva',
-  custom_domain: 'Dominio Personalizado',
+const FEATURE_LABELS: Record<string, { label: string; icon: string }> = {
+  academic: { label: 'Gestión Académica & Notas', icon: '📝' },
+  enrollment: { label: 'Matrícula & Registro', icon: '📋' },
+  finance: { label: 'Tesorería & Cobranzas', icon: '💳' },
+  commerce: { label: 'Tienda Escolar Online', icon: '🛍️' },
+  activities: { label: 'Talleres Extracurriculares', icon: '⚽' },
+  hr: { label: 'Recursos Humanos & Docentes', icon: '👥' },
+  payroll: { label: 'Cálculo de Planillas', icon: '💼' },
+  notifications: { label: 'Notificaciones Push & Email', icon: '🔔' },
+  documents: { label: 'Gestor Documental', icon: '📄' },
+  reporting: { label: 'Reportes Ejecutivos & BI', icon: '📊' },
+  advanced_analytics: { label: 'Analítica Predictiva', icon: '🔬' },
+  custom_domain: { label: 'Dominio Personalizado', icon: '🌐' },
 };
 
 /* ── Tenant Detail Modal ── */
@@ -95,12 +95,23 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
         {/* Header */}
         <div className="p-6 border-b border-slate-100 flex items-start justify-between">
           <div className="flex items-center gap-3.5">
-            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 to-indigo-600 flex items-center justify-center text-white text-base font-bold shadow-md shadow-indigo-500/20">
+            <div className="w-11 h-11 rounded-xl bg-gradient-to-tr from-blue-600 via-indigo-600 to-orange-500 flex items-center justify-center text-white text-base font-black shadow-md shadow-indigo-500/20">
               {detail.name.charAt(0)}
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900 leading-tight">{detail.name}</h2>
-              <p className="text-xs font-mono text-blue-600 mt-0.5">{detail.subdomain}.cole.pe</p>
+              <div className="flex items-center gap-2">
+                <h2 className="text-base font-bold text-slate-900 leading-tight">{detail.name}</h2>
+                <span className={`text-[10px] font-bold px-2 py-0.5 rounded border ${
+                  detail.status === 'ACTIVE'
+                    ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
+                    : detail.status === 'TRIAL'
+                    ? 'bg-orange-50 text-orange-700 border-orange-200'
+                    : 'bg-rose-50 text-rose-700 border-rose-200'
+                }`}>
+                  {detail.status}
+                </span>
+              </div>
+              <p className="text-xs font-mono font-medium text-blue-600 mt-0.5">{detail.subdomain}.cole.pe</p>
             </div>
           </div>
           <button onClick={onClose} className="p-1.5 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600 transition-colors">
@@ -117,41 +128,57 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
             {/* Stats Row */}
             <div className="grid grid-cols-3 gap-3">
               <div className="p-3.5 rounded-xl bg-blue-50/50 border border-blue-100">
-                <span className="text-[10px] font-bold text-blue-700 uppercase">Capacidad Alumnos</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-blue-700 uppercase">Capacidad Alumnos</span>
+                  <span className="text-blue-600">👥</span>
+                </div>
                 <p className="text-xl font-bold text-slate-900 mt-1">{sc} <span className="text-xs font-normal text-slate-500">/ {plan?.maxStudents ?? '—'}</span></p>
                 <div className="w-full h-1 bg-blue-200 rounded-full mt-2 overflow-hidden">
                   <div className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : 'bg-blue-600'}`} style={{ width: `${Math.min(pct, 100)}%` }} />
                 </div>
               </div>
 
-              <div className="p-3.5 rounded-xl bg-emerald-50/50 border border-emerald-100">
-                <span className="text-[10px] font-bold text-emerald-700 uppercase">Facturación MRR</span>
-                <p className="text-xl font-bold text-emerald-700 mt-1">${plan?.monthlyPrice ?? 0} <span className="text-xs font-normal text-slate-500">/mes</span></p>
-                <p className="text-[10px] text-slate-500 mt-1">Plan {plan?.name}</p>
+              <div className="p-3.5 rounded-xl bg-orange-50/50 border border-orange-100">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-orange-700 uppercase">Facturación MRR</span>
+                  <span className="text-orange-600">💵</span>
+                </div>
+                <p className="text-xl font-bold text-orange-700 mt-1">${plan?.monthlyPrice ?? 0} <span className="text-xs font-normal text-slate-500">/mes</span></p>
+                <p className="text-[10px] text-slate-500 mt-1 font-semibold">Plan {plan?.name}</p>
               </div>
 
               <div className="p-3.5 rounded-xl bg-purple-50/50 border border-purple-100">
-                <span className="text-[10px] font-bold text-purple-700 uppercase">Módulos Activos</span>
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold text-purple-700 uppercase">Módulos Activos</span>
+                  <span className="text-purple-600">⚡</span>
+                </div>
                 <p className="text-xl font-bold text-purple-700 mt-1">{plan?.features.length ?? 0} <span className="text-xs font-normal text-slate-500">activos</span></p>
-                <p className="text-[10px] text-slate-500 mt-1">Entitlements OK</p>
+                <p className="text-[10px] text-slate-500 mt-1 font-semibold">Entitlements OK</p>
               </div>
             </div>
 
             {/* Feature Entitlements Checklist */}
             <div className="space-y-3">
-              <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Entitlements del Plan</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-xs font-bold text-slate-700 uppercase tracking-wider">Entitlements del Plan</h3>
+                <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
+                  {plan?.features.length} Habilitados
+                </span>
+              </div>
               <div className="grid grid-cols-2 gap-2">
                 {(plan?.features ?? []).map((f) => {
                   const ent = entitlements[f];
                   const allowed = ent?.allowed !== false;
+                  const featMeta = FEATURE_LABELS[f] ?? { label: f, icon: '📦' };
+
                   return (
                     <div key={f} className="flex items-center justify-between p-2.5 rounded-lg bg-slate-50 border border-slate-200/80 text-xs">
                       <div className="flex items-center gap-2">
-                        <span className={`w-1.5 h-1.5 rounded-full ${allowed ? 'bg-emerald-500' : 'bg-rose-500'}`} />
-                        <span className="font-medium text-slate-800">{FEATURE_LABELS[f] ?? f}</span>
+                        <span className="text-xs">{featMeta.icon}</span>
+                        <span className="font-semibold text-slate-800">{featMeta.label}</span>
                       </div>
-                      <span className={`text-[10px] font-bold ${allowed ? 'text-emerald-700' : 'text-rose-600'}`}>
-                        {allowed ? 'Habilitado' : 'Bloqueado'}
+                      <span className={`text-[10px] font-bold ${allowed ? 'text-emerald-700 bg-emerald-50 px-1.5 py-0.2 rounded border border-emerald-200' : 'text-rose-600'}`}>
+                        {allowed ? '✓ Activo' : '✗ Bloqueado'}
                       </span>
                     </div>
                   );
@@ -161,7 +188,10 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
 
             {/* Edit Controls */}
             <div className="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
-              <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Configuración de Suscripción</h3>
+              <div className="flex items-center gap-2">
+                <span className="text-blue-600">⚙️</span>
+                <h3 className="text-xs font-bold text-slate-800 uppercase tracking-wider">Configuración de Suscripción</h3>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
                   <label className="block text-[10px] font-bold text-slate-600 uppercase mb-1">Estado Operativo</label>
@@ -170,9 +200,9 @@ function TenantDetailModal({ tenant, plans, onClose, onUpdated }: {
                     onChange={(e) => setEditStatus(e.target.value as PlatformTenant['status'])}
                     className="w-full px-3 py-2 bg-white border border-slate-200 rounded-lg text-slate-800 text-xs focus:outline-none focus:border-blue-500 shadow-sm"
                   >
-                    <option value="ACTIVE">ACTIVE (Operativo)</option>
-                    <option value="TRIAL">TRIAL (Período de prueba)</option>
-                    <option value="SUSPENDED">SUSPENDED (Suspendido)</option>
+                    <option value="ACTIVE">ACTIVE (Operativo - Verde)</option>
+                    <option value="TRIAL">TRIAL (Período de prueba - Naranja)</option>
+                    <option value="SUSPENDED">SUSPENDED (Suspendido - Rojo)</option>
                     <option value="ARCHIVED">ARCHIVED (Archivado)</option>
                   </select>
                 </div>
@@ -257,9 +287,12 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
     <div className="fixed inset-0 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4 z-50" onClick={onClose}>
       <div className="bg-white border border-slate-200 rounded-2xl p-6 max-w-md w-full text-slate-800 shadow-2xl" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between pb-4 border-b border-slate-100">
-          <div>
-            <h3 className="text-base font-bold text-slate-900">Registrar Nuevo Colegio</h3>
-            <p className="text-xs text-slate-500">Provisión de tenant multi-tenant</p>
+          <div className="flex items-center gap-2">
+            <span className="p-1 rounded bg-blue-100 text-blue-700">🏫</span>
+            <div>
+              <h3 className="text-base font-bold text-slate-900">Registrar Nuevo Colegio</h3>
+              <p className="text-xs text-slate-500">Provisión de tenant multi-tenant</p>
+            </div>
           </div>
           <button onClick={onClose} className="p-1 rounded-lg hover:bg-slate-100 text-slate-400 hover:text-slate-600">✕</button>
         </div>
@@ -288,7 +321,7 @@ function CreateTenantModal({ plans, onClose, onCreated }: {
                 onChange={(e) => setSubdomain(e.target.value.toLowerCase().replace(/[^a-z0-9-]/g, ''))}
                 className="flex-1 px-3.5 py-2.5 bg-white border border-slate-200 rounded-l-lg text-slate-900 text-xs font-mono focus:outline-none focus:border-blue-500 shadow-sm"
               />
-              <span className="px-3 py-2.5 bg-slate-100 border border-l-0 border-slate-200 rounded-r-lg text-xs font-semibold text-slate-600">
+              <span className="px-3 py-2.5 bg-blue-50 border border-l-0 border-blue-200 rounded-r-lg text-xs font-bold text-blue-700">
                 .cole.pe
               </span>
             </div>
@@ -398,16 +431,16 @@ export default function TenantsView() {
 
         <div className="flex bg-slate-100 border border-slate-200 rounded-lg p-0.5 text-[11px] font-medium text-slate-600">
           {[
-            { id: 'ALL', label: 'Todos' },
-            { id: 'ACTIVE', label: 'Activos' },
-            { id: 'TRIAL', label: 'En Prueba' },
-            { id: 'SUSPENDED', label: 'Suspendidos' },
+            { id: 'ALL', label: 'Todos', color: 'hover:text-slate-900' },
+            { id: 'ACTIVE', label: 'Activos', color: 'hover:text-emerald-700' },
+            { id: 'TRIAL', label: 'En Prueba', color: 'hover:text-orange-700' },
+            { id: 'SUSPENDED', label: 'Suspendidos', color: 'hover:text-rose-700' },
           ].map((s) => (
             <button
               key={s.id}
               onClick={() => setFilterStatus(s.id)}
               className={`px-3 py-1 rounded-md transition-all ${
-                filterStatus === s.id ? 'bg-white text-slate-900 font-semibold shadow-sm' : 'hover:text-slate-900'
+                filterStatus === s.id ? 'bg-white text-slate-900 font-bold shadow-sm' : s.color
               }`}
             >
               {s.label}
@@ -449,7 +482,7 @@ export default function TenantsView() {
                     >
                       <td className="px-5 py-3.5">
                         <div className="flex items-center gap-3">
-                          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-50 to-indigo-50 border border-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700">
+                          <div className="w-8 h-8 rounded-lg bg-gradient-to-tr from-blue-50 via-indigo-50 to-orange-50 border border-indigo-100 flex items-center justify-center text-xs font-bold text-indigo-700">
                             {t.name.charAt(0)}
                           </div>
                           <div>
@@ -473,11 +506,11 @@ export default function TenantsView() {
                         <div className="w-28">
                           <div className="flex justify-between text-[10px] mb-1 font-medium">
                             <span className="text-slate-500">{sc}/{max}</span>
-                            <span className={pct > 90 ? 'text-rose-600 font-bold' : 'text-slate-700 font-semibold'}>{pct}%</span>
+                            <span className={pct > 90 ? 'text-rose-600 font-bold' : pct > 70 ? 'text-orange-600 font-bold' : 'text-emerald-700 font-bold'}>{pct}%</span>
                           </div>
                           <div className="w-full bg-slate-100 rounded-full h-1.5 overflow-hidden border border-slate-200/50">
                             <div
-                              className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : 'bg-emerald-500'}`}
+                              className={`h-full rounded-full ${pct > 90 ? 'bg-rose-500' : pct > 70 ? 'bg-orange-500' : 'bg-emerald-500'}`}
                               style={{ width: `${Math.min(pct, 100)}%` }}
                             />
                           </div>
@@ -489,7 +522,7 @@ export default function TenantsView() {
                           t.status === 'ACTIVE'
                             ? 'bg-emerald-50 text-emerald-700 border-emerald-200'
                             : t.status === 'TRIAL'
-                            ? 'bg-blue-50 text-blue-700 border-blue-200'
+                            ? 'bg-orange-50 text-orange-700 border-orange-200'
                             : 'bg-rose-50 text-rose-700 border-rose-200'
                         }`}>
                           {t.status}

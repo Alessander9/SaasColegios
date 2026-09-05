@@ -39,12 +39,12 @@ const MOCK_STATS: AuditStats = {
   ],
 };
 
-const ACTION_STYLES: Record<string, { bg: string; text: string; border: string }> = {
-  CREATE: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200' },
-  UPDATE: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200' },
-  PUBLISH: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200' },
-  REVERSE: { bg: 'bg-amber-50', text: 'text-amber-700', border: 'border-amber-200' },
-  DELETE: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200' },
+const ACTION_STYLES: Record<string, { bg: string; text: string; border: string; icon: string }> = {
+  CREATE: { bg: 'bg-emerald-50', text: 'text-emerald-700', border: 'border-emerald-200', icon: '+' },
+  UPDATE: { bg: 'bg-blue-50', text: 'text-blue-700', border: 'border-blue-200', icon: '✎' },
+  PUBLISH: { bg: 'bg-purple-50', text: 'text-purple-700', border: 'border-purple-200', icon: '🚀' },
+  REVERSE: { bg: 'bg-orange-50', text: 'text-orange-700', border: 'border-orange-200', icon: '↺' },
+  DELETE: { bg: 'bg-rose-50', text: 'text-rose-700', border: 'border-rose-200', icon: '✕' },
 };
 
 export default function AuditView() {
@@ -75,7 +75,13 @@ export default function AuditView() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 pb-2 border-b border-slate-200/80">
         <div>
-          <h2 className="text-xl font-bold text-slate-900 tracking-tight">Registro de Auditoría & Seguridad</h2>
+          <div className="flex items-center gap-2">
+            <h2 className="text-xl font-bold text-slate-900 tracking-tight">Registro de Auditoría & Seguridad</h2>
+            <span className="text-[10px] font-bold text-orange-700 bg-orange-50 border border-orange-200 px-2 py-0.5 rounded-full flex items-center gap-1">
+              <span className="w-1.5 h-1.5 rounded-full bg-orange-500 animate-pulse" />
+              Inmutable
+            </span>
+          </div>
           <p className="text-xs text-slate-500 mt-0.5">Trazabilidad inmutable de eventos de dominio multi-tenant</p>
         </div>
 
@@ -83,6 +89,49 @@ export default function AuditView() {
           <span className="text-[11px] font-mono font-bold text-purple-700 bg-purple-50 border border-purple-200 px-2.5 py-1 rounded-lg">
             Total Eventos: {logs.length}
           </span>
+        </div>
+      </div>
+
+      {/* Summary KPI Chips */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+        <div className="p-3 bg-white border border-emerald-200 rounded-xl flex items-center gap-3 shadow-sm">
+          <div className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-xs border border-emerald-200">
+            +
+          </div>
+          <div>
+            <p className="text-[10px] uppercase font-bold text-slate-500">Creaciones</p>
+            <p className="text-base font-black text-emerald-700">62</p>
+          </div>
+        </div>
+
+        <div className="p-3 bg-white border border-blue-200 rounded-xl flex items-center gap-3 shadow-sm">
+          <div className="w-8 h-8 rounded-lg bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-xs border border-blue-200">
+            ✎
+          </div>
+          <div>
+            <p className="text-[10px] uppercase font-bold text-slate-500">Ediciones</p>
+            <p className="text-base font-black text-blue-700">48</p>
+          </div>
+        </div>
+
+        <div className="p-3 bg-white border border-purple-200 rounded-xl flex items-center gap-3 shadow-sm">
+          <div className="w-8 h-8 rounded-lg bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-xs border border-purple-200">
+            🚀
+          </div>
+          <div>
+            <p className="text-[10px] uppercase font-bold text-slate-500">Publicaciones</p>
+            <p className="text-base font-black text-purple-700">12</p>
+          </div>
+        </div>
+
+        <div className="p-3 bg-white border border-orange-200 rounded-xl flex items-center gap-3 shadow-sm">
+          <div className="w-8 h-8 rounded-lg bg-orange-50 text-orange-700 flex items-center justify-center font-bold text-xs border border-orange-200">
+            ↺
+          </div>
+          <div>
+            <p className="text-[10px] uppercase font-bold text-orange-700">Reversiones</p>
+            <p className="text-base font-black text-orange-700">3</p>
+          </div>
         </div>
       </div>
 
@@ -97,7 +146,7 @@ export default function AuditView() {
           <option value="CREATE">CREATE</option>
           <option value="UPDATE">UPDATE</option>
           <option value="PUBLISH">PUBLISH</option>
-          <option value="REVERSE">REVERSE</option>
+          <option value="REVERSE">REVERSE (Orange)</option>
           <option value="DELETE">DELETE</option>
         </select>
 
@@ -145,8 +194,9 @@ export default function AuditView() {
                     <React.Fragment key={log.id}>
                       <tr className="hover:bg-slate-50/80 transition-colors">
                         <td className="px-5 py-3.5">
-                          <span className={`text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${sty.bg} ${sty.text} ${sty.border}`}>
-                            {log.action}
+                          <span className={`inline-flex items-center gap-1 text-[10px] font-mono font-bold px-2 py-0.5 rounded border ${sty.bg} ${sty.text} ${sty.border}`}>
+                            <span>{sty.icon}</span>
+                            <span>{log.action}</span>
                           </span>
                         </td>
 
@@ -157,8 +207,15 @@ export default function AuditView() {
                         </td>
 
                         <td className="px-5 py-3.5">
-                          <p className="text-slate-900 font-semibold text-xs">{log.actorEmail}</p>
-                          <p className="text-[10px] text-slate-400 font-mono">ID: {log.actorId}</p>
+                          <div className="flex items-center gap-2">
+                            <div className="w-6 h-6 rounded bg-slate-100 border border-slate-200 flex items-center justify-center text-[10px] font-bold text-slate-700">
+                              {log.actorEmail.charAt(0).toUpperCase()}
+                            </div>
+                            <div>
+                              <p className="text-slate-900 font-semibold text-xs">{log.actorEmail}</p>
+                              <p className="text-[10px] text-slate-400 font-mono">ID: {log.actorId}</p>
+                            </div>
+                          </div>
                         </td>
 
                         <td className="px-5 py-3.5 font-mono text-[11px] text-blue-600 font-medium">
@@ -210,3 +267,4 @@ export default function AuditView() {
     </div>
   );
 }
+
