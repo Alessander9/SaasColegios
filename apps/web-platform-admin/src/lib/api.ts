@@ -1,7 +1,9 @@
+import { getCookie, setCookie, deleteCookie } from './cookies';
+
 const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000/api/v1';
 
 async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
-  const token = typeof window === 'undefined' ? null : localStorage.getItem('cole_super_admin_token');
+  const token = typeof window === 'undefined' ? null : (getCookie('cole_super_admin_token') || localStorage.getItem('cole_super_admin_token'));
   const response = await fetch(`${API_URL}${path}`, {
     ...options,
     headers: {
@@ -20,19 +22,32 @@ export async function login(email: string, password: string) {
     method: 'POST',
     body: JSON.stringify({ email, password }),
   });
-  localStorage.setItem('cole_super_admin_token', result.accessToken);
-  localStorage.setItem('cole_super_admin_user', JSON.stringify(result.user));
+  // Persist in Cookie (7 days default) and localStorage
+  setCookie('cole_super_admin_token', result.accessToken, { days: 7 });
+  setCookie('cole_super_admin_user', JSON.stringify(result.user), { days: 7 });
+  setCookie('cole_super_admin_session_start', new Date().toISOString(), { days: 7 });
+  try {
+    localStorage.setItem('cole_super_admin_token', result.accessToken);
+    localStorage.setItem('cole_super_admin_user', JSON.stringify(result.user));
+    localStorage.setItem('cole_super_admin_session_start', new Date().toISOString());
+  } catch { /* ignore */ }
   return result;
 }
 
 export function logout() {
-  localStorage.removeItem('cole_super_admin_token');
-  localStorage.removeItem('cole_super_admin_user');
+  deleteCookie('cole_super_admin_token');
+  deleteCookie('cole_super_admin_user');
+  deleteCookie('cole_super_admin_session_start');
+  try {
+    localStorage.removeItem('cole_super_admin_token');
+    localStorage.removeItem('cole_super_admin_user');
+    localStorage.removeItem('cole_super_admin_session_start');
+  } catch { /* ignore */ }
 }
 
 export function getCurrentUser() {
   if (typeof window === 'undefined') return null;
-  const raw = localStorage.getItem('cole_super_admin_user');
+  const raw = getCookie('cole_super_admin_user') || localStorage.getItem('cole_super_admin_user');
   return raw ? JSON.parse(raw) : null;
 }
 
